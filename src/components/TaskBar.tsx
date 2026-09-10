@@ -6,6 +6,8 @@ interface TaskBarProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   isAdmin?: boolean;
+  isEditMode?: boolean;
+  onToggleEditMode?: () => void;
   onOpenAdminModal?: () => void;
   onAdminLogout?: () => void;
 }
@@ -14,6 +16,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({
   activeTab,
   onTabChange,
   isAdmin = false,
+  isEditMode = false,
+  onToggleEditMode,
   onOpenAdminModal,
   onAdminLogout,
 }) => {
@@ -58,16 +62,29 @@ export const TaskBar: React.FC<TaskBarProps> = ({
           <div className="flex items-center gap-1.5 bg-[#F8EDF1] border border-[#442F2A] px-2 py-0.5 rounded text-[10px] text-[#9D5A64] font-bold shadow-2xs">
             <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
             <span className="hidden sm:inline">管理員已連線</span>
+            {onToggleEditMode && (
+              <button
+                onClick={onToggleEditMode}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                  isEditMode
+                    ? 'bg-[#C89398] text-white border-[#442F2A]'
+                    : 'bg-white text-[#442F2A] border-[#442F2A]/40 hover:bg-[#E0BAC7]/40'
+                }`}
+                title={isEditMode ? '點擊退出編輯模式（進入純淨展示）' : '點擊開啟編輯模式'}
+              >
+                {isEditMode ? '✏️ 編輯模式中' : '👁️ 點擊開啟編輯'}
+              </button>
+            )}
             <button
               onClick={onOpenAdminModal}
-              className="text-[#442F2A] hover:underline cursor-pointer ml-1"
+              className="text-[#442F2A] hover:underline cursor-pointer ml-0.5"
               title="管理員選單"
             >
               [設定]
             </button>
             <button
               onClick={onAdminLogout}
-              className="text-red-600 hover:underline cursor-pointer ml-1"
+              className="text-red-600 hover:underline cursor-pointer ml-0.5"
               title="登出管理員"
             >
               [登出]

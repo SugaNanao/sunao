@@ -166,8 +166,8 @@ export default function App() {
   // 3. Main Desktop Website
   return (
     <div className="min-h-screen dot-bg pb-14 text-[#442F2A] flex flex-col selection:bg-[#E0BAC7] selection:text-[#442F2A]">
-      {/* Top Header with Category Navigation (Preserve blank space on HOME page in visitor mode) */}
-      {isVisitor && activeTab === 'HOME' ? (
+      {/* Top Header with Category Navigation (Only show when in Edit Mode across ALL tabs) */}
+      {!effectiveEditMode ? (
         <div className="w-full h-[58px] sm:h-[62px] pointer-events-none select-none" aria-hidden="true" />
       ) : (
         <DesktopHeader
@@ -320,6 +320,8 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isAdmin={isAdmin}
+        isEditMode={effectiveEditMode}
+        onToggleEditMode={handleToggleEditMode}
         onOpenAdminModal={() => setIsAdminModalOpen(true)}
         onAdminLogout={handleAdminLogout}
       />
