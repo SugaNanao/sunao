@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CoupleSiteData, SpecialDate } from '../types';
-import { Edit, ChevronLeft, ChevronRight, Heart, Calendar } from 'lucide-react';
+import { Edit, ChevronLeft, ChevronRight, Heart, Calendar, Star } from 'lucide-react';
 
 interface RightSidebarProps {
   data: CoupleSiteData;
@@ -17,6 +17,7 @@ interface FloatingDateDetail {
   title: string;
   note: string;
   isAnniversary?: boolean;
+  isHoliday?: boolean;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -239,6 +240,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               cell.day === today.getDate();
 
             if (specialDate) {
+              const isHoliday = specialDate.category === 'holiday';
               return (
                 <div key={idx} className="h-6 flex items-center justify-center">
                   <button
@@ -246,19 +248,32 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                       setFloatingDate({
                         date: specialDate.date,
                         title: specialDate.title,
-                        note: specialDate.note || '特別的心動紀念日！',
+                        note: specialDate.note || (isHoliday ? '特別的節日紀錄！' : '特別的心動紀念日！'),
+                        isHoliday: isHoliday,
                       });
                     }}
                     className={`relative w-6 h-6 flex items-center justify-center hover:scale-115 transition cursor-pointer group ${
                       isToday ? 'ring-2 ring-[#442F2A] rounded-full' : ''
                     }`}
-                    title={`${specialDate.title} (${cell.day}日)${isToday ? ' [今天]' : ''}`}
+                    title={`${isHoliday ? '節日' : '紀念日'}: ${specialDate.title} (${cell.day}日)${isToday ? ' [今天]' : ''}`}
                   >
-                    {/* Heart with fill matching its stroke color */}
-                    <Heart className="w-[23px] h-[23px] fill-[#C89398] stroke-[#C89398] stroke-[1.5px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]" />
-                    <span className="relative z-10 text-white font-bold text-[8.5px] leading-none pt-0.5">
-                      {cell.day}
-                    </span>
+                    {isHoliday ? (
+                      <>
+                        {/* Pink star outline with transparent fill (粉色星星線條框起，中間不上色) */}
+                        <Star className="w-[23px] h-[23px] fill-transparent stroke-[#E0BAC7] stroke-[2.2px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)] group-hover:stroke-[#C89398]" />
+                        <span className="relative z-10 text-[#442F2A] font-bold text-[8.5px] leading-none pt-0.5">
+                          {cell.day}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {/* Heart with fill matching its stroke color */}
+                        <Heart className="w-[23px] h-[23px] fill-[#C89398] stroke-[#C89398] stroke-[1.5px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]" />
+                        <span className="relative z-10 text-white font-bold text-[8.5px] leading-none pt-0.5">
+                          {cell.day}
+                        </span>
+                      </>
+                    )}
                   </button>
                 </div>
               );
@@ -315,7 +330,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
         {/* Calendar Helper Note */}
         <div className="text-[10px] font-pixel text-[#442F2A]/80 border-t border-[#442F2A]/15 pt-1.5 flex items-center justify-center min-h-[22px] bg-[#F8EDF1]/60 px-1.5 rounded text-center">
-          <span className="truncate">✦ 點擊愛心日期查看紀念日註記</span>
+          <span className="truncate">✦ 點擊愛心 (紀念日) 或星星 (節日) 查看註記</span>
         </div>
       </div>
 
@@ -332,8 +347,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             {/* Header */}
             <div className="bg-[#442F2A] text-[#FFF8F5] px-3.5 py-2 flex items-center justify-between font-pixel text-xs">
               <div className="flex items-center gap-1.5 font-bold">
-                <Heart className="w-3.5 h-3.5 fill-[#C89398] text-[#C89398]" />
-                <span>MEMORIAL DATE // 紀念日註記</span>
+                {floatingDate.isHoliday ? (
+                  <Star className="w-3.5 h-3.5 text-[#E0BAC7] stroke-[2px]" />
+                ) : (
+                  <Heart className="w-3.5 h-3.5 fill-[#C89398] text-[#C89398]" />
+                )}
+                <span>
+                  {floatingDate.isHoliday ? 'HOLIDAY // 節日註記' : 'MEMORIAL DATE // 紀念日註記'}
+                </span>
               </div>
               <button
                 onClick={() => setFloatingDate(null)}
@@ -354,15 +375,27 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     {floatingDate.date}
                   </span>
                 </span>
-                <span className="text-[10px] bg-[#E0BAC7] text-[#442F2A] px-2 py-0.5 rounded font-bold border border-[#442F2A]/30">
-                  {floatingDate.isAnniversary ? 'ANNIVERSARY' : 'SPECIAL DAY'}
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded font-bold border border-[#442F2A]/30 ${
+                    floatingDate.isHoliday ? 'bg-amber-100 text-[#442F2A]' : 'bg-[#E0BAC7] text-[#442F2A]'
+                  }`}
+                >
+                  {floatingDate.isAnniversary
+                    ? 'ANNIVERSARY'
+                    : floatingDate.isHoliday
+                    ? '★ HOLIDAY (節日)'
+                    : '♥ SPECIAL DAY (紀念日)'}
                 </span>
               </div>
 
               {/* Title */}
               <div className="border-b border-[#442F2A]/15 pb-2">
                 <h4 className="text-sm font-bold text-[#C89398] flex items-center gap-1.5">
-                  <Heart className="w-4 h-4 fill-[#C89398] text-[#442F2A] shrink-0" />
+                  {floatingDate.isHoliday ? (
+                    <Star className="w-4 h-4 text-[#C89398] stroke-[2px] shrink-0" />
+                  ) : (
+                    <Heart className="w-4 h-4 fill-[#C89398] text-[#442F2A] shrink-0" />
+                  )}
                   <span>{floatingDate.title}</span>
                 </h4>
               </div>

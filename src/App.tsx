@@ -201,6 +201,8 @@ export default function App() {
         {/* Left Column Sidebar */}
         <LeftSidebar
           data={data}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
           isEditMode={effectiveEditMode}
           onEditSection={handleOpenEditSection}
         />
@@ -218,7 +220,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'CHARACTER' && (
+          {(activeTab === 'CHARACTER' || activeTab === 'CHARACTER PROFILE') && (
             <CharacterProfileView
               data={data}
               isEditMode={effectiveEditMode}
@@ -242,7 +244,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'AU' && (
+          {(activeTab === 'AU' || activeTab === 'ALTERNATIVE UNIVERSE') && (
             <AUView
               data={data}
               isEditMode={effectiveEditMode}

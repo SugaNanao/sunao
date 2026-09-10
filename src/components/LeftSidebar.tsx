@@ -19,10 +19,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 }) => {
   const navButtons: { id: ActiveTab; label: string }[] = [
     { id: 'HOME', label: 'HOME' },
-    { id: 'CHARACTER PROFILE', label: 'CHARACTER PROFILE' },
+    { id: 'CHARACTER', label: 'CHARACTER PROFILE' },
     { id: 'STORY', label: 'STORY' },
     { id: 'ALBUM', label: 'ALBUM' },
-    { id: 'ALTERNATIVE UNIVERSE', label: 'ALTERNATIVE UNIVERSE' },
+    { id: 'AU', label: 'ALTERNATIVE UNIVERSE' },
   ];
 
   return (
@@ -103,7 +103,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           {data.characterA.name} × {data.characterB.name}
         </h2>
         <p className="text-[11px] text-[#442F2A]/70 font-pixel">
-          「{data.siteSubtitle}」
+          「Koshi x Nanao」
         </p>
       </div>
 
@@ -118,7 +118,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
         <div className="flex flex-col gap-1.5">
           {navButtons.map((btn) => {
-            const isActive = activeTab === btn.id;
+            const isActive =
+              activeTab === btn.id ||
+              (btn.id === 'CHARACTER' && activeTab === 'CHARACTER PROFILE') ||
+              (btn.id === 'AU' && activeTab === 'ALTERNATIVE UNIVERSE');
             return (
               <button
                 key={btn.id}

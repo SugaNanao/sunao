@@ -29,6 +29,7 @@ import {
   Heart,
   MessageSquare,
   FileText,
+  Star,
 } from 'lucide-react';
 import { exportDataAsJSON, resetCoupleData } from '../utils/storage';
 
@@ -372,42 +373,69 @@ export const EditModal: React.FC<EditModalProps> = ({
 
               {/* SPECIAL ANNIVERSARIES (日曆特殊紀念日設定) */}
               <div className="border-t-2 border-[#442F2A]/30 pt-4 mt-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                   <div>
                     <h4 className="font-bold text-sm text-[#9D5A64] flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-[#C89398]" />
-                      <span>特殊紀念日設定 (SPECIAL ANNIVERSARIES)</span>
+                      <span>特殊紀念日與節日設定 (ANNIVERSARY & HOLIDAY)</span>
                     </h4>
                     <p className="text-[11px] text-[#442F2A]/70">
-                      設定專屬特殊紀念日（如 9/28 夏日花火回憶日），日曆將標記並在側欄顯示！
+                      可自行選擇新增「紀念日」（粉色愛心滿版）或「節日」（粉色星星線條框，中間不上色）！
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newId = 'sp-' + Date.now();
-                      const newDate: SpecialDate = {
-                        id: newId,
-                        title: '新特殊紀念日',
-                        date: '09-28',
-                        tag: 'Sweet',
-                        note: '浪漫約定回憶',
-                      };
-                      setFormData({
-                        ...formData,
-                        specialDates: [...(formData.specialDates || []), newDate],
-                      });
-                    }}
-                    className="pixel-btn px-3 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>新增紀念日</span>
-                  </button>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = 'sp-' + Date.now();
+                        const newDate: SpecialDate = {
+                          id: newId,
+                          title: '新特殊紀念日',
+                          category: 'anniversary',
+                          date: '09-28',
+                          tag: 'Sweet',
+                          note: '浪漫心動紀念日',
+                        };
+                        setFormData({
+                          ...formData,
+                          specialDates: [...(formData.specialDates || []), newDate],
+                        });
+                      }}
+                      className="pixel-btn px-2.5 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      title="新增粉色愛心紀念日"
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-[#C89398]" />
+                      <span>+ 新增紀念日</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = 'sp-' + Date.now();
+                        const newDate: SpecialDate = {
+                          id: newId,
+                          title: '新節日活動',
+                          category: 'holiday',
+                          date: '12-25',
+                          tag: 'Holiday',
+                          note: '溫馨節日回憶',
+                        };
+                        setFormData({
+                          ...formData,
+                          specialDates: [...(formData.specialDates || []), newDate],
+                        });
+                      }}
+                      className="pixel-btn px-2.5 py-1 bg-amber-100 hover:bg-amber-200 border border-[#442F2A] rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      title="新增粉色星星線條框節日"
+                    >
+                      <Star className="w-3.5 h-3.5 text-[#C89398]" />
+                      <span>+ 新增節日</span>
+                    </button>
+                  </div>
                 </div>
 
                 {(!formData.specialDates || formData.specialDates.length === 0) ? (
                   <div className="p-4 bg-white/70 rounded border border-dashed border-[#442F2A]/40 text-center text-[#442F2A]/60 text-xs">
-                    目前尚未設定特殊紀念日，點擊上方按鈕新增！
+                    目前尚未設定特殊紀念日或節日，點擊上方按鈕新增！
                   </div>
                 ) : (
                   <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
@@ -416,7 +444,25 @@ export const EditModal: React.FC<EditModalProps> = ({
                         key={sd.id || idx}
                         className="bg-white p-3 rounded border-2 border-[#442F2A]/30 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between shadow-xs"
                       >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1 w-full">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 flex-1 w-full">
+                          <div>
+                            <span className="text-[10px] text-[#442F2A]/60 block font-bold">類別 (CATEGORY)</span>
+                            <select
+                              value={sd.category || 'anniversary'}
+                              onChange={(e) => {
+                                const updated = [...(formData.specialDates || [])];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  category: e.target.value as 'anniversary' | 'holiday',
+                                };
+                                setFormData({ ...formData, specialDates: updated });
+                              }}
+                              className="w-full bg-[#FFF8F5] border border-[#442F2A]/40 rounded p-1 text-xs font-bold"
+                            >
+                              <option value="anniversary">♥ 紀念日 (粉色愛心)</option>
+                              <option value="holiday">★ 節日 (星星線條框)</option>
+                            </select>
+                          </div>
                           <div>
                             <span className="text-[10px] text-[#442F2A]/60 block font-bold">名稱 (TITLE)</span>
                             <input
@@ -450,7 +496,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                             <input
                               type="text"
                               value={sd.note || ''}
-                              placeholder="紀念日備註說明..."
+                              placeholder="備註說明..."
                               onChange={(e) => {
                                 const updated = [...(formData.specialDates || [])];
                                 updated[idx] = { ...updated[idx], note: e.target.value };
@@ -467,7 +513,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                             const updated = (formData.specialDates || []).filter((_, i) => i !== idx);
                             setFormData({ ...formData, specialDates: updated });
                           }}
-                          className="p-1.5 text-[#C89398] hover:bg-[#F8EDF1] rounded border border-transparent hover:border-[#E0BAC7] cursor-pointer self-end sm:self-center"
+                          className="p-1.5 text-[#C89398] hover:bg-[#F8EDF1] rounded border border-transparent hover:border-[#E0BAC7] cursor-pointer self-end sm:self-center shrink-0"
                           title="刪除"
                         >
                           <Trash2 className="w-4 h-4" />

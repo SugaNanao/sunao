@@ -460,9 +460,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
                 {/* Message Bubble */}
                 <div className={`max-w-[78%] flex flex-col ${isCharA ? 'items-start' : 'items-end'}`}>
-                  <span className="text-[10px] font-pixel text-[#442F2A]/60 px-1 mb-0.5">
-                    {char.name}
-                  </span>
+                  {/* Sender nickname: Only shown for characterA as "私の一番✌🏻" (brown symbol), self (characterB) does not show nickname */}
+                  {isCharA && (
+                    <span className="text-[10px] font-pixel text-[#442F2A] px-1 mb-0.5 flex items-center gap-0.5 font-bold">
+                      <span>私の一番</span>
+                      <span className="text-[#442F2A] select-none text-[11px]">✌🏻</span>
+                    </span>
+                  )}
                   <div
                     className={`p-2.5 rounded-2xl text-xs font-pixel leading-relaxed border-2 border-[#442F2A] shadow-xs relative break-words ${
                       isCharA
@@ -493,35 +497,35 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
           <div ref={messagesEndRef} />
 
-          {/* Interactive Tap Prompt Overlay at the bottom */}
+          {/* Subtle Continue / Replay Prompt with flashing circle dot (像圖二一樣有一個閃爍圓點寫"continue") */}
           <div className="pt-2 pb-1 text-center pointer-events-none sticky bottom-0">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF8F5]/95 border border-[#442F2A]/40 text-[11px] font-pixel text-[#442F2A] shadow-md">
-              {isFinished ? (
-                <>
-                  <RotateCcw className="w-3.5 h-3.5 text-[#C89398]" />
-                  <span className="font-bold text-[#C89398]">
-                    ✦ 本組對話結束 (點擊重新播放，或點擊上方「隨機切換」)
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5 text-[#C89398] animate-spin" />
-                  <span className="font-bold">
-                    點擊螢幕顯示下一則訊息 ({revealedCount}/{totalMessages})
-                  </span>
-                </>
-              )}
-            </div>
+            {isFinished ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF8F5]/95 border border-[#442F2A]/30 text-[11px] font-pixel text-[#442F2A] shadow-xs">
+                <RotateCcw className="w-3 h-3 text-[#C89398]" />
+                <span className="text-[#C89398] font-bold">✦ 點擊重新播放</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF8F5]/95 border border-[#442F2A]/30 text-xs font-pixel text-[#442F2A]/80 shadow-xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C89398] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#C89398]" />
+                </span>
+                <span className="font-mono tracking-wider lowercase">continue</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Footer Area: Visitor Mode vs Edit Mode */}
         {isSharedLink || !isEditMode ? (
-          /* Visitor Mode: No typing, no identity switcher, only friendly prompt */
-          <div className="bg-[#FFF8F5] border-t-2 border-[#442F2A] px-3.5 py-2.5 text-center text-xs font-pixel text-[#442F2A] flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[#442F2A]/80 text-[11px]">
-              <span className="w-2 h-2 rounded-full bg-[#C89398] animate-ping" />
-              <span>點擊對話視窗推進對話</span>
+          /* Visitor Mode: continue with pulsing dot */
+          <div className="bg-[#FFF8F5] border-t-2 border-[#442F2A] px-3.5 py-2 text-center text-xs font-pixel text-[#442F2A] flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#442F2A]/80 text-xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C89398] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#C89398]" />
+              </span>
+              <span className="font-mono tracking-wider lowercase">continue</span>
             </div>
             <span className="text-[11px] font-bold text-[#9D5A64]">
               {data.characterA.name} ♡ {data.characterB.name}

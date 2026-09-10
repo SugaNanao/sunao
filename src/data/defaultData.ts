@@ -3,7 +3,7 @@ import { CoupleSiteData } from '../types';
 // Default avatars & illustrations using high-quality SVG pixel/anime illustrations
 export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
   siteTitle: '月が星を照らすまで',
-  siteSubtitle: '菅原孝支 X 宮原七緒 ・ OUR SWEET ARCHIVE',
+  siteSubtitle: 'Koshi x Nanao',
   introQuote: '存放和夢有關的一切。正在講述一對青梅竹馬從互不順眼到兩情相悅的故事。',
   introDescription: '設定包含烏野一年級友情向＆部分成員提及。本質是備份與生活碎碎念，記錄屬於我們的每一次心動與日常。',
   introNotice: {
@@ -512,6 +512,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     {
       id: 'sd-1',
       date: '09-28',
+      category: 'anniversary',
       title: '9/28 夏日花火回憶日',
       note: '第一次一起看夏日河畔花火大會，在絢爛夜空下偷偷牽起手。',
       tag: 'Fireworks',
@@ -520,6 +521,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     {
       id: 'sd-2',
       date: '11-09',
+      category: 'anniversary',
       title: '11/09 交往紀念日',
       note: '正式確認心意的那一天，青梅竹馬成為彼此最重要的人。',
       tag: 'Anniversary',
@@ -528,6 +530,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     {
       id: 'sd-3',
       date: '04-12',
+      category: 'anniversary',
       title: '04/12 宮原七緒生日',
       note: '小太陽的誕生日，為她親手製作草莓甜點與相冊禮物。',
       tag: 'Birthday',
@@ -536,10 +539,29 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     {
       id: 'sd-4',
       date: '06-13',
+      category: 'anniversary',
       title: '06/13 菅原孝支生日',
       note: '爽朗副攻手的生日，七緒偷偷送給他收集很久的特製排球掛件。',
       tag: 'Birthday',
       color: '#442F2A',
+    },
+    {
+      id: 'sd-5',
+      date: '09-17',
+      category: 'holiday',
+      title: '09/17 中秋月見之夜',
+      note: '微涼秋夜坐在體育館屋頂賞月，分食特大號草莓豆沙月餅。',
+      tag: 'Holiday',
+      color: '#E0BAC7',
+    },
+    {
+      id: 'sd-6',
+      date: '12-25',
+      category: 'holiday',
+      title: '12/25 聖誕初雪之約',
+      note: '兩個人圍著同一條紅圍巾，在仙台街頭漫步等待初雪降下。',
+      tag: 'Holiday',
+      color: '#E0BAC7',
     },
   ],
 

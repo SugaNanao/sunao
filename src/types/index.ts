@@ -136,6 +136,7 @@ export interface SpecialDate {
   id: string;
   date: string; // MM-DD or YYYY-MM-DD (e.g. "09-28" or "2026-09-28")
   title: string; // e.g. "9/28 夏日花火回憶日"
+  category?: 'anniversary' | 'holiday'; // 'anniversary' = 紀念日 (粉色愛心), 'holiday' = 節日 (粉色星星線條框)
   note?: string; // description / story
   tag?: string;
   color?: string;
