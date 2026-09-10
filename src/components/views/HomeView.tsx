@@ -102,14 +102,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           {/* Intro Story & Concept (Equal width & height to picture box) */}
           <div className="w-full md:w-1/2 flex flex-col justify-between text-left">
-            {/* Centered Title and Names with expanded spacing */}
-            <div className="text-center">
+            {/* Centered Title */}
+            <div className="text-center mb-2 sm:mb-2.5">
               <h2 className="text-lg sm:text-xl font-bold font-pixel text-[#442F2A] tracking-wider">
                 {data.siteTitle}
               </h2>
-              <p className="text-[10px] sm:text-[11px] font-pixel text-[#442F2A]/60 font-normal mt-1.5 mb-2.5 sm:mt-2 sm:mb-3 tracking-wider">
-                菅原孝支 X 宮原七緒
-              </p>
             </div>
 
             {/* Intro Text Box with 1.5 gap from title */}
