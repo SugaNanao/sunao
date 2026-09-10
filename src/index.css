@@ -8,23 +8,31 @@
     --color-soft-pink: #F8EDF1;
     --color-accent-pink: #D49BB0;
     --color-dark-brown: #33211D;
+
+    /* Comprehensive CJK & Pixel Font Stacks */
+    --font-cjk-sans: 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    --font-cjk-rounded: 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    --font-pixel-stack: 'DotGothic16', 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', monospace, sans-serif;
   }
 
   *, ::before, ::after {
-    letter-spacing: 0.1em;
-    line-height: 1.8;
+    letter-spacing: 0.06em;
+    line-height: 1.75;
   }
 
   body {
     background-color: #E0BAC7;
     color: #442F2A;
-    font-family: 'M PLUS Rounded 1c', 'DotGothic16', sans-serif;
+    font-family: var(--font-cjk-rounded);
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     user-select: none;
-    letter-spacing: 0.1em;
-    line-height: 1.8;
+    letter-spacing: 0.06em;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
 
@@ -42,9 +50,35 @@
   background-size: 18px 18px;
 }
 
-/* Retro Pixel Font Classes */
+/* Retro Pixel Font Classes with Seamless CJK Fallback */
 .font-pixel {
-  font-family: 'DotGothic16', 'Press Start 2P', monospace;
+  font-family: 'DotGothic16', 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', monospace, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-rounded {
+  font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+
+.font-sans-cjk {
+  font-family: 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+
+/* Global Font Mode Switcher Rules */
+[data-font-mode="rounded"] .font-pixel,
+[data-font-mode="rounded"] body {
+  font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+[data-font-mode="clean"] .font-pixel,
+[data-font-mode="clean"] body {
+  font-family: 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+[data-font-mode="pixel"] .font-pixel {
+  font-family: 'DotGothic16', 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', monospace, sans-serif;
 }
 
 .font-silkscreen {

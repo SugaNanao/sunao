@@ -10,6 +10,8 @@ interface TaskBarProps {
   onToggleEditMode?: () => void;
   onOpenAdminModal?: () => void;
   onAdminLogout?: () => void;
+  fontMode?: 'pixel' | 'rounded' | 'clean';
+  onCycleFontMode?: () => void;
 }
 
 export const TaskBar: React.FC<TaskBarProps> = ({
@@ -20,6 +22,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({
   onToggleEditMode,
   onOpenAdminModal,
   onAdminLogout,
+  fontMode = 'pixel',
+  onCycleFontMode,
 }) => {
   const [timeStr, setTimeStr] = useState('');
 
@@ -97,6 +101,20 @@ export const TaskBar: React.FC<TaskBarProps> = ({
             title="管理員通行認證"
           >
             <Lock className="w-3 h-3" />
+          </button>
+        )}
+
+        {/* Font Style Switcher: 像素風 / 日系圓體 / 典雅黑體 */}
+        {onCycleFontMode && (
+          <button
+            onClick={onCycleFontMode}
+            className="bg-white border border-[#442F2A] px-2 py-0.5 rounded text-[10px] sm:text-[11px] flex items-center gap-1 shadow-2xs hover:bg-[#E0BAC7]/40 transition cursor-pointer font-bold text-[#442F2A]"
+            title="點擊切換全站字體風格：像素風 (中日文適配) / 日系圓體 / 典雅黑體"
+          >
+            <span className="text-[#C89398] font-mono">Aa</span>
+            <span className="hidden sm:inline">
+              {fontMode === 'pixel' ? '像素風' : fontMode === 'rounded' ? '日系圓體' : '典雅黑體'}
+            </span>
           </button>
         )}
 

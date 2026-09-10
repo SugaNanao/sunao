@@ -55,6 +55,26 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [editInitialTab, setEditInitialTab] = useState('basic');
   const [copiedNotice, setCopiedNotice] = useState(false);
+  const [fontMode, setFontMode] = useState<'pixel' | 'rounded' | 'clean'>(() => {
+    try {
+      const saved = localStorage.getItem('love_archive_font_mode');
+      if (saved === 'rounded' || saved === 'clean' || saved === 'pixel') {
+        return saved;
+      }
+    } catch {}
+    return 'pixel';
+  });
+
+  useEffect(() => {
+    try {
+      document.documentElement.setAttribute('data-font-mode', fontMode);
+      localStorage.setItem('love_archive_font_mode', fontMode);
+    } catch {}
+  }, [fontMode]);
+
+  const handleCycleFontMode = () => {
+    setFontMode((prev) => (prev === 'pixel' ? 'rounded' : prev === 'rounded' ? 'clean' : 'pixel'));
+  };
 
   // If ?admin=1 is in URL and not logged in yet, prompt the modal automatically
   useEffect(() => {
@@ -165,7 +185,10 @@ export default function App() {
 
   // 3. Main Desktop Website
   return (
-    <div className="min-h-screen dot-bg pb-14 text-[#442F2A] flex flex-col selection:bg-[#E0BAC7] selection:text-[#442F2A]">
+    <div
+      data-font-mode={fontMode}
+      className="min-h-screen dot-bg pb-14 text-[#442F2A] flex flex-col selection:bg-[#E0BAC7] selection:text-[#442F2A]"
+    >
       {/* Top Header with Category Navigation (Only show when in Edit Mode across ALL tabs) */}
       {!effectiveEditMode ? (
         <div className="w-full h-[58px] sm:h-[62px] pointer-events-none select-none" aria-hidden="true" />
@@ -324,6 +347,8 @@ export default function App() {
         onToggleEditMode={handleToggleEditMode}
         onOpenAdminModal={() => setIsAdminModalOpen(true)}
         onAdminLogout={handleAdminLogout}
+        fontMode={fontMode}
+        onCycleFontMode={handleCycleFontMode}
       />
     </div>
   );
