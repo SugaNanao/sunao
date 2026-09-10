@@ -89,6 +89,14 @@
   font-family: 'Press Start 2P', monospace;
 }
 
+/* Italic styling for CJK characters and pixel fonts */
+.italic, em, i {
+  font-style: italic;
+  display: inline-block;
+  transform: skewX(-8deg);
+  transform-origin: bottom center;
+}
+
 /* Retro Windows / Pixel UI Components */
 .pixel-window {
   background-color: #FFF8F5;

@@ -245,23 +245,70 @@ export const EditModal: React.FC<EditModalProps> = ({
               </div>
 
               <div>
-                <label className="font-bold text-[#442F2A] block mb-1">首頁金句 (Intro Quote)：</label>
-                <input
-                  type="text"
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-[#442F2A] block">首頁金句 (Intro Quote)：</label>
+                  <span className="text-[10px] text-[#442F2A]/70">
+                    可直接按 Enter 換行 ｜ 斜體前後加 * 或 _
+                  </span>
+                </div>
+                <textarea
+                  rows={2}
                   value={formData.introQuote}
                   onChange={(e) => setFormData({ ...formData, introQuote: e.target.value })}
-                  className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs"
+                  placeholder="可在此輸入句子，支援按 Enter 直接換行；前後加上 *文字* 可呈現斜體"
+                  className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs leading-relaxed"
                 />
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const quote = formData.introQuote || '';
+                      setFormData({
+                        ...formData,
+                        introQuote: quote ? `${quote} *斜體文字*` : '*斜體文字*',
+                      });
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/40 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold flex items-center gap-1"
+                  >
+                    <span className="italic font-serif">I</span>
+                    <span>插入斜體語法 (*文字*)</span>
+                  </button>
+                  <span className="text-[10px] text-[#C89398]">
+                    例：*以風聲，以水響。*
+                  </span>
+                </div>
               </div>
 
               <div>
-                <label className="font-bold text-[#442F2A] block mb-1">首頁完整介紹 (Intro Description)：</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-[#442F2A] block">首頁完整介紹 (Intro Description)：</label>
+                  <span className="text-[10px] text-[#442F2A]/70">
+                    可直接按 Enter 換行 ｜ 斜體前後加 * 或 _
+                  </span>
+                </div>
                 <textarea
                   rows={3}
                   value={formData.introDescription}
                   onChange={(e) => setFormData({ ...formData, introDescription: e.target.value })}
+                  placeholder="可在此輸入內文，支援按 Enter 換行與 *斜體語法*"
                   className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs leading-relaxed"
                 />
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const desc = formData.introDescription || '';
+                      setFormData({
+                        ...formData,
+                        introDescription: desc ? `${desc} *斜體文字*` : '*斜體文字*',
+                      });
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/40 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold flex items-center gap-1"
+                  >
+                    <span className="italic font-serif">I</span>
+                    <span>插入斜體語法 (*文字*)</span>
+                  </button>
+                </div>
               </div>
 
               {/* Main Illustration Settings with File Upload */}
