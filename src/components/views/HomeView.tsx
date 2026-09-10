@@ -107,7 +107,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <h2 className="text-lg sm:text-xl font-bold font-pixel text-[#442F2A] tracking-wider">
                 {data.siteTitle}
               </h2>
-              <p className="text-xs sm:text-sm font-pixel text-[#442F2A]/60 font-normal mt-2.5 mb-3 sm:mt-3 sm:mb-3.5 tracking-wide">
+              <p className="text-[10px] sm:text-[11px] font-pixel text-[#442F2A]/60 font-normal mt-1.5 mb-2.5 sm:mt-2 sm:mb-3 tracking-wider">
                 菅原孝支 X 宮原七緒
               </p>
             </div>
