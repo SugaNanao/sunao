@@ -18,6 +18,7 @@ import { EditModal } from './components/EditModal';
 import { ShareModal } from './components/ShareModal';
 import { TaskBar } from './components/TaskBar';
 import { FloatingMusicPlayer } from './components/FloatingMusicPlayer';
+import { AdminAuthModal } from './components/AdminAuthModal';
 
 export default function App() {
   const [data, setData] = useState<CoupleSiteData>(loadCoupleData);
@@ -27,6 +28,24 @@ export default function App() {
   
   // Shared link detection: when shared, permanently enforce Guest Mode
   const [isSharedLink] = useState<boolean>(() => isSharedUrl());
+
+  // Admin authentication: Default is false (Visitor Mode) for all public users on Vercel!
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const adminParam = params.get('admin');
+      const customPwd = localStorage.getItem('love_archive_admin_custom_pwd') || 'sugananao24222';
+      if (adminParam === '1' || adminParam === 'true' || adminParam === customPwd || adminParam === 'sugananao24222') {
+        localStorage.setItem('love_archive_admin_auth', 'true');
+        return true;
+      }
+      return localStorage.getItem('love_archive_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
@@ -36,6 +55,16 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [editInitialTab, setEditInitialTab] = useState('basic');
   const [copiedNotice, setCopiedNotice] = useState(false);
+
+  // If ?admin=1 is in URL and not logged in yet, prompt the modal automatically
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === '1' && !isAdmin) {
+        setIsAdminModalOpen(true);
+      }
+    } catch {}
+  }, [isAdmin]);
 
   // Sync music play state
   useEffect(() => {
@@ -55,10 +84,31 @@ export default function App() {
     }
   }, [isSharedLink]);
 
+  // Effective visitor mode: visitor mode is active whenever user is NOT admin or is viewing a shared link
+  const isVisitor = !isAdmin || isSharedLink;
+  const effectiveEditMode = isAdmin && isEditMode && !isSharedLink;
+
   const handleToggleEditMode = () => {
-    // If shared, strictly prevent switching to edit mode
-    if (isSharedLink) return;
+    // Only authenticated admin can toggle edit mode
+    if (isVisitor) return;
     setIsEditMode((prev) => !prev);
+  };
+
+  const handleAdminLogin = (password: string): boolean => {
+    const customPwd = localStorage.getItem('love_archive_admin_custom_pwd') || 'sugananao24222';
+    if (password === customPwd || password === 'sugananao24222') {
+      setIsAdmin(true);
+      setIsEditMode(true);
+      localStorage.setItem('love_archive_admin_auth', 'true');
+      return true;
+    }
+    return false;
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+    setIsEditMode(false);
+    localStorage.removeItem('love_archive_admin_auth');
   };
 
   const handleUpdateData = (newData: CoupleSiteData) => {
@@ -84,7 +134,7 @@ export default function App() {
   };
 
   const handleOpenEditSection = (section: string) => {
-    if (isSharedLink) return;
+    if (isVisitor) return;
     setEditInitialTab(section);
     setIsEditModalOpen(true);
   };
@@ -116,14 +166,14 @@ export default function App() {
   // 3. Main Desktop Website
   return (
     <div className="min-h-screen dot-bg pb-14 text-[#442F2A] flex flex-col selection:bg-[#E0BAC7] selection:text-[#442F2A]">
-      {/* Top Header with Category Navigation (Preserve blank space on HOME page in shared visitor mode) */}
-      {isSharedLink && activeTab === 'HOME' ? (
+      {/* Top Header with Category Navigation (Preserve blank space on HOME page in visitor mode) */}
+      {isVisitor && activeTab === 'HOME' ? (
         <div className="w-full h-[58px] sm:h-[62px] pointer-events-none select-none" aria-hidden="true" />
       ) : (
         <DesktopHeader
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          isEditMode={!isSharedLink && isEditMode}
+          isEditMode={effectiveEditMode}
           onToggleEditMode={handleToggleEditMode}
           isPlayingMusic={isPlayingMusic}
           onToggleMusic={handleToggleMusic}
@@ -133,49 +183,45 @@ export default function App() {
           onShare={handleShare}
           data={data}
           isSharedLink={isSharedLink}
+          isAdmin={isAdmin}
+          onOpenAdminModal={() => setIsAdminModalOpen(true)}
         />
       )}
 
       {/* Share Toast Notification */}
       {copiedNotice && (
-        <div className="fixed top-16 right-6 z-50 bg-[#442F2A] text-[#FFF8F5] px-4 py-2 rounded shadow-lg border-2 border-[#E0BAC7] text-xs font-pixel animate-bounce">
-          ✓ 已複製專屬戀愛紀錄分享連結！訪客模式已鎖定
+        <div className="fixed top-16 right-4 z-50 bg-[#442F2A] text-[#FFF8F5] px-4 py-2 rounded-md font-pixel text-xs border border-[#C89398] shadow-lg animate-fade-in flex items-center gap-2">
+          <span className="text-[#C89398]">♥</span>
+          <span>專屬戀愛紀錄分享連結已複製到剪貼簿！</span>
         </div>
       )}
 
-      {/* Main 3-Column Layout: Center content sized referencing Loading window proportions with more top spacing */}
-      <main className="flex-1 max-w-[1160px] xl:max-w-[1220px] w-full mx-auto px-3 sm:px-5 lg:px-6 pt-7 sm:pt-9 lg:pt-10 pb-10 sm:pb-14 flex flex-col lg:flex-row gap-5 lg:gap-7 xl:gap-8 items-start justify-center">
-        {/* Left Column Widgets */}
+      {/* Main OS Desktop Layout Grid */}
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex-1 flex flex-col lg:flex-row gap-4 items-start">
+        {/* Left Column Sidebar */}
         <LeftSidebar
           data={data}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          isEditMode={!isSharedLink && isEditMode}
+          isEditMode={effectiveEditMode}
           onEditSection={handleOpenEditSection}
         />
 
-        {/* Center Column (Main Views - exact max-w-lg horizontal proportion matching LoadingScreen) */}
-        <div className="flex-1 w-full min-w-0 max-w-lg mx-auto">
+        {/* Center Main Stage Area (Router Views) */}
+        <div className="flex-1 w-full min-w-0" id="main-content-view">
           {activeTab === 'HOME' && (
             <HomeView
               data={data}
               onNavigateTab={setActiveTab}
-              isEditMode={!isSharedLink && isEditMode}
+              isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
-              onUpdateSiteData={(updater) => {
-                setData((prev) => {
-                  const updated = updater(prev);
-                  saveCoupleData(updated);
-                  return updated;
-                });
-              }}
+              onOpenMusicModal={() => setIsMusicModalOpen(true)}
+              onOpenChat={() => setIsChatOpen(true)}
             />
           )}
 
-          {activeTab === 'CHARACTER PROFILE' && (
+          {activeTab === 'CHARACTER' && (
             <CharacterProfileView
               data={data}
-              isEditMode={!isSharedLink && isEditMode}
+              isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
             />
           )}
@@ -183,7 +229,7 @@ export default function App() {
           {activeTab === 'STORY' && (
             <StoryView
               data={data}
-              isEditMode={!isSharedLink && isEditMode}
+              isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
             />
           )}
@@ -191,15 +237,15 @@ export default function App() {
           {activeTab === 'ALBUM' && (
             <AlbumView
               data={data}
-              isEditMode={!isSharedLink && isEditMode}
+              isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
             />
           )}
 
-          {activeTab === 'ALTERNATIVE UNIVERSE' && (
+          {activeTab === 'AU' && (
             <AUView
               data={data}
-              isEditMode={!isSharedLink && isEditMode}
+              isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
             />
           )}
@@ -211,12 +257,12 @@ export default function App() {
           onOpenChat={() => setIsChatOpen(true)}
           isPlayingMusic={isPlayingMusic}
           onToggleMusic={handleToggleMusic}
-          isEditMode={!isSharedLink && isEditMode}
+          isEditMode={effectiveEditMode}
           onEditSection={handleOpenEditSection}
         />
       </main>
 
-      {/* Floating Music Player Window (as requested) */}
+      {/* Floating Music Player Window */}
       <FloatingMusicPlayer
         isPlaying={isPlayingMusic}
         onTogglePlay={handleToggleMusic}
@@ -228,8 +274,8 @@ export default function App() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         data={data}
-        isEditMode={!isSharedLink && isEditMode}
-        isSharedLink={isSharedLink}
+        isEditMode={effectiveEditMode}
+        isSharedLink={isVisitor}
         onUpdateChatHistory={handleUpdateChat}
         onUpdateChatGroups={handleUpdateChatGroups}
       />
@@ -256,10 +302,24 @@ export default function App() {
         onImportData={handleUpdateData}
       />
 
-      {/* Bottom Retro TaskBar with HOME button */}
+      {/* Admin Authentication & Console Modal */}
+      <AdminAuthModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        isAdmin={isAdmin}
+        onLogin={handleAdminLogin}
+        onLogout={handleAdminLogout}
+        data={data}
+        onImportData={handleUpdateData}
+      />
+
+      {/* Bottom Retro TaskBar with HOME button & Admin trigger */}
       <TaskBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        isAdmin={isAdmin}
+        onOpenAdminModal={() => setIsAdminModalOpen(true)}
+        onAdminLogout={handleAdminLogout}
       />
     </div>
   );

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveTab } from '../types';
-import { Home } from 'lucide-react';
+import { Home, Lock, ShieldCheck } from 'lucide-react';
 
 interface TaskBarProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
-  isEditMode?: boolean;
-  onToggleEditMode?: () => void;
-  onOpenChat?: () => void;
-  unreadCount?: number;
-  isSharedLink?: boolean;
+  isAdmin?: boolean;
+  onOpenAdminModal?: () => void;
+  onAdminLogout?: () => void;
 }
 
 export const TaskBar: React.FC<TaskBarProps> = ({
   activeTab,
   onTabChange,
+  isAdmin = false,
+  onOpenAdminModal,
+  onAdminLogout,
 }) => {
   const [timeStr, setTimeStr] = useState('');
 
@@ -34,7 +35,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 bg-[#FFF8F5] border-t-2 border-[#442F2A] h-10 px-2 sm:px-4 flex items-center justify-between font-pixel text-xs text-[#442F2A] select-none shadow-md">
-      {/* Left side: HOME button (COUPLE OS replaced as requested) */}
+      {/* Left side: HOME button */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => onTabChange('HOME')}
@@ -51,8 +52,37 @@ export const TaskBar: React.FC<TaskBarProps> = ({
         </button>
       </div>
 
-      {/* Right side: System Clock (Edit mode & Message buttons removed from taskbar as requested) */}
+      {/* Right side: Admin Status & System Clock */}
       <div className="flex items-center gap-2">
+        {isAdmin ? (
+          <div className="flex items-center gap-1.5 bg-[#F8EDF1] border border-[#442F2A] px-2 py-0.5 rounded text-[10px] text-[#9D5A64] font-bold shadow-2xs">
+            <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
+            <span className="hidden sm:inline">管理員已連線</span>
+            <button
+              onClick={onOpenAdminModal}
+              className="text-[#442F2A] hover:underline cursor-pointer ml-1"
+              title="管理員選單"
+            >
+              [設定]
+            </button>
+            <button
+              onClick={onAdminLogout}
+              className="text-red-600 hover:underline cursor-pointer ml-1"
+              title="登出管理員"
+            >
+              [登出]
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenAdminModal}
+            className="p-1 rounded text-[#442F2A]/40 hover:text-[#442F2A] hover:bg-[#E0BAC7]/60 transition cursor-pointer"
+            title="管理員通行認證"
+          >
+            <Lock className="w-3 h-3" />
+          </button>
+        )}
+
         <div className="bg-white border border-[#442F2A] px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1 shadow-xs">
           <span>{timeStr || '12:00 Sat'}</span>
         </div>

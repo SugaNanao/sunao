@@ -186,4 +186,4 @@ export const ALBUM_ALL_TAG = '#記憶のかけら';
 export const ALBUM_ITEM_TAGS = ['#いつもの景色', '#季節のしるし', '#ともに過ごした日々'] as const;
 export const ALBUM_PRESET_TAGS = [ALBUM_ALL_TAG, ...ALBUM_ITEM_TAGS] as const;
 
-export type ActiveTab = 'HOME' | 'CHARACTER PROFILE' | 'STORY' | 'ALBUM' | 'ALTERNATIVE UNIVERSE';
+export type ActiveTab = 'HOME' | 'CHARACTER' | 'CHARACTER PROFILE' | 'STORY' | 'ALBUM' | 'AU' | 'ALTERNATIVE UNIVERSE';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab, CoupleSiteData } from '../types';
-import { Music, Volume2, VolumeX, Edit3, Eye, Lock, Sparkles, Home, User, BookOpen, Image as ImageIcon, Globe, Share2 } from 'lucide-react';
+import { Music, Volume2, VolumeX, Edit3, Eye, Lock, Sparkles, Home, User, BookOpen, Image as ImageIcon, Globe, Share2, ShieldCheck } from 'lucide-react';
 import { soundPlayer } from '../utils/audioSynth';
 
 interface DesktopHeaderProps {
@@ -16,6 +16,8 @@ interface DesktopHeaderProps {
   onShare: () => void;
   data: CoupleSiteData;
   isSharedLink?: boolean;
+  isAdmin?: boolean;
+  onOpenAdminModal?: () => void;
 }
 
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
@@ -31,16 +33,18 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   onShare,
   data,
   isSharedLink = false,
+  isAdmin = false,
+  onOpenAdminModal,
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full select-none" id="main-desktop-header">
-      {/* Decorative Scallop Lace Border (Image 2 style) */}
+      {/* Decorative Scallop Lace Border */}
       <div className="w-full bg-[#FFF8F5] border-b-2 border-[#442F2A] relative">
         {/* Scalloped edge visual */}
         <div className="lace-pattern-top opacity-90" />
 
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3">
-          {/* Couple Logo & Title (Cherry blossom icon removed as requested) */}
+          {/* Couple Logo & Title */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => onTabChange('HOME')}
@@ -96,51 +100,53 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               </div>
             </div>
 
-            {/* Mode Switcher: Hidden when shared so visitor cannot change to edit mode */}
-            {isSharedLink ? (
-              <div className="flex items-center gap-1.5 bg-[#F8EDF1] border-2 border-[#442F2A] rounded-md px-2.5 py-1 text-xs font-pixel text-[#442F2A] shadow-sm">
-                <Eye className="w-3.5 h-3.5 text-[#442F2A]" />
-                <span className="font-bold">訪客模式</span>
+            {/* Mode Switcher: Only visible to authenticated Admin */}
+            {isAdmin ? (
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center bg-[#FFF8F5] border-2 border-[#442F2A] rounded-md p-0.5 shadow-sm text-xs font-pixel">
+                  <button
+                    onClick={onToggleEditMode}
+                    className={`px-2 py-1 rounded flex items-center gap-1 transition cursor-pointer ${
+                      !isEditMode
+                        ? 'bg-[#442F2A] text-[#FFF8F5] font-bold'
+                        : 'text-[#442F2A] hover:bg-[#F8EDF1]'
+                    }`}
+                    title="切換至訪客預覽模式"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">訪客模式</span>
+                  </button>
+                  <button
+                    onClick={onToggleEditMode}
+                    className={`px-2 py-1 rounded flex items-center gap-1 transition cursor-pointer ${
+                      isEditMode
+                        ? 'bg-[#E0BAC7] text-[#442F2A] font-bold border border-[#442F2A]'
+                        : 'text-[#442F2A] hover:bg-[#F8EDF1]'
+                    }`}
+                    title="切換至自訂編輯模式"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">編輯模式</span>
+                  </button>
+                </div>
+
+                {isEditMode && (
+                  <button
+                    onClick={onOpenEditModal}
+                    className="pixel-btn px-2.5 py-1 text-xs font-pixel font-bold bg-[#E0BAC7] flex items-center gap-1 rounded"
+                    title="編輯全部網站內容"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="hidden lg:inline">編輯站點</span>
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="flex items-center bg-[#FFF8F5] border-2 border-[#442F2A] rounded-md p-0.5 shadow-sm text-xs font-pixel">
-                <button
-                  onClick={onToggleEditMode}
-                  className={`px-2.5 py-1 rounded flex items-center gap-1 transition cursor-pointer ${
-                    !isEditMode
-                      ? 'bg-[#442F2A] text-[#FFF8F5] font-bold'
-                      : 'text-[#442F2A] hover:bg-[#F8EDF1]'
-                  }`}
-                  title="切換至訪客純淨發布預覽模式"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">訪客模式</span>
-                </button>
-                <button
-                  onClick={onToggleEditMode}
-                  className={`px-2.5 py-1 rounded flex items-center gap-1 transition cursor-pointer ${
-                    isEditMode
-                      ? 'bg-[#E0BAC7] text-[#442F2A] font-bold border border-[#442F2A]'
-                      : 'text-[#442F2A] hover:bg-[#F8EDF1]'
-                  }`}
-                  title="切換至自訂編輯模式"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">編輯模式</span>
-                </button>
+              /* Public Visitor: Simple clean badge */
+              <div className="flex items-center gap-1 bg-[#F8EDF1] border-2 border-[#442F2A] rounded-md px-2 py-1 text-xs font-pixel text-[#442F2A] shadow-sm">
+                <Eye className="w-3.5 h-3.5 text-[#442F2A]" />
+                <span className="font-bold text-[11px]">訪客模式</span>
               </div>
-            )}
-
-            {/* If in edit mode and not shared, show comprehensive edit button */}
-            {!isSharedLink && isEditMode && (
-              <button
-                onClick={onOpenEditModal}
-                className="pixel-btn px-2.5 py-1 text-xs font-pixel font-bold bg-[#E0BAC7] flex items-center gap-1 rounded"
-                title="編輯全部網站內容"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span className="hidden lg:inline">編輯站點資料</span>
-              </button>
             )}
 
             {/* Share / Export button */}
@@ -158,12 +164,44 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               className="pixel-btn px-2 py-1 text-[#442F2A] rounded text-xs flex items-center gap-1 font-pixel"
               title="返回 LOADING / 封面進入頁"
             >
-              <Lock className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline text-[11px]">LOADING 封面</span>
+              <span>COVER</span>
             </button>
           </div>
         </div>
       </div>
+
+      {/* Retro Navigation Tabs Strip (Only shown when not in preserved blank space) */}
+      <nav className="w-full bg-[#F8EDF1] border-b-2 border-[#442F2A] overflow-x-auto scrollbar-none">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center gap-1 py-1 text-xs font-pixel">
+          {(['HOME', 'CHARACTER', 'STORY', 'ALBUM', 'AU'] as ActiveTab[]).map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => onTabChange(tab)}
+                className={`px-3 py-1 rounded font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-[#442F2A] text-[#FFF8F5] shadow-xs'
+                    : 'text-[#442F2A] hover:bg-[#E0BAC7]/60'
+                }`}
+              >
+                {tab === 'HOME' && <Home className="w-3.5 h-3.5" />}
+                {tab === 'CHARACTER' && <User className="w-3.5 h-3.5" />}
+                {tab === 'STORY' && <BookOpen className="w-3.5 h-3.5" />}
+                {tab === 'ALBUM' && <ImageIcon className="w-3.5 h-3.5" />}
+                {tab === 'AU' && <Globe className="w-3.5 h-3.5" />}
+                <span>
+                  {tab === 'HOME' && '首頁'}
+                  {tab === 'CHARACTER' && '菅緒檔案'}
+                  {tab === 'STORY' && '故事章節'}
+                  {tab === 'ALBUM' && '戀愛相簿'}
+                  {tab === 'AU' && '平行宇宙'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </header>
   );
 };
