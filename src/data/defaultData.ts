@@ -1,0 +1,594 @@
+import { CoupleSiteData } from '../types';
+
+// Default avatars & illustrations using high-quality SVG pixel/anime illustrations
+export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
+  siteTitle: '月が星を照らすまで',
+  siteSubtitle: '菅原孝支 X 宮原七緒 ・ OUR SWEET ARCHIVE',
+  introQuote: '存放和夢有關的一切。正在講述一對青梅竹馬從互不順眼到兩情相悅的故事。',
+  introDescription: '設定包含烏野一年級友情向＆部分成員提及。本質是備份與生活碎碎念，記錄屬於我們的每一次心動與日常。',
+  introNotice: {
+    title: 'NOTICE ・ 月が星を照らすまで',
+    content: '歡迎來到 菅原孝支 X 宮原七緒 的秘密存檔庫！\n這裡是存放我們從青梅竹馬到戀人所有心動與日常的小天地。\n\n「無論夜幕多麼深沉，月光都會如期灑在星辰之上。」\n\n✦ 訪客須知：\n1. 請帶著溫柔的心情閱讀\n2. 點擊日曆可查看專屬特殊紀念日\n3. 支援上傳專屬的 MP3 / MP4 音樂背景播放',
+  },
+  introMemo: {
+    title: 'SPECIAL THANKS',
+    content: '✦ 兩人的日常守則 ✦\n\n1. 練習結束後要在更衣室外等對方一起走回家。\n2. 肚子餓的時候草莓大福的第一口永遠留給她。\n3. 傲嬌說反話時，會用比平時更大聲的聲音拆穿。\n4. 每年 9/28 一定要一起看夏日花火。\n5. 無論發生什麼事，每天都要道聲晚安。',
+  },
+  anniversaryDate: '2022-11-09',
+  anniversaryNote: '相識於2024.02.22',
+  coverTitle: 'OUR SPECIAL MEMORIES',
+  coverPromptText: '點選任意區域即可進入主介面',
+  coverTopStatus: 'CONNECTED TO DESKTOP // LOVE ARCHIVE OS',
+  coverNoteTitle: '菅原孝支 X 宮原七緒',
+  coverWelcomeText: '歡迎來到我們的浪漫秘密基地',
+  coverQuoteText: '存放和夢有關的一切。正在講述一對青梅竹馬從互不順眼到兩情相悅的故事。',
+  coverBottomText: '點選任意區域即可進入主介面',
+  // Pixel art anime couple holding 1st anniversary cake under fireworks (like Image 1)
+  coverImage: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80',
+  mainIllustration: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1000&q=80',
+  weatherCity: 'Sendai 仙台',
+  weatherTemp: '23°C',
+  weatherCondition: '晴時多雲 降水 10%',
+  weatherSweetIndex: '100% 甜蜜爆表 ♡',
+  
+  characterA: {
+    name: '菅原孝支',
+    romajiName: 'Sugawara Koshi',
+    role: '烏野高校 排球部 二傳手',
+    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80',
+    gender: '男',
+    age: '17',
+    occupation: '烏野高校 排球部',
+    animal: '邊牧',
+    bodyType: '174.3 cm',
+    tagsBadge: 'INFJ, 無辣不歡, òωó.',
+    swatches: [
+      { label: 'HAIR', color: '薄墨灰', colorCode: '#8E8D8A' },
+      { label: 'EYE', color: '琥珀棕', colorCode: '#6E473B' },
+    ],
+    statusList: [
+      { label: '親密', value: 95 },
+      { label: '激情', value: 70 },
+      { label: '承諾', value: 90 },
+    ],
+    sections: [
+      {
+        number: '01',
+        title: '一本正經的胡說八道',
+        content: `個性活潑開朗，鬼點子多 + 經常顏藝，是活躍氣氛的一把好手（但偶爾會出現冷笑話無人捧場的狀況）。
+
+薛定諤的可靠，看似穩重大事靠譜小事糊塗，在熟人面前腹黑調皮為所欲為。
+
+除了爽朗外也有細膩的一面，總能快速察覺隊友們的不同狀態跟情緒並給予回饋。
+對自我的想法也很透徹，能夠堅定地表達想法跟立場，是內在自我強大的人。`,
+      },
+      {
+        number: '02',
+        title: '戀愛二三事',
+        content: `先意識到喜歡的那個人，發現自己不挑明的話這段關係會永遠止步在朋友界線內就直接開口了。
+（互相喜歡結果錯過彼此什麼的是絕對不可能發生的）
+
+在一起之後反而是更常撒嬌的人，有肢體接觸還是會臉紅害羞，喜歡逗七緒玩，但三不五時就會被反將一軍。
+
+近期的一大樂趣是拍女朋友的各種小表情。
+-偶爾會因為照片太醜被七緒捶`,
+      },
+    ],
+    birthday: '06.13',
+    constellation: '雙子座 ♊',
+    bloodType: 'O 型',
+    mbti: 'INFJ 提倡者',
+    height: '174.3 cm',
+    likes: ['超辣麻婆豆腐 🌶️', '排球托球 🏐', '逗七緒玩 😊', '相機小表情 📸'],
+    dislikes: ['冷笑話被無視', '七緒皺眉頭', '太甜的點心', '麻煩的說教'],
+    personality: '看似爽朗沉穩，實則腹黑幽默又溫柔細膩，大事永遠靠譜，在七緒面前格外會撒嬌。',
+    quote: '「先意識到喜歡的人是我，不挑明的話永遠止步朋友，所以當然要直接開口啦。」',
+    fortuneStars: 5,
+    fortuneNote: '今天拍到七緒可愛小表情的機率是 100%。',
+    color: '#442F2A',
+  },
+
+  characterB: {
+    name: '宮原七緒',
+    romajiName: 'Miyahara Nanao',
+    role: '烏野高校 經理兼攝影',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    gender: '女',
+    age: '17',
+    occupation: '烏野高校 經理兼攝影',
+    animal: '垂耳兔',
+    bodyType: '160 cm',
+    tagsBadge: 'ENFP, 甜食控, (✿◡‿◡)',
+    swatches: [
+      { label: 'HAIR', color: '深栗棕', colorCode: '#5A3825' },
+      { label: 'EYE', color: '琥珀棕', colorCode: '#7D4F37' },
+    ],
+    statusList: [
+      { label: '親密', value: 98 },
+      { label: '激情', value: 85 },
+      { label: '承諾', value: 95 },
+    ],
+    sections: [
+      {
+        number: '01',
+        title: '元氣滿滿的小太陽',
+        content: `性格開朗率直、行動力極強的元氣少女。總是帶著燦爛的笑容，是大家最安心溫暖的後盾。
+
+觀察力敏銳且富有同理心，鏡頭裡總是捕捉著身邊人最真實動人的瞬間。雖然平時大大咧咧，但在排球部的事務與照片整理上卻無比認真負責。
+
+對於喜歡的事物毫不掩飾，直球進攻時常讓身邊的人（特別是孝支）手足無措，但自己偶爾也會後知後覺地滿臉通紅。`,
+      },
+      {
+        number: '02',
+        title: '戀愛二三事',
+        content: `從小學起就是一起長大的青梅竹馬。在察覺到彼此的心意前，總是習慣性地依賴並注視著他。
+
+被告白的時候明明心跳快得要命，卻第一時間先笑了出來，說著「太慢了啦，孝支」。
+
+雖然嘴上常常吐槽孝支的幼稚惡作劇與奇怪冷笑話，但每次他摸摸自己的頭時還是會忍不住心軟。
+
+相機裡私藏了無數張孝支在球場上與私底下的獨家抓拍，是誰也不能看的珍藏寶物。`,
+      },
+    ],
+    birthday: '04.12',
+    constellation: '白羊座 ♈',
+    bloodType: 'A 型',
+    mbti: 'ENFP 競選者',
+    height: '160 cm',
+    likes: ['膠卷攝影 📷', '草莓大福 🍓', '看孝支托球 🏐', '記錄日常手帳 📓'],
+    dislikes: ['打雷天 ⚡', '太辣的麻婆豆腐', '孝支裝沒聽見', '排隊等太久'],
+    personality: '開朗坦率、充滿活力與治癒力的小太陽，對感情大膽直球，是孝支專屬的心靈避風港。',
+    quote: '「太慢了啦，孝支！不過能被你先告白，真的超級開心～」',
+    fortuneStars: 5,
+    fortuneNote: '今天被某人摸頭殺的機率高達 99%。',
+    color: '#C89398',
+  },
+
+  dialogues: [
+    {
+      id: 'd1',
+      charASpeech: '……喂，妳今天又把我的耳機線纏成毛線球了吧？',
+      charBSpeech: '嘿嘿！那是愛的蝴蝶結好不好！Koshi 戴上去一定超級可愛～',
+      mood: 'sweet',
+    },
+    {
+      id: 'd2',
+      charASpeech: '草莓蛋糕上面的草莓……留給妳吃，別盯著我的盤子了。',
+      charBSpeech: '哇！最喜歡 Koshi 了！今天的 Koshi 是世界上最好的大恐龍！🦖',
+      mood: 'flirty',
+    },
+    {
+      id: 'd3',
+      charASpeech: '明明比我矮那麼多，走路還敢一直東張西望，摔倒我可不扶。',
+      charBSpeech: '知道啦知道啦！那 Koshi 要牽緊我，這樣我才不會飄走呀♡',
+      mood: 'shy',
+    },
+    {
+      id: 'd4',
+      charASpeech: '今天仙台的風有點涼，圍巾借妳。不要著涼了又向我哭訴。',
+      charBSpeech: '圍巾上有 Koshi 的味道耶～暖呼呼的！我們今天去吃熱可可吧！',
+      mood: 'happy',
+    },
+  ],
+
+  milestones: [
+    {
+      id: 'm1',
+      date: '2022.11.09',
+      title: '青梅竹馬的戀愛結成日',
+      desc: '在體育館後門的銀杏樹下，遞出了草莓牛奶與那句練習了很久的告白。',
+      icon: 'heart',
+      tag: 'Anniversary',
+    },
+    {
+      id: 'm2',
+      date: '2023.03.14',
+      title: '第一次白色情人節回禮',
+      desc: '收到了親手烤製的恐龍形狀草莓曲奇，表面裝作平靜，心跳卻快得像發球。',
+      icon: 'sparkles',
+      tag: 'Sweet Moment',
+    },
+    {
+      id: 'm3',
+      date: '2023.08.18',
+      title: '仙台夏日祭典與花火',
+      desc: '穿著浴衣在撈金魚攤位前較勁，煙火在空中綻放那一刻，十指悄悄扣在了一起。',
+      icon: 'camera',
+      tag: 'Summer',
+    },
+    {
+      id: 'm4',
+      date: '2024.01.01',
+      title: '新年初詣的大吉繪馬',
+      desc: '在神前許下同一份願望：「希望明年、後年，未來的每一個春夏秋冬身邊都是你。」',
+      icon: 'calendar',
+      tag: 'New Year',
+    },
+    {
+      id: 'm5',
+      date: '2024.09.27',
+      title: '20歲生日的秘密驚喜',
+      desc: '在博物館恐龍特展結束後，送上了定制的錄音耳機與兩千字手寫信。',
+      icon: 'gift',
+      tag: 'Birthday',
+    },
+  ],
+
+  album: [
+    {
+      id: 'p1',
+      url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80',
+      caption: '夏祭夜空的浪漫花火大會 🎆',
+      date: '2023.08.18',
+      location: 'Sendai, Japan',
+      tag: '季節のしるし',
+    },
+    {
+      id: 'p2',
+      url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
+      caption: '偷偷拍下的專注側臉與草莓蛋糕 🍰',
+      date: '2023.11.02',
+      location: '烏野街角咖啡廳',
+      tag: 'いつもの景色',
+    },
+    {
+      id: 'p3',
+      url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80',
+      caption: '秋日金黃銀杏大道牽手漫步 🍂',
+      date: '2024.11.15',
+      location: '仙台市區公園',
+      tag: 'ともに過ごした日々',
+    },
+    {
+      id: 'p4',
+      url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
+      caption: '博物館恐龍特展的情侶合照 🦖',
+      date: '2024.09.27',
+      location: '國立自然科學館',
+      tag: 'いつもの景色',
+    },
+    {
+      id: 'p5',
+      url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+      caption: '初雪那天在公車站戴同一副耳機 ❄️',
+      date: '2025.01.12',
+      location: '學校門口巴士站',
+      tag: '季節のしるし',
+    },
+    {
+      id: 'p6',
+      url: 'https://images.unsplash.com/photo-1494774157365-9e04c6720e47?auto=format&fit=crop&w=800&q=80',
+      caption: '一起在海邊看夕陽沉入地平線 🌅',
+      date: '2025.07.20',
+      location: '宮城海岸線',
+      tag: 'ともに過ごした日々',
+    },
+  ],
+
+  stories: [
+    {
+      id: 's1',
+      chapterNumber: 'Chapter 01',
+      title: '排球館外的手作便當與初雪',
+      date: '2022.09.15',
+      summary: '關於那個總是滿臉爽朗笑容、實則腹黑逗人的二傳手，以及追著他跑的元氣經理。',
+      content: '小學時期的菅原孝支就已經是個鬼點子滿滿的孩子王了，常常帶著爽朗的笑聲把七緒逗得團團轉。宮原七緒卻偏偏最喜歡圍在他身邊，像隻蹦蹦跳跳的小兔子。\n\n「孝支，你看這個！今天拍到的雙彩虹喔！」\n「哇～真的很漂亮呢！不過七緒要是跑太快摔倒，可是會變成哭包小兔子的喔。」\n\n然而，當七緒因為奔跑差點踩空樓梯時，那隻溫暖有力的手掌，總會在最千鈞一髮的時刻牢牢護住她。從那時起，她就知道，那個看似愛開玩笑的爽朗少年背後，藏著最深沉溫柔的守護。',
+      coverImage: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      mood: 'nostalgic',
+    },
+    {
+      id: 's2',
+      chapterNumber: 'Chapter 02',
+      title: '體育館後的草莓大福與告白',
+      date: '2022.11.09',
+      summary: '秋風吹落銀杏葉的那天傍晚，練習結束後的微汗與直接挑明的心意。',
+      content: '那天部活結束後天色已經泛起了粉紫色的晚霞。七緒照常在體育館門口等他，手裡捧著剛買來的草莓大福。\n\n「給妳說過很多次了，天氣變冷了不要一直在風口吹風。」孝支一邊用毛巾擦著汗走出來，一邊熟練地把自己脖子上的圍巾解下來圍到她脖子上，動作溫柔得無可救藥。\n\n「孝支……」七緒深吸了一口氣，手指抓緊了溫熱的圍巾。\n「七緒，別說話，先聽我說。」向來爽朗的二傳手神情無比認真，眼眸深邃明亮，「我先意識到喜歡的人是妳。如果我不挑明的話，這段關係會永遠停在朋友界線內——但我絕對不能接受錯過妳。我喜歡妳，七緒，和我交往吧。」\n\n晚風吹拂過泛紅的臉頰，七緒笑了出來，眼眶卻泛著感動的淚光：「……太慢了啦，孝支！我也最喜歡你了！」',
+      coverImage: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80',
+      mood: 'sweet',
+    },
+    {
+      id: 's3',
+      chapterNumber: 'Chapter 03',
+      title: '月光與星辰的永恆軌道',
+      date: '2023.08.18',
+      summary: '彼此在各自熱愛的領域前進時，那份默默支撐彼此的堅定力量。',
+      content: '升入大學後，孝支繼續在排球場上以出色的戰術托起每一球，而七緒則拿著單眼相機，成為了記錄所有青春賽事的攝影記者。\n生活變得無比忙碌，但只要哨聲一響，孝支總能在觀眾席第一排的鏡頭後面，精準找到那雙閃閃發光的眼睛。\n\n每當關鍵球精準傳給隊友扣殺得分，全場歡呼雷動時，孝支會轉過身，隔著漫天飛舞的彩帶，悄悄朝著攝影鏡頭比出一個專屬於他們的勝利手勢。\n\n月亮總會如期照亮星辰，無論走得多遠，彼此就是最溫暖的歸宿。',
+      coverImage: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
+      mood: 'inspiring',
+    },
+  ],
+
+  alternativeUniverses: [
+    {
+      id: 'au1',
+      title: '【AU: 宮廷首席神官 × 王都冒險者公會長】',
+      genre: 'Fantasy RPG AU 🏰',
+      tag: '奇幻冒險 / 溫柔腹黑神官',
+      premise: '在埃爾芬王國，最年輕的王宮首席神官菅原，被迫與王都最麻煩的冒險者公會長七緒簽訂永恆神聖契約的故事。',
+      charARole: '王宮首席光輝神官（面帶溫和微笑、實則戰術極強的腹黑智囊，神聖治癒術只為七緒破例）',
+      charBRole: '王都熱血冒險公會長（掌握敏捷弓箭與探險技巧，每天風風火火踹開神殿大門）',
+      storySnippet: '「我說過很多次了，公會長大人。神殿大門修繕費很貴的。」菅原微笑著合上聖典，眼眸裡卻滿是寵溺。\n「可是孝支大人！外面的遺跡魔物太凶殘了，沒有你附魔的守護羽翼我會受傷耶～你捨得嗎？」七緒趴在祈禱台前眨眨眼。\n「……真拿妳沒辦法，過來。」下一秒，全王國最強大的高階神聖結界已悄無聲息地籠罩在她身側。',
+      coverImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+      stories: [
+        {
+          id: 'au1-s1',
+          title: '篇章一：神殿門扉的清脆扣響',
+          date: '王國曆 402 年・春',
+          content: '「我說過很多次了，公會長大人。神殿大門修繕費很貴的。」菅原微笑著合上聖典，眼眸裡卻滿是寵溺。\n\n「可是孝支大人！外面的遺跡魔物太凶殘了，沒有你附魔的守護羽翼我會受傷耶～你捨得嗎？」七緒趴在祈禱台前眨眨眼，身後的弓箭袋還沾著清晨的露水。\n\n「……真拿妳沒辦法，過來。」下一秒，全王國最強大的高階神聖結界已悄無聲息地籠罩在她身側。\n\n「嘻嘻，我就知道孝支最好了！」七緒心滿意足地揚起笑靨，而神官大人無奈搖頭，嘴角卻早已揚起藏不住的溫柔。',
+        },
+        {
+          id: 'au1-s2',
+          title: '篇章二：星夜古遺跡的治癒之誓',
+          date: '王國曆 402 年・夏',
+          content: '在埃爾芬王國深處的古代神廟廢墟，月光穿過坍塌的拱門，照在二人身上。\n\n七緒剛剛解決完盤踞在祭壇周圍的魔物，手臂上被藤蔓劃了一道淺淺的擦傷。菅原輕輕握住她的手腕，指尖泛起柔和的淡金微光。\n\n「痛嗎？」他低聲問，語氣比平時多了一絲嚴肅與心疼。\n「有孝支在，一點都不痛！」七緒搖搖頭。\n「笨蛋，每次都衝在最前面。」菅原收回手，順勢將她拉進懷裡，輕聲在她耳邊道：「冒險公會的會長也好，任性的七緒也罷……只要在我身邊，妳就永遠不需要一個人逞強。」',
+        },
+      ],
+    },
+    {
+      id: 'au2',
+      title: '【AU: 人氣樂團二傳貝斯手 × 專屬巡演攝影師】',
+      genre: 'Modern Band AU 🎸',
+      tag: '搖滾樂團 / 專屬節奏',
+      premise: '超人氣獨立搖滾樂隊「SETTER MOON」的貝斯手，他的舞台視線永遠只停留在一個鏡頭上。',
+      charARole: '樂團二傳貝斯手（舞台上活力四射又爽朗自如，耳麥裡永遠留有一條專用頻道聽七緒說話）',
+      charBRole: '天才巡演攝影師（精準捕捉舞台上最完美的動態光影，也是唯一能讓貝斯手撒嬌的人）',
+      storySnippet: '彩排現場，孝支笑著摘下一邊耳機，對著台下的鏡頭招手：「七緒，剛才那段拍得帥不帥？」\n鏡頭後探出一張笑臉：「超帥的！不過某人要是不要偷偷對著鏡頭眨眼，我的相機可能不會差點晃掉喔～」\n孝支無奈地笑著揉了揉頭髮：「沒辦法啊，誰讓我的專屬攝影師這麼可愛。」',
+      coverImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80',
+      stories: [
+        {
+          id: 'au2-s1',
+          title: 'Track 01: 彩排室的私密專用頻道',
+          date: 'Live Tour Day 01',
+          content: '彩排現場，孝支笑著摘下一邊耳機，對著台下的鏡頭招手：「七緒，剛才那段拍得帥不帥？」\n\n鏡頭後探出一張笑臉：「超帥的！不過某人要是不要偷偷對著鏡頭眨眼，我的相機可能不會差點晃掉喔～」\n\n孝支無奈地笑著揉了揉頭髮：「沒辦法啊，誰讓我的專屬攝影師這麼可愛。」\n\n樂團主唱在旁邊翻了個白眼：「餵餵，耳麥是共用頻道好嗎？全世界都聽到你們在放閃了！」',
+        },
+        {
+          id: 'au2-s2',
+          title: 'Track 02: 萬人安可時的暗號',
+          date: 'Live Tour Final',
+          content: '全場燈光熄滅，破萬名歌迷的安可吶喊響徹整座巨蛋。\n\n孝支撥動最後一串琴弦，汗水順著下頜滑落。他在舞台最亮處站定，透過刺眼的追光燈，視線毫無偏差地鎖定在側台專屬攝影位上的七緒。\n\n他抬手輕輕碰了碰胸口的情侶撥片項鍊，無聲地對著她的鏡頭說了四個字：\n\n「都是給妳。」\n\n快門聲喀嚓作響，那一幀定格的畫面，成為了樂團巡演最傳奇的官方封底。',
+        },
+      ],
+    },
+    {
+      id: 'au3',
+      title: '【AU: 街角手作麵包店長 × 幼兒園元氣老師】',
+      genre: 'Cozy Slice-of-life AU ☕',
+      tag: '溫暖治癒 / 剛出爐的草莓可頌',
+      premise: '在下著細雨的街道轉角，有一家清晨飄散濃郁麥香的溫暖麵包店，玻璃窗旁永遠放著特製的兔子草莓可頌。',
+      charARole: '溫柔爽朗的麵包店店長（擅長烘焙熱騰騰的手作麵包與限定草莓甜點，永遠為她留一把透明雨傘）',
+      charBRole: '附近幼兒園的元氣老師（每天下班後最期待的就是吃到店長剛出爐的限定麵包）',
+      storySnippet: '傍晚時分，門上的風鈴清脆響起。\n「辛苦啦，今天幼兒園的小朋友們也很鬧騰吧？」孝支笑著端出一盤金黃酥脆的草莓可頌和熱熱的甜牛奶。\n「超級鬧騰的～但是只要吃到孝支烤的麵包，所有的疲勞都瞬間消失不見了！」七緒滿足地咬了一口，眼睛彎成了月牙。',
+      coverImage: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
+      stories: [
+        {
+          id: 'au3-s1',
+          title: '第 1 話：剛出爐的草莓可頌與透明雨傘',
+          date: '初秋的雨天午後',
+          content: '傍晚時分，門上的風鈴清脆響起。\n\n「辛苦啦，今天幼兒園的小朋友們也很鬧騰吧？」孝支笑著端出一盤金黃酥脆的草莓可頌和熱熱的甜牛奶。\n\n「超級鬧騰的～但是只要吃到孝支烤的麵包，所有的疲勞都瞬間消失不見了！」七緒滿足地咬了一口，眼睛彎成了月牙。\n\n窗外飄起了細雨，孝支從櫃檯下拿出一把早已備好的透明雨傘：「等一下打烊，我送妳走回家。」',
+        },
+      ],
+    },
+  ],
+
+  chatHistory: [
+    {
+      id: 'c1',
+      sender: 'b',
+      text: 'Koshi～～～部活練習結束了嗎？(つ´ω`)つ',
+      time: '18:32',
+    },
+    {
+      id: 'c2',
+      sender: 'a',
+      text: '剛收完球。妳又在更衣室外面吹冷風對吧？',
+      time: '18:34',
+    },
+    {
+      id: 'c3',
+      sender: 'b',
+      text: '欸？！你怎麼知道！你有讀心術嗎 (ﾟДﾟ;)',
+      time: '18:35',
+    },
+    {
+      id: 'c4',
+      sender: 'a',
+      text: '因為窗戶看出去，某人的粉紅色圍巾像個兔子招牌一樣晃來晃去。',
+      time: '18:36',
+    },
+    {
+      id: 'c5',
+      sender: 'b',
+      text: '嘿嘿～那快點出來！我買了新出的草莓大福，一人一半！🍓',
+      time: '18:37',
+    },
+    {
+      id: 'c6',
+      sender: 'a',
+      text: '……妳自己吃大份的就好。等我兩分鐘，換好衣服馬上出去。',
+      time: '18:38',
+    },
+    {
+      id: 'c7',
+      sender: 'b',
+      text: '好耶！今天也要牽手手走回家喔 (,,> v <,,)♡',
+      time: '18:39',
+    },
+    {
+      id: 'c8',
+      sender: 'a',
+      text: '牽手雖然會被大地他們笑……不過，好吧，過來牽著。',
+      time: '18:40',
+    },
+  ],
+
+  chatGroups: [
+    {
+      id: 'grp-1',
+      title: '放學後的自動販賣機前',
+      messages: [
+        {
+          id: 'g1-1',
+          sender: 'b',
+          text: '孝支！草莓大福最後一個被我搶到了～🍓',
+          time: '18:32',
+        },
+        {
+          id: 'g1-2',
+          sender: 'a',
+          text: '好狡猾！明明是我先看到的吧？我剛練習完超餓耶。',
+          time: '18:33',
+        },
+        {
+          id: 'g1-3',
+          sender: 'b',
+          text: '哼哼，兵貴神速！不過看在你今天托球很帥的份上……分你咬一大口好了 (๑•̀ㅂ•́)و✧',
+          time: '18:34',
+        },
+        {
+          id: 'g1-4',
+          sender: 'a',
+          text: '這還差不多。那今天的熱可可我請客，販賣機按好了，快過來拿。',
+          time: '18:35',
+        },
+        {
+          id: 'g1-5',
+          sender: 'b',
+          text: '好耶！孝支最好了～那等一下要牽著手走回家喔 ♡',
+          time: '18:36',
+        },
+        {
+          id: 'g1-6',
+          sender: 'a',
+          text: '……真是的，拿妳沒辦法。手伸過來，快涼掉了。',
+          time: '18:37',
+        },
+      ],
+    },
+    {
+      id: 'grp-2',
+      title: '排球館外的小碎念',
+      messages: [
+        {
+          id: 'g2-1',
+          sender: 'a',
+          text: '今天練習賽的時候，妳又拍了幾百張照片吧？相機電池撐得住嗎？',
+          time: '19:10',
+        },
+        {
+          id: 'g2-2',
+          sender: 'b',
+          text: '那是當然！二傳手菅原前輩的托球姿勢，我可是全世界第一位專屬攝影師呢 📸',
+          time: '19:11',
+        },
+        {
+          id: 'g2-3',
+          sender: 'a',
+          text: '噗，專屬攝影師小姐，那請問我的獨家抓拍可以申請看一眼嗎？',
+          time: '19:12',
+        },
+        {
+          id: 'g2-4',
+          sender: 'b',
+          text: '不行～那是我的私藏寶物！只有等回家我挑出最帥的一張才傳給你。',
+          time: '19:13',
+        },
+        {
+          id: 'g2-5',
+          sender: 'a',
+          text: '好啦好啦。我在社辦門口了，妳圍巾圍好了沒？外面風大。',
+          time: '19:14',
+        },
+        {
+          id: 'g2-6',
+          sender: 'b',
+          text: '圍好了！已經看到你了～笨蛋孝支快抬頭看前面！(揮手)',
+          time: '19:15',
+        },
+      ],
+    },
+  ],
+
+  specialDates: [
+    {
+      id: 'sd-1',
+      date: '09-28',
+      title: '9/28 夏日花火回憶日',
+      note: '第一次一起看夏日河畔花火大會，在絢爛夜空下偷偷牽起手。',
+      tag: 'Fireworks',
+      color: '#C89398',
+    },
+    {
+      id: 'sd-2',
+      date: '11-09',
+      title: '11/09 交往紀念日',
+      note: '正式確認心意的那一天，青梅竹馬成為彼此最重要的人。',
+      tag: 'Anniversary',
+      color: '#442F2A',
+    },
+    {
+      id: 'sd-3',
+      date: '04-12',
+      title: '04/12 宮原七緒生日',
+      note: '小太陽的誕生日，為她親手製作草莓甜點與相冊禮物。',
+      tag: 'Birthday',
+      color: '#C89398',
+    },
+    {
+      id: 'sd-4',
+      date: '06-13',
+      title: '06/13 菅原孝支生日',
+      note: '爽朗副攻手的生日，七緒偷偷送給他收集很久的特製排球掛件。',
+      tag: 'Birthday',
+      color: '#442F2A',
+    },
+  ],
+
+  coupleProfile: {
+    title: '',
+    verse: '',
+    items: [
+      {
+        id: 'cp-1',
+        category: '代表色',
+        charAValue: '暖咖褐色 #442F2A',
+        charANote: '沉穩可靠、溫柔包容的底色',
+        charBValue: '櫻花柔粉 #C89398',
+        charBNote: '明亮元氣、溫暖純真的晨曦',
+        sugaNanaValue: '琥珀裸粉 #E0BAC7',
+        sugaNanaNote: '如烏野體育館向陽處的晨光與影子，交織出最溫暖的默契',
+      },
+      {
+        id: 'cp-2',
+        category: '代表物',
+        charAValue: '2號球衣、口哨、手作熱便當 🏐',
+        charANote: '在球場上全力托球守護大家',
+        charBValue: '單眼相機、兔子御守、草莓大福 🍓',
+        charBNote: '在場邊定格每一個燦爛瞬間',
+        sugaNanaValue: '草莓牛奶 🥛🍓',
+        sugaNanaNote: '練習結束後自動販賣機前的默契投幣，一人喝一半',
+      },
+      {
+        id: 'cp-3',
+        category: '動物意象',
+        charAValue: '邊境牧羊犬 🐶',
+        charANote: '聰明可靠、偶爾皮一下',
+        charBValue: '軟萌垂耳兔 🐰',
+        charBNote: '好奇心旺盛、總是直球前進',
+        sugaNanaValue: '大型犬與小兔子的日常追逐',
+        sugaNanaNote: '看似大狗守護著小兔子，其實經常是被小兔子牽著鼻子走',
+      },
+      {
+        id: 'cp-4',
+        category: '心動暗號',
+        charAValue: '摸摸頭、捏臉頰、悄悄遞過去的熱可可 ☕',
+        charANote: '自然流露的專屬寵溺',
+        charBValue: '拉住衣角、無預警的鏡頭特寫、偷藏的水果糖 🍬',
+        charBNote: '坦誠而依賴的直球習慣',
+        sugaNanaValue: '指尖輕扣的牽手方式',
+        sugaNanaNote: '走在放學的坂道上，不需要言語也能讀懂的心有靈犀',
+      },
+    ],
+  },
+
+  bgMusicPlaying: false,
+};
