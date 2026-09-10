@@ -112,9 +112,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Intro Text Box with 1.3 line height spacing from title and 1.5 spacing to bottom line */}
             <div className="mt-[1.3em] mb-[1.5em] font-pixel text-[#442F2A] leading-relaxed bg-[#F8EDF1]/35 p-3.5 sm:p-4 rounded-xl border-2 border-[#E0BAC7] shadow-2xs">
-              <p className="font-bold text-[#C89398] text-[13px] leading-snug whitespace-pre-line">
-                {renderFormattedText(data.introQuote)}
-              </p>
+              {/* Pink Quote with Vertical Bar */}
+              <div className="border-l-[2.5px] border-[#C89398] pl-3 py-0.5">
+                <p className="font-bold text-[#C89398] text-[13px] leading-[1.75] [&_*]:leading-[1.75] whitespace-pre-line" style={{ lineHeight: 1.75 }}>
+                  {renderFormattedText(data.introQuote)}
+                </p>
+              </div>
               <p className="text-[11px] sm:text-[12px] text-[#442F2A]/80 whitespace-pre-line leading-relaxed mt-2.5">
                 {renderFormattedText(data.introDescription)}
               </p>
