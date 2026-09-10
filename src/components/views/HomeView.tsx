@@ -104,17 +104,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="w-full md:w-1/2 flex flex-col text-left">
             {/* Centered Title */}
             <div className="text-center">
-              <h2 className="text-lg sm:text-xl font-bold font-pixel text-[#442F2A] tracking-wider">
+              <h2 className="text-lg sm:text-xl font-bold font-pixel text-[#442F2A] tracking-[0.2em]">
                 {data.siteTitle}
               </h2>
             </div>
 
-            {/* Intro Text Box with 1.5 line height spacing from title and bottom line, pink border neatly framing the text */}
-            <div className="my-[1.5em] text-xs font-pixel text-[#442F2A] leading-relaxed bg-[#F8EDF1]/35 p-3.5 sm:p-4 rounded-xl border-2 border-[#E0BAC7] shadow-2xs">
-              <p className="font-bold text-[#C89398] text-[11px] sm:text-xs">
+            {/* Intro Text Box with 1.3 line height spacing from title and 1.5 spacing to bottom line */}
+            <div className="mt-[1.3em] mb-[1.5em] font-pixel text-[#442F2A] leading-relaxed bg-[#F8EDF1]/35 p-3.5 sm:p-4 rounded-xl border-2 border-[#E0BAC7] shadow-2xs">
+              <p className="font-bold text-[#C89398] text-[13px] leading-snug">
                 {data.introQuote}
               </p>
-              <p className="text-[11px] text-[#442F2A]/80 whitespace-pre-line leading-relaxed mt-2.5">
+              <p className="text-[11px] sm:text-[12px] text-[#442F2A]/80 whitespace-pre-line leading-relaxed mt-2.5">
                 {data.introDescription}
               </p>
             </div>
