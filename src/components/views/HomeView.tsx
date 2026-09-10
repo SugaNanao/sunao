@@ -101,26 +101,26 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           {/* Intro Story & Concept (Equal width & height to picture box) */}
-          <div className="w-full md:w-1/2 flex flex-col justify-between text-left">
+          <div className="w-full md:w-1/2 flex flex-col text-left">
             {/* Centered Title */}
-            <div className="text-center mb-2 sm:mb-2.5">
+            <div className="text-center">
               <h2 className="text-lg sm:text-xl font-bold font-pixel text-[#442F2A] tracking-wider">
                 {data.siteTitle}
               </h2>
             </div>
 
-            {/* Intro Text Box with 1.5 gap from title */}
-            <div className="space-y-1.5 text-xs font-pixel text-[#442F2A] leading-relaxed bg-[#F8EDF1]/40 p-2.5 rounded-lg border border-[#442F2A]/15 flex-1 flex flex-col justify-center">
+            {/* Intro Text Box with 1.5 line height spacing from title and bottom line, pink border neatly framing the text */}
+            <div className="my-[1.5em] text-xs font-pixel text-[#442F2A] leading-relaxed bg-[#F8EDF1]/35 p-3.5 sm:p-4 rounded-xl border-2 border-[#E0BAC7] shadow-2xs">
               <p className="font-bold text-[#C89398] text-[11px] sm:text-xs">
                 {data.introQuote}
               </p>
-              <p className="text-[11px] text-[#442F2A]/80 whitespace-pre-line leading-relaxed">
+              <p className="text-[11px] text-[#442F2A]/80 whitespace-pre-line leading-relaxed mt-2.5">
                 {data.introDescription}
               </p>
             </div>
 
             {/* Two dots under 月が星を照らすまで: One Brown Alert Warning, One Pencil */}
-            <div className="flex items-center gap-2.5 pt-2.5 mt-2 border-t border-[#442F2A]/20">
+            <div className="flex items-center gap-2.5 pt-3 border-t border-[#442F2A]/20">
               {/* Notice Dot - Brown Alert Warning 棕色警示 */}
               <button
                 onClick={() => handleOpenModal('notice')}

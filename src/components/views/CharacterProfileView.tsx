@@ -108,7 +108,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
           {/* Right: 基本資料 Section (One item per row with English labels, all font in brown) */}
           <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
             <div className="text-[10px] font-bold text-[#442F2A]/80 tracking-widest uppercase mb-0.5 font-pixel">
-              基本資料
+              基本情報
             </div>
 
             <div className="flex-1 flex flex-col justify-between">
@@ -249,7 +249,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
           }`}
         >
           <User className="w-3.5 h-3.5" />
-          <span>個人基本資料 (PERSONAL ARCHIVE)</span>
+          <span>基本情報</span>
         </button>
 
         <button
