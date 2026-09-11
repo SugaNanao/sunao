@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { CoupleSiteData, Character, CoupleProfileItem } from '../../types';
 import { PixelHeart } from '../PixelHeart';
 import { OverlappingHearts } from '../OverlappingHearts';
-import { Edit, Sparkles, Plus, Quote, User, Users, Calendar, Sparkle } from 'lucide-react';
+import { Edit, Sparkles, Plus, Quote, User, Users, Calendar, Sparkle, Heart } from 'lucide-react';
+import { renderFormattedText } from '../../utils/textFormatter';
+import { DEFAULT_COUPLE_DATA } from '../../data/defaultData';
 
 interface CharacterProfileViewProps {
   data: CoupleSiteData;
   isEditMode: boolean;
   onEditSection: (section: string) => void;
+  targetCharacter?: 'BOTH' | 'CHAR_A' | 'CHAR_B';
 }
 
 // Styled "敬請期待" placeholder with border and background color
@@ -26,8 +29,29 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
   data,
   isEditMode,
   onEditSection,
+  targetCharacter,
 }) => {
   const [subTab, setSubTab] = useState<'PERSONAL' | 'COUPLE'>('PERSONAL');
+
+  const [selectedChar, setSelectedChar] = useState<'BOTH' | 'CHAR_A' | 'CHAR_B'>(
+    targetCharacter || 'BOTH'
+  );
+
+  const [expandedTrivia, setExpandedTrivia] = useState<Record<string, boolean>>({});
+
+  const toggleTrivia = (key: string) => {
+    setExpandedTrivia((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  React.useEffect(() => {
+    if (targetCharacter) {
+      setSubTab('PERSONAL');
+      setSelectedChar(targetCharacter);
+    }
+  }, [targetCharacter]);
 
   const coupleProfile = data.coupleProfile || {
     title: 'KOSHI × NANAO ・ COUPLE ARCHIVE',
@@ -36,177 +60,276 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
     items: [],
   };
 
-  const renderCharacterCard = (char: Character, isA: boolean) => {
+  // Render Detailed Character Dossier with the requested elements:
+  // 1. 照片, 2. 姓名, 3. 一句引用金句 (棕色豎線｜), 4. 基本資料(高校３年現在), 5. 外貌描述, 6. 性格剖析(小段落與小標題), 7. 人際關係, 8. 冷知識(含對方的吐槽小視窗)
+  const renderDetailedDossierCard = (char: Character, isA: boolean) => {
     const heartColor = isA ? '#442F2A' : '#C89398';
+    const fallbackData = isA ? DEFAULT_COUPLE_DATA.characterA : DEFAULT_COUPLE_DATA.characterB;
 
-    const rawSwatches = char.swatches && char.swatches.length > 0 ? char.swatches : [
-      { label: 'HAIR', color: isA ? '薄墨灰' : '深栗棕', colorCode: isA ? '#8E8D8A' : '#5A3825' },
-      { label: 'EYE', color: isA ? '琥珀棕' : '琥珀棕', colorCode: isA ? '#6E473B' : '#7D4F37' },
-    ];
-    // Keep only HAIR and EYE, removing ACCENT
-    const swatches = rawSwatches.filter((s) => s.label.toUpperCase() !== 'ACCENT').slice(0, 2);
+    const quoteText = char.quote || fallbackData.quote;
+    const appearanceText = char.appearance || fallbackData.appearance || '';
+    const relationshipsText = char.relationships || fallbackData.relationships || '';
 
-    const statusList = char.statusList && char.statusList.length > 0 ? char.statusList : [
-      { label: '親密', value: isA ? 95 : 98 },
-      { label: '激情', value: isA ? 70 : 85 },
-      { label: '承諾', value: isA ? 90 : 95 },
-    ];
+    // 1. 基本資料條列
+    const basicInfoList: string[] =
+      char.basicInfoList && char.basicInfoList.length > 0
+        ? char.basicInfoList
+        : isA
+        ? [
+            '烏野高校 ３年４組',
+            '男子排球部副主將',
+            '隊中位置｜舉球員（Ｓ）',
+            '身高｜１７４.３ｃｍ',
+            '體重｜６３.５ｋｇ',
+            '誕生日｜６月１３日',
+            '好物｜激辛麻婆豆腐',
+            '最近的煩惱｜有很多後輩的個頭都比自己高',
+          ]
+        : [
+            '烏野高校 ３年４組',
+            '男子排球部經理兼攝影',
+            '身高｜１６０ｃｍ',
+            '體重｜秘密 (約４５ｋｇ)',
+            '誕生日｜４月１２日',
+            '好物｜草莓大福・水果千層',
+            '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
+          ];
 
-    const sections = char.sections && char.sections.length > 0 ? char.sections : [
-      {
-        number: '01',
-        title: isA ? '一本正經的胡說八道' : '元氣滿滿的小太陽',
-        content: char.personality,
-      },
-      {
-        number: '02',
-        title: '戀愛二三事',
-        content: char.quote,
-      },
-    ];
+    // 2. 性格剖析段落列表
+    const personalityParagraphs =
+      char.personalityParagraphs && char.personalityParagraphs.length > 0
+        ? char.personalityParagraphs
+        : fallbackData.personalityParagraphs || [
+            {
+              id: 'p1',
+              title: isA ? '爽朗溫和的外表與定海神針' : '夏日午後般溫暖燦爛的小太陽',
+              content:
+                char.personalityAnalysis ||
+                char.personality ||
+                fallbackData.personalityAnalysis ||
+                '',
+            },
+          ];
+
+    // 3. 冷知識列表 (含吐槽小視窗)
+    const triviaItems =
+      char.triviaItems && char.triviaItems.length > 0
+        ? char.triviaItems
+        : fallbackData.triviaItems || [];
 
     return (
-      <div className="pixel-card p-3.5 sm:p-4.5 bg-white border-2 border-[#442F2A] rounded-xl shadow-md flex flex-col gap-3">
-        {/* Card Header: Character Name & Romaji (Badges removed) */}
-        <div className="flex items-center justify-between border-b border-[#442F2A]/15 pb-2">
-          <div className="flex items-center gap-1.5">
-            <PixelHeart color={heartColor} className="w-3.5 h-3.5 shrink-0" />
-            <h3 className="font-pixel font-bold text-base text-[#442F2A]">{char.name}</h3>
-            {char.romajiName && (
-              <span className="text-[11px] font-pixel text-[#442F2A]/60">({char.romajiName})</span>
-            )}
-          </div>
-        </div>
-
-        {/* Top Section: Photo with HAIR & EYE swatches below on left, 基本資料 on right */}
-        <div className="flex items-start gap-3 sm:gap-3.5">
-          {/* Left: Scaled Photo on top, HAIR & EYE Swatches directly underneath */}
-          <div className="flex flex-col items-center gap-1.5 shrink-0 w-24 sm:w-28">
-            <div className="w-full h-36 sm:h-42 rounded-xl overflow-hidden bg-[#F8EDF1] border border-[#442F2A]/15 shadow-xs relative group">
+      <div className="pixel-card p-4 sm:p-5 bg-white border-2 border-[#442F2A] rounded-xl shadow-md flex flex-col gap-4.5 font-pixel">
+        {/* 1 & 2 & 3. 照片、姓名與一句引用金句 */}
+        <div className="flex flex-col sm:flex-row items-start gap-4 pb-3 border-b border-[#442F2A]/15">
+          {/* 1. 照片 */}
+          <div className="shrink-0 w-28 sm:w-32 self-center sm:self-start">
+            <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden bg-[#F8EDF1] border-2 border-[#442F2A] shadow-xs relative group">
               <img
                 src={char.avatar}
                 alt={char.name}
                 className="w-full h-full object-cover filter contrast-105 group-hover:scale-103 transition duration-300"
               />
             </div>
-
-            {/* Swatches: HAIR and EYE only, directly placed under photo */}
-            <div className="w-full flex items-center justify-between gap-1">
-              {swatches.map((swatch, sIdx) => (
-                <div
-                  key={sIdx}
-                  className="flex-1 py-0.5 px-0.5 rounded text-[9px] font-bold text-white text-center shadow-2xs uppercase tracking-wider truncate"
-                  style={{ backgroundColor: swatch.colorCode || (sIdx === 0 ? '#8E8D8A' : '#6E473B') }}
-                  title={`${swatch.label}: ${swatch.color}`}
-                >
-                  {swatch.label}
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Right: 基本資料 Section (One item per row with English labels, all font in brown) */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
-            <div className="text-[10px] font-bold text-[#442F2A]/80 tracking-widest uppercase mb-0.5 font-pixel">
-              基本情報
-            </div>
-
-            <div className="flex-1 flex flex-col justify-between">
-              {/* Row 1: GENDER */}
-              <div className="py-0.5 border-b border-[#442F2A]/10">
-                <div className="text-[9px] text-[#442F2A]/65 font-medium tracking-wide">GENDER</div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#442F2A] leading-tight">
-                  {char.gender || (isA ? '男' : '女')}
-                </div>
+          {/* 2 & 3. 姓名與引用金句 */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center self-stretch">
+            <div>
+              {/* 2. 姓名 (無額外身份稱號標籤) */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <PixelHeart color={heartColor} className="w-4 h-4 shrink-0" />
+                <h3 className="font-pixel font-bold text-lg sm:text-xl text-[#442F2A]">
+                  {char.name}
+                </h3>
+                {char.romajiName && (
+                  <span className="text-xs font-pixel text-[#442F2A]/60">
+                    ({char.romajiName})
+                  </span>
+                )}
               </div>
 
-              {/* Row 2: AGE */}
-              <div className="py-0.5 border-b border-[#442F2A]/10">
-                <div className="text-[9px] text-[#442F2A]/65 font-medium tracking-wide">AGE</div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#442F2A] leading-tight">
-                  {char.age || '17'}
-                </div>
-              </div>
-
-              {/* Row 3: OCCUPATION */}
-              <div className="py-0.5 border-b border-[#442F2A]/10">
-                <div className="text-[9px] text-[#442F2A]/65 font-medium tracking-wide">OCCUPATION</div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#442F2A] leading-tight truncate">
-                  {char.occupation || (isA ? '烏野高校 排球部' : '烏野高校 經理兼攝影')}
-                </div>
-              </div>
-
-              {/* Row 4: MBTI */}
-              <div className="py-0.5 border-b border-[#442F2A]/10">
-                <div className="text-[9px] text-[#442F2A]/65 font-medium tracking-wide">MBTI</div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#442F2A] leading-tight">
-                  {char.mbti || (isA ? 'INFJ' : 'ENFP')}
-                </div>
-              </div>
-
-              {/* Row 5: HEIGHT */}
-              <div className="py-0.5 border-b border-[#442F2A]/10">
-                <div className="text-[9px] text-[#442F2A]/65 font-medium tracking-wide">HEIGHT</div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#442F2A] leading-tight">
-                  {char.bodyType || char.height || (isA ? '174.3 cm' : '160 cm')}
-                </div>
-              </div>
-
-              {/* Row 6: BIRTHDAY */}
-              <div className="py-0.5 border-b border-[#442F2A]/10">
-                <div className="text-[9px] text-[#442F2A]/65 font-medium tracking-wide">BIRTHDAY</div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#442F2A] leading-tight">
-                  {char.birthday || (isA ? '06.13' : '04.12')} {char.constellation ? `(${char.constellation})` : ''}
-                </div>
+              {/* 3. 一句引用金句 (前方棕色豎線｜) */}
+              <div className="border-l-[3px] border-[#442F2A] pl-3 py-1.5 bg-[#FFF8F5]/80 rounded-r-lg my-2.5">
+                <p className="font-bold text-[#442F2A] text-xs sm:text-[13px] leading-[1.7] whitespace-pre-line">
+                  {renderFormattedText(quoteText)}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* STATUS Progress Bars (Bars in Pink #E0BAC7 / #C89398, Labels in Brown) */}
-        <div className="mt-1 space-y-1.5">
-          <div className="text-[10px] text-[#442F2A]/80 font-bold tracking-widest uppercase font-pixel">
-            STATUS
+        {/* 4. 基本資料 (高校３年現在) - 僅展示指定清單，有小標題才加，其餘不在清單內的內容全數刪除 */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
+            <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
+            <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
+              基本資料 (高校３年現在)
+            </h4>
           </div>
-          <div className="space-y-1.5">
-            {statusList.map((st, idx) => (
-              <div key={idx} className="flex items-center text-xs">
-                <span className="w-7 text-[10px] text-[#442F2A] font-bold shrink-0">{st.label}</span>
-                <div className="flex-1 h-2 bg-[#F8EDF1] border border-[#442F2A]/15 rounded-full overflow-hidden mx-2.5">
+
+          <div className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 divide-y divide-[#442F2A]/10">
+            {basicInfoList.map((item, idx) => {
+              // 判斷是否包含小標題分隔符 ｜ 或 |
+              const match = item.split(/[｜|]/);
+              if (match.length >= 2) {
+                const label = match[0].trim();
+                const val = match.slice(1).join('｜').trim();
+                return (
                   <div
-                    className="h-full bg-[#C89398] rounded-full transition-all duration-500 shadow-2xs"
-                    style={{ width: `${Math.min(100, Math.max(0, st.value))}%` }}
-                  />
+                    key={idx}
+                    className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0 text-xs sm:text-[13px]"
+                  >
+                    <span className="font-bold text-[#442F2A] shrink-0 min-w-[75px] sm:min-w-[85px] tracking-wide">
+                      {label}
+                    </span>
+                    <span className="text-[#442F2A]/35 shrink-0 select-none">｜</span>
+                    <span className="font-normal text-[#442F2A] flex-1 leading-relaxed">
+                      {val}
+                    </span>
+                  </div>
+                );
+              }
+
+              // 沒有小標題的項目直接展示 (圓點清單，內文字體大小，不加粗)
+              const cleanItem = item.replace(/^[•·・\s]+/, '');
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0 text-xs sm:text-[13px] text-[#442F2A]"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#442F2A] shrink-0" />
+                  <span className="font-normal text-[#442F2A] flex-1 leading-relaxed">
+                    {cleanItem}
+                  </span>
                 </div>
-                <span className="text-[9px] text-[#442F2A] w-5 text-right font-bold shrink-0">{st.value}</span>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 5. 外貌描述 */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
+            <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
+            <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
+              外貌描述
+            </h4>
+          </div>
+          <div className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line">
+            {renderFormattedText(appearanceText)}
+          </div>
+        </div>
+
+        {/* 6. 性格剖析 (多個小段落與小標題) */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
+            <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
+            <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
+              性格剖析
+            </h4>
+          </div>
+
+          <div className="space-y-2.5">
+            {personalityParagraphs.map((para, pIdx) => (
+              <div
+                key={para.id || pIdx}
+                className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 space-y-1"
+              >
+                <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[#442F2A]">
+                  <span className="text-[#C89398] font-mono text-sm">✦</span>
+                  <span className="tracking-wide">{para.title}</span>
+                </div>
+                <div className="text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line pl-3.5 sm:pl-4 font-normal">
+                  {renderFormattedText(para.content)}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Numbered Lore / Narrative Sections (Font in Brown) */}
-        <div className="mt-2 space-y-3.5">
-          {sections.map((sec, secIdx) => (
-            <div key={secIdx} className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded bg-[#442F2A] text-[#FFF8F5] flex items-center justify-center text-[9px] font-bold font-mono shrink-0">
-                  {sec.number || `0${secIdx + 1}`}
-                </span>
-                <h4 className="font-bold text-xs sm:text-[13px] text-[#442F2A] tracking-tight">
-                  {sec.title}
-                </h4>
-              </div>
-              <div className="text-xs text-[#442F2A] leading-[1.7] whitespace-pre-line">
-                {sec.content && sec.content.trim() ? (
-                  sec.content
-                ) : (
-                  <div className="inline-block bg-[#FFF8F5] border border-[#442F2A] text-[#442F2A] px-2.5 py-0.5 rounded text-[10px] font-pixel font-bold">
-                    ［ 敬請期待 ］
+        {/* 7. 人際關係 */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
+            <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
+            <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
+              人際關係
+            </h4>
+          </div>
+          <div className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line space-y-1 font-normal">
+            {renderFormattedText(relationshipsText)}
+          </div>
+        </div>
+
+        {/* 8. 冷知識 (含對方的吐槽小視窗) */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
+            <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
+            <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
+              冷知識
+            </h4>
+          </div>
+
+          <div className="space-y-2.5">
+            {triviaItems.map((tItem, tIdx) => {
+              // 誰吐槽就用代表色像素愛心開頭，字體顏色與愛心一致
+              const commenterColor = isA ? '#C89398' : '#442F2A';
+              const hasComment = Boolean(tItem.comment && tItem.comment.trim());
+              const triviaKey = `${isA ? 'charA' : 'charB'}-${tItem.id || tIdx}`;
+              const isCommentExpanded = Boolean(expandedTrivia[triviaKey]);
+
+              return (
+                <div
+                  key={tItem.id || tIdx}
+                  className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 flex flex-col md:flex-row items-start justify-between gap-2.5 md:gap-4"
+                >
+                  {/* 冷知識本體 */}
+                  <div className="flex-1 text-xs sm:text-[13px] text-[#442F2A] leading-relaxed flex items-start gap-2 font-normal">
+                    <span className="text-[#C89398] font-bold shrink-0 mt-0.5">✦</span>
+                    <span className="flex-1">{renderFormattedText(tItem.fact)}</span>
                   </div>
-                )}
-              </div>
-            </div>
-          ))}
+
+                  {/* 對方的吐槽：預設只有像素愛心，點愛心後在愛心右邊展開吐槽框(不是浮窗) */}
+                  {hasComment && (
+                    <div className="flex items-start gap-1.5 shrink-0 max-w-full md:max-w-[340px] mt-1 md:mt-0">
+                      <button
+                        type="button"
+                        onClick={() => toggleTrivia(triviaKey)}
+                        className={`p-1 rounded-md transition-all duration-200 cursor-pointer flex items-center justify-center shrink-0 ${
+                          isCommentExpanded
+                            ? 'bg-[#442F2A]/10 scale-105'
+                            : 'hover:bg-[#442F2A]/5 hover:scale-120 active:scale-95'
+                        }`}
+                        title={isCommentExpanded ? '點擊收合吐槽' : '點擊展開吐槽'}
+                        aria-expanded={isCommentExpanded}
+                        aria-label={isCommentExpanded ? '收合吐槽' : '展開吐槽'}
+                      >
+                        <PixelHeart
+                          color={commenterColor}
+                          className="w-3.5 h-3.5"
+                        />
+                      </button>
+
+                      {isCommentExpanded && (
+                        <div
+                          className="bg-white border rounded-lg px-2.5 py-1.5 shadow-2xs text-xs font-pixel transition-all duration-200"
+                          style={{
+                            borderColor: isA ? '#C8939860' : '#442F2A35',
+                          }}
+                        >
+                          <span
+                            className="text-[11px] sm:text-xs font-normal leading-relaxed break-words block"
+                            style={{ color: commenterColor }}
+                          >
+                            {tItem.comment}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -265,11 +388,54 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
         </button>
       </div>
 
-      {/* Sub-Tab 1: 個人檔案 (Character A and B in single column for max-w-lg) */}
+      {/* Sub-Tab 1: 基本情報 (包含 照片, 姓名, 一句引用金句(棕色豎線｜), 基本資料(高校３年現在), 外貌描述, 性格剖析, 人際關係, 冷知識) */}
       {subTab === 'PERSONAL' && (
-        <div className="grid grid-cols-1 gap-5 items-start">
-          <div>{renderCharacterCard(data.characterA, true)}</div>
-          <div>{renderCharacterCard(data.characterB, false)}</div>
+        <div className="space-y-4">
+          {/* Character Selector Toggle */}
+          <div className="flex items-center justify-center gap-2 p-1.5 bg-white border-2 border-[#442F2A] rounded-xl shadow-xs font-pixel">
+            <button
+              onClick={() => setSelectedChar('BOTH')}
+              className={`px-3 py-1 text-xs rounded-lg transition font-bold cursor-pointer ${
+                selectedChar === 'BOTH'
+                  ? 'bg-[#442F2A] text-[#FFF8F5] shadow-xs'
+                  : 'text-[#442F2A] hover:bg-[#FFF8F5]'
+              }`}
+            >
+              兩人全覽
+            </button>
+            <button
+              onClick={() => setSelectedChar('CHAR_A')}
+              className={`px-3 py-1 text-xs rounded-lg transition font-bold cursor-pointer flex items-center gap-1.5 ${
+                selectedChar === 'CHAR_A'
+                  ? 'bg-[#442F2A] text-[#FFF8F5] shadow-xs'
+                  : 'text-[#442F2A] hover:bg-[#FFF8F5]'
+              }`}
+            >
+              <PixelHeart color={selectedChar === 'CHAR_A' ? '#FFF8F5' : '#442F2A'} className="w-3 h-3" />
+              <span>{data.characterA.name}</span>
+            </button>
+            <button
+              onClick={() => setSelectedChar('CHAR_B')}
+              className={`px-3 py-1 text-xs rounded-lg transition font-bold cursor-pointer flex items-center gap-1.5 ${
+                selectedChar === 'CHAR_B'
+                  ? 'bg-[#442F2A] text-[#FFF8F5] shadow-xs'
+                  : 'text-[#442F2A] hover:bg-[#FFF8F5]'
+              }`}
+            >
+              <PixelHeart color={selectedChar === 'CHAR_B' ? '#FFF8F5' : '#C89398'} className="w-3 h-3" />
+              <span>{data.characterB.name}</span>
+            </button>
+          </div>
+
+          {/* Render Dossier Cards */}
+          <div className="grid grid-cols-1 gap-6 items-start">
+            {(selectedChar === 'BOTH' || selectedChar === 'CHAR_A') && (
+              <div>{renderDetailedDossierCard(data.characterA, true)}</div>
+            )}
+            {(selectedChar === 'BOTH' || selectedChar === 'CHAR_B') && (
+              <div>{renderDetailedDossierCard(data.characterB, false)}</div>
+            )}
+          </div>
         </div>
       )}
 
@@ -337,7 +503,8 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                         {/* 解讀 A (若無內容則不顯示) */}
                         {noteA ? (
                           <div className="bg-[#442F2A]/5 p-2 rounded border border-[#442F2A]/15 text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
-                            <span className="font-bold text-[#442F2A] mr-1">✦ 解讀：</span>
+                            <span className="font-bold text-[#C89398] mr-1">✦</span>
+                            <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
                             <span>{noteA}</span>
                           </div>
                         ) : null}
@@ -364,7 +531,8 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                         {/* 解讀 B (若無內容則不顯示) */}
                         {noteB ? (
                           <div className="bg-[#C89398]/15 p-2 rounded border border-[#C89398]/30 text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
-                            <span className="font-bold text-[#9D5A64] mr-1">✦ 解讀：</span>
+                            <span className="font-bold text-[#C89398] mr-1">✦</span>
+                            <span className="font-bold text-[#9D5A64] mr-1">解讀：</span>
                             <span>{noteB}</span>
                           </div>
                         ) : null}
@@ -386,7 +554,8 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                           {/* 解讀 菅緒 (若無內容則不顯示) */}
                           {noteSugaNana ? (
                             <div className="bg-[#E0BAC7]/25 p-2 rounded border border-[#E0BAC7] text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
-                              <span className="font-bold text-[#442F2A] mr-1">✦ 解讀：</span>
+                              <span className="font-bold text-[#C89398] mr-1">✦</span>
+                              <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
                               <span>{noteSugaNana}</span>
                             </div>
                           ) : null}

@@ -15,6 +15,19 @@ export interface CharacterSection {
   content: string;
 }
 
+export interface PersonalityParagraph {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface CharacterTriviaItem {
+  id: string;
+  fact: string;
+  comment?: string;
+  commenterName?: string;
+}
+
 export interface Character {
   name: string;
   romajiName?: string;
@@ -41,6 +54,14 @@ export interface Character {
   fortuneStars: number;
   fortuneNote: string;
   color: string;
+  appearance?: string; // 外貌描述
+  personalityAnalysis?: string; // 性格剖析 (legacy)
+  personalityParagraphs?: PersonalityParagraph[]; // 性格剖析多段落
+  relationships?: string; // 人際關係
+  trivia?: string; // 冷知識 (legacy)
+  triviaItems?: CharacterTriviaItem[]; // 冷知識列表 (含吐槽小視窗)
+  basicInfoList?: string[]; // 基本資料條列 (高校３年現在)
+  highSchoolStatus?: string; // 高校３年現在
 }
 
 export interface CoupleProfileItem {

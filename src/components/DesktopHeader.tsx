@@ -55,7 +55,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 <h1 className="font-pixel font-bold text-sm sm:text-base text-[#442F2A] flex items-center gap-2">
                   <span>{data.siteTitle}</span>
                   <span className="text-[10px] bg-[#E0BAC7] text-[#442F2A] px-1.5 py-0.2 rounded border border-[#442F2A]">
-                    菅原孝支 X 宮原七緒
+                    {data.characterA.name} X {data.characterB.name}
                   </span>
                 </h1>
                 <p className="text-[10px] text-[#442F2A]/70 font-pixel">

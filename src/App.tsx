@@ -25,6 +25,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCoverView, setIsCoverView] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('HOME');
+  const [characterProfileTarget, setCharacterProfileTarget] = useState<'BOTH' | 'CHAR_A' | 'CHAR_B'>('BOTH');
   
   // Shared link detection: when shared, permanently enforce Guest Mode
   const [isSharedLink] = useState<boolean>(() => isSharedUrl());
@@ -235,11 +236,21 @@ export default function App() {
           {activeTab === 'HOME' && (
             <HomeView
               data={data}
-              onNavigateTab={setActiveTab}
+              onNavigateTab={(tab) => {
+                if (tab === 'CHARACTER') {
+                  setCharacterProfileTarget('BOTH');
+                }
+                setActiveTab(tab);
+              }}
               isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
               onOpenMusicModal={() => setIsMusicModalOpen(true)}
               onOpenChat={() => setIsChatOpen(true)}
+              onNavigateToCharacter={(char) => {
+                setCharacterProfileTarget(char);
+                setActiveTab('CHARACTER');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           )}
 
@@ -248,6 +259,7 @@ export default function App() {
               data={data}
               isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
+              targetCharacter={characterProfileTarget}
             />
           )}
 

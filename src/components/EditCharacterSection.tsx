@@ -1,7 +1,14 @@
 import React from 'react';
-import { Character, ColorSwatch, CharacterStatus, CharacterSection } from '../types';
+import {
+  Character,
+  ColorSwatch,
+  CharacterStatus,
+  CharacterSection,
+  PersonalityParagraph,
+  CharacterTriviaItem,
+} from '../types';
 import { PixelHeart } from './PixelHeart';
-import { Plus, Trash2, Upload, Palette, Sliders, FileText, User } from 'lucide-react';
+import { Plus, Trash2, Upload, Palette, Sliders, FileText, User, MessageSquare, Sparkles } from 'lucide-react';
 
 interface EditCharacterSectionProps {
   charKey: 'characterA' | 'characterB';
@@ -64,17 +71,6 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               placeholder="例：Sugawara Koshi"
             />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-[11px] font-bold text-[#442F2A]">身份 / 稱號 (Role / Title)：</label>
-          <input
-            type="text"
-            value={character.role || ''}
-            onChange={(e) => onUpdate({ ...character, role: e.target.value })}
-            className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs"
-            placeholder="例：烏野高校 排球部 二傳手"
-          />
         </div>
 
         {/* Avatar with Upload & Preview */}
@@ -146,16 +142,6 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-[#442F2A]">MBTI：</label>
-            <input
-              type="text"
-              value={character.mbti || ''}
-              placeholder={charKey === 'characterA' ? 'INFJ' : 'ENFP'}
-              onChange={(e) => onUpdate({ ...character, mbti: e.target.value })}
-              className="w-full bg-white border border-[#442F2A]/40 rounded p-1 text-xs"
-            />
-          </div>
-          <div>
             <label className="block text-[10px] font-bold text-[#442F2A]">HEIGHT：</label>
             <input
               type="text"
@@ -175,17 +161,433 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               className="w-full bg-white border border-[#442F2A]/40 rounded p-1 text-xs"
             />
           </div>
+          <div>
+            <label className="block text-[10px] font-bold text-[#442F2A]">CONSTELLATION：</label>
+            <input
+              type="text"
+              value={character.constellation || ''}
+              placeholder="雙子座 ♊"
+              onChange={(e) => onUpdate({ ...character, constellation: e.target.value })}
+              className="w-full bg-white border border-[#442F2A]/40 rounded p-1 text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 2.5 專屬詳細檔案 (金句、基本資料清單、外貌、性格剖析、人際關係、冷知識) */}
+      <div className="p-2.5 bg-[#FFF8F5] rounded border border-[#442F2A]/30 space-y-3">
+        <span className="font-bold text-[11px] text-[#442F2A] flex items-center gap-1">
+          <FileText className="w-3 h-3 text-[#C89398]" />
+          <span>詳細檔案設定 (金句・基本資料・外貌・性格剖析・人際・冷知識)</span>
+        </span>
+
+        {/* 1. 一句引用金句 */}
+        <div>
+          <label className="block text-[10px] font-bold text-[#442F2A]">
+            一句引用金句 (Quote - 前方有棕色豎線)：
+          </label>
+          <textarea
+            rows={2}
+            value={character.quote || ''}
+            placeholder="請輸入一句引用金句..."
+            onChange={(e) => onUpdate({ ...character, quote: e.target.value })}
+            className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
+          />
         </div>
 
+        {/* 2. 基本資料清單 (高校３年現在) */}
+        <div className="p-2 bg-white rounded border border-[#442F2A]/20 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#442F2A] flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-[#C89398]" />
+              <span>基本資料清單 (高校３年現在)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const existing = character.basicInfoList || (charKey === 'characterA' ? [
+                  '烏野高校 ３年４組',
+                  '男子排球部副主將',
+                  '隊中位置｜舉球員（Ｓ）',
+                  '身高｜１７４.３ｃｍ',
+                  '體重｜６３.５ｋｇ',
+                  '誕生日｜６月１３日',
+                  '好物｜激辛麻婆豆腐',
+                  '最近的煩惱｜有很多後輩的個頭都比自己高',
+                ] : [
+                  '烏野高校 ３年４組',
+                  '男子排球部經理兼攝影',
+                  '身高｜１６０ｃｍ',
+                  '體重｜秘密 (約４５ｋｇ)',
+                  '誕生日｜４月１２日',
+                  '好物｜草莓大福・水果千層',
+                  '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
+                ]);
+                onUpdate({
+                  ...character,
+                  basicInfoList: [...existing, '新項目｜內容'],
+                });
+              }}
+              className="text-[9px] bg-[#442F2A] text-white px-2 py-0.5 rounded font-bold hover:bg-[#C89398] transition flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-2.5 h-2.5" />
+              <span>新增一項</span>
+            </button>
+          </div>
+          <p className="text-[9px] text-[#442F2A]/70 leading-normal">
+            提示：有小標題請使用全形「｜」或半形「|」隔開（例：隊中位置｜舉球員（Ｓ））；無小標題直接填寫即可（例：烏野高校 ３年４組）。
+          </p>
+
+          <div className="space-y-1.5">
+            {(
+              character.basicInfoList ||
+              (charKey === 'characterA'
+                ? [
+                    '烏野高校 ３年４組',
+                    '男子排球部副主將',
+                    '隊中位置｜舉球員（Ｓ）',
+                    '身高｜１７４.３ｃｍ',
+                    '體重｜６３.５ｋｇ',
+                    '誕生日｜６月１３日',
+                    '好物｜激辛麻婆豆腐',
+                    '最近的煩惱｜有很多後輩的個頭都比自己高',
+                  ]
+                : [
+                    '烏野高校 ３年４組',
+                    '男子排球部經理兼攝影',
+                    '身高｜１６０ｃｍ',
+                    '體重｜秘密 (約４５ｋｇ)',
+                    '誕生日｜４月１２日',
+                    '好物｜草莓大福・水果千層',
+                    '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
+                  ])
+            ).map((item, idx) => (
+              <div key={idx} className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => {
+                    const current = [
+                      ...(character.basicInfoList ||
+                        (charKey === 'characterA'
+                          ? [
+                              '烏野高校 ３年４組',
+                              '男子排球部副主將',
+                              '隊中位置｜舉球員（Ｓ）',
+                              '身高｜１７４.３ｃｍ',
+                              '體重｜６３.５ｋｇ',
+                              '誕生日｜６月１３日',
+                              '好物｜激辛麻婆豆腐',
+                              '最近的煩惱｜有很多後輩的個頭都比自己高',
+                            ]
+                          : [
+                              '烏野高校 ３年４組',
+                              '男子排球部經理兼攝影',
+                              '身高｜１６０ｃｍ',
+                              '體重｜秘密 (約４５ｋｇ)',
+                              '誕生日｜４月１２日',
+                              '好物｜草莓大福・水果千層',
+                              '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
+                            ])),
+                    ];
+                    current[idx] = e.target.value;
+                    onUpdate({ ...character, basicInfoList: current });
+                  }}
+                  className="flex-1 bg-[#FFF8F5] border border-[#442F2A]/30 rounded px-1.5 py-0.5 text-xs font-normal text-[#442F2A]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = [
+                      ...(character.basicInfoList ||
+                        (charKey === 'characterA'
+                          ? [
+                              '烏野高校 ３年４組',
+                              '男子排球部副主將',
+                              '隊中位置｜舉球員（Ｓ）',
+                              '身高｜１７４.３ｃｍ',
+                              '體重｜６３.５ｋｇ',
+                              '誕生日｜６月１３日',
+                              '好物｜激辛麻婆豆腐',
+                              '最近的煩惱｜有很多後輩的個頭都比自己高',
+                            ]
+                          : [
+                              '烏野高校 ３年４組',
+                              '男子排球部經理兼攝影',
+                              '身高｜１６０ｃｍ',
+                              '體重｜秘密 (約４５ｋｇ)',
+                              '誕生日｜４月１２日',
+                              '好物｜草莓大福・水果千層',
+                              '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
+                            ])),
+                    ];
+                    current.splice(idx, 1);
+                    onUpdate({ ...character, basicInfoList: current });
+                  }}
+                  className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                  title="刪除"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. 外貌描述 */}
         <div>
-          <label className="block text-[10px] font-bold text-[#442F2A]">CONSTELLATION：</label>
-          <input
-            type="text"
-            value={character.constellation || ''}
-            placeholder="雙子座 ♊"
-            onChange={(e) => onUpdate({ ...character, constellation: e.target.value })}
-            className="w-full bg-white border border-[#442F2A]/40 rounded p-1 text-xs"
+          <label className="block text-[10px] font-bold text-[#442F2A]">外貌描述 (Appearance)：</label>
+          <textarea
+            rows={2}
+            value={character.appearance || ''}
+            placeholder="請輸入外貌描述（髮型、五官特徵、身材、穿搭等）..."
+            onChange={(e) => onUpdate({ ...character, appearance: e.target.value })}
+            className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
           />
+        </div>
+
+        {/* 4. 性格剖析 (多個小段落與小標題，可自由新增) */}
+        <div className="p-2 bg-white rounded border border-[#442F2A]/20 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#442F2A] flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-[#C89398]" />
+              <span>性格剖析 (多個小段落與小標題)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const current = character.personalityParagraphs && character.personalityParagraphs.length > 0
+                  ? [...character.personalityParagraphs]
+                  : [
+                      {
+                        id: 'p1',
+                        title: charKey === 'characterA' ? '爽朗溫和的外表與定海神針' : '夏日午後般溫暖燦爛的小太陽',
+                        content: character.personalityAnalysis || character.personality || '',
+                      },
+                    ];
+                onUpdate({
+                  ...character,
+                  personalityParagraphs: [
+                    ...current,
+                    {
+                      id: `para-${Date.now()}`,
+                      title: '新小標題',
+                      content: '',
+                    },
+                  ],
+                });
+              }}
+              className="text-[9px] bg-[#442F2A] text-white px-2 py-0.5 rounded font-bold hover:bg-[#C89398] transition flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-2.5 h-2.5" />
+              <span>新增小段落</span>
+            </button>
+          </div>
+
+          <div className="space-y-2.5">
+            {(character.personalityParagraphs && character.personalityParagraphs.length > 0
+              ? character.personalityParagraphs
+              : [
+                  {
+                    id: 'p1',
+                    title: charKey === 'characterA' ? '爽朗溫和的外表與定海神針' : '夏日午後般溫暖燦爛的小太陽',
+                    content: character.personalityAnalysis || character.personality || '',
+                  },
+                ]
+            ).map((para, pIdx) => (
+              <div
+                key={para.id || pIdx}
+                className="p-2 bg-[#FFF8F5] rounded border border-[#442F2A]/20 space-y-1.5"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-[#C89398] shrink-0">小標題：</span>
+                  <input
+                    type="text"
+                    value={para.title}
+                    placeholder="例：爽朗溫和的外表與定海神針"
+                    onChange={(e) => {
+                      const list = [
+                        ...(character.personalityParagraphs || [
+                          {
+                            id: 'p1',
+                            title: charKey === 'characterA' ? '爽朗溫和的外表與定海神針' : '夏日午後般溫暖燦爛的小太陽',
+                            content: character.personalityAnalysis || character.personality || '',
+                          },
+                        ]),
+                      ];
+                      list[pIdx] = { ...list[pIdx], title: e.target.value };
+                      onUpdate({ ...character, personalityParagraphs: list });
+                    }}
+                    className="flex-1 bg-white border border-[#442F2A]/30 rounded px-1.5 py-0.5 text-xs font-bold text-[#442F2A]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const list = [
+                        ...(character.personalityParagraphs || [
+                          {
+                            id: 'p1',
+                            title: charKey === 'characterA' ? '爽朗溫和的外表與定海神針' : '夏日午後般溫暖燦爛的小太陽',
+                            content: character.personalityAnalysis || character.personality || '',
+                          },
+                        ]),
+                      ];
+                      list.splice(pIdx, 1);
+                      onUpdate({ ...character, personalityParagraphs: list });
+                    }}
+                    className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
+                    title="刪除段落"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div>
+                  <textarea
+                    rows={2}
+                    value={para.content}
+                    placeholder="請輸入段落內容..."
+                    onChange={(e) => {
+                      const list = [
+                        ...(character.personalityParagraphs || [
+                          {
+                            id: 'p1',
+                            title: charKey === 'characterA' ? '爽朗溫和的外表與定海神針' : '夏日午後般溫暖燦爛的小太陽',
+                            content: character.personalityAnalysis || character.personality || '',
+                          },
+                        ]),
+                      ];
+                      list[pIdx] = { ...list[pIdx], content: e.target.value };
+                      onUpdate({ ...character, personalityParagraphs: list });
+                    }}
+                    className="w-full bg-white border border-[#442F2A]/30 rounded p-1.5 text-xs leading-relaxed"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. 人際關係 */}
+        <div>
+          <label className="block text-[10px] font-bold text-[#442F2A]">人際關係 (Relationships)：</label>
+          <textarea
+            rows={3}
+            value={character.relationships || ''}
+            placeholder="請輸入人際關係（支援按 Enter 換行）..."
+            onChange={(e) => onUpdate({ ...character, relationships: e.target.value })}
+            className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
+          />
+        </div>
+
+        {/* 6. 冷知識 (含對方的吐槽小視窗，可自由新增) */}
+        <div className="p-2 bg-white rounded border border-[#442F2A]/20 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#442F2A] flex items-center gap-1">
+              <MessageSquare className="w-3 h-3 text-[#C89398]" />
+              <span>冷知識列表 (含對方的代表色愛心吐槽)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const current = character.triviaItems && character.triviaItems.length > 0
+                  ? [...character.triviaItems]
+                  : [];
+                onUpdate({
+                  ...character,
+                  triviaItems: [
+                    ...current,
+                    {
+                      id: `trivia-${Date.now()}`,
+                      fact: '',
+                      comment: '',
+                      commenterName: charKey === 'characterA' ? '七緒' : '孝支',
+                    },
+                  ],
+                });
+              }}
+              className="text-[9px] bg-[#442F2A] text-white px-2 py-0.5 rounded font-bold hover:bg-[#C89398] transition flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-2.5 h-2.5" />
+              <span>新增冷知識</span>
+            </button>
+          </div>
+          <p className="text-[9px] text-[#442F2A]/70 leading-normal">
+            提示：對方的吐槽為選填。填寫後會以對方的代表色像素愛心開頭直接呈現吐槽，愛心與內文不分行且字體同色；留空則僅單純展示冷知識。
+          </p>
+
+          <div className="space-y-2.5">
+            {(character.triviaItems && character.triviaItems.length > 0
+              ? character.triviaItems
+              : []
+            ).map((item, tIdx) => (
+              <div
+                key={item.id || tIdx}
+                className="p-2 bg-[#FFF8F5] rounded border border-[#442F2A]/20 space-y-1.5"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-bold text-[#442F2A] mb-0.5">
+                      冷知識內容 (Fact)：
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={item.fact}
+                      placeholder="例：無辣不歡，極度熱愛超辣麻婆豆腐..."
+                      onChange={(e) => {
+                        const list = [...(character.triviaItems || [])];
+                        list[tIdx] = { ...list[tIdx], fact: e.target.value };
+                        onUpdate({ ...character, triviaItems: list });
+                      }}
+                      className="w-full bg-white border border-[#442F2A]/30 rounded p-1.5 text-xs leading-relaxed"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const list = [...(character.triviaItems || [])];
+                      list.splice(tIdx, 1);
+                      onUpdate({ ...character, triviaItems: list });
+                    }}
+                    className="text-red-500 hover:text-red-700 p-1 cursor-pointer mt-3"
+                    title="刪除"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="p-1.5 bg-white rounded border border-[#442F2A]/15 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold">
+                    <PixelHeart
+                      color={charKey === 'characterA' ? '#C89398' : '#442F2A'}
+                      className="w-2.5 h-2.5 shrink-0"
+                    />
+                    <span style={{ color: charKey === 'characterA' ? '#C89398' : '#442F2A' }}>
+                      {charKey === 'characterA' ? '七緒' : '孝支'}的吐槽 (選填)：
+                    </span>
+                    <span className="text-[#442F2A]/40 font-normal text-[8px]">
+                      (前綴代表色愛心直接吐槽，字體同色不分行)
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={item.comment || ''}
+                    placeholder={`輸入${charKey === 'characterA' ? '七緒' : '孝支'}的吐槽（留空則不顯示）...`}
+                    onChange={(e) => {
+                      const list = [...(character.triviaItems || [])];
+                      list[tIdx] = { ...list[tIdx], comment: e.target.value };
+                      onUpdate({ ...character, triviaItems: list });
+                    }}
+                    className="w-full bg-[#FFF8F5] border border-[#442F2A]/20 rounded p-1 text-xs text-[#442F2A]"
+                  />
+                </div>
+              </div>
+            ))}
+            {(!character.triviaItems || character.triviaItems.length === 0) && (
+              <div className="text-center py-2 text-xs text-[#442F2A]/50 bg-[#FFF8F5] rounded border border-dashed border-[#442F2A]/20">
+                尚未新增冷知識，點擊上方按鈕即可新增！
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

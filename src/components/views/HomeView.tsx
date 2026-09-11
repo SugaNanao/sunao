@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CoupleSiteData, ActiveTab } from '../../types';
 import { ChevronRight, Edit, Pencil, Save, AlertTriangle } from 'lucide-react';
 import { renderFormattedText } from '../../utils/textFormatter';
+import { CharacterOverviewCard } from '../CharacterOverviewCard';
 
 interface HomeViewProps {
   data: CoupleSiteData;
@@ -9,6 +10,7 @@ interface HomeViewProps {
   isEditMode: boolean;
   onEditSection: (section: string) => void;
   onUpdateSiteData?: (updater: (prev: CoupleSiteData) => CoupleSiteData) => void;
+  onNavigateToCharacter?: (char: 'CHAR_A' | 'CHAR_B') => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -17,6 +19,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   isEditMode,
   onEditSection,
   onUpdateSiteData,
+  onNavigateToCharacter,
 }) => {
   const [activeModal, setActiveModal] = useState<'notice' | 'memo' | null>(null);
   const [isEditingModal, setIsEditingModal] = useState<boolean>(false);
@@ -313,6 +316,34 @@ export const HomeView: React.FC<HomeViewProps> = ({
               to be continue...
             </span>
           </div>
+        </div>
+      </section>
+
+      {/* Character Overview Cards (橫向並排於 ALBUM 上方) */}
+      <section className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5 items-stretch">
+          <CharacterOverviewCard
+            character={data.characterA}
+            isA={true}
+            onImageClick={() => {
+              if (onNavigateToCharacter) {
+                onNavigateToCharacter('CHAR_A');
+              } else {
+                onNavigateTab('CHARACTER');
+              }
+            }}
+          />
+          <CharacterOverviewCard
+            character={data.characterB}
+            isA={false}
+            onImageClick={() => {
+              if (onNavigateToCharacter) {
+                onNavigateToCharacter('CHAR_B');
+              } else {
+                onNavigateTab('CHARACTER');
+              }
+            }}
+          />
         </div>
       </section>
 

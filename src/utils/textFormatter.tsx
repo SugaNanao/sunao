@@ -73,6 +73,22 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       );
     }
 
+    if (part.includes('✦')) {
+      const subParts = part.split('✦');
+      return (
+        <React.Fragment key={index}>
+          {subParts.map((sub, sIdx) => (
+            <React.Fragment key={sIdx}>
+              {sub}
+              {sIdx < subParts.length - 1 && (
+                <span className="text-[#C89398] font-bold">✦</span>
+              )}
+            </React.Fragment>
+          ))}
+        </React.Fragment>
+      );
+    }
+
     return <React.Fragment key={index}>{part}</React.Fragment>;
   });
 };
