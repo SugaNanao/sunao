@@ -402,8 +402,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
               {/* One Sentence Note */}
               <div className="bg-white p-3 rounded-lg border border-[#442F2A]/20 shadow-xs">
-                <p className="text-xs text-[#442F2A] leading-relaxed italic">
-                  「{floatingDate.note}」
+                <p className="text-xs text-[#442F2A] leading-relaxed font-normal">
+                  "{floatingDate.note ? floatingDate.note.replace(/[「」]/g, '"').replace(/^"+/, '').replace(/"+$/, '') : ''}"
                 </p>
               </div>
 

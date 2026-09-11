@@ -103,7 +103,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           {data.characterA.name} × {data.characterB.name}
         </h2>
         <p className="text-[11px] text-[#442F2A]/70 font-pixel">
-          「{data.characterA.romajiName || 'Koshi'} x {data.characterB.romajiName || 'Nanao'}」
+          「{data.siteSubtitle || 'Koshi x Nanao'}」
         </p>
       </div>
 
