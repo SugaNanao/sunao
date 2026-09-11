@@ -2,22 +2,58 @@ import React from 'react';
 
 /**
  * Parses and formats text with support for:
- * 1. Bold: **text** or <b>text</b> or <strong>text</strong>
- * 2. Italic: *text* or _text_ or <i>text</i> or <em>text</em>
- * 3. Preserves newlines and spaces
+ * 1. Strikethrough: ~~text~~ or ~text~ or <s>text</s> or <del>text</del> or <strike>text</strike>
+ * 2. Bold: **text** or <b>text</b> or <strong>text</strong>
+ * 3. Italic: *text* or _text_ or <i>text</i> or <em>text</em>
+ * 4. Sparkle: ✦ (rendered in accent color #C89398)
+ * 5. Preserves newlines and spaces
  */
 export const renderFormattedText = (text: string | undefined | null): React.ReactNode => {
   if (!text) return null;
 
   // Tokenize formatted segments
-  const tokenRegex = /(<b>[\s\S]*?<\/b>|<strong>[\s\S]*?<\/strong>|<i>[\s\S]*?<\/i>|<em>[\s\S]*?<\/em>|\*\*[^*]+?\*\*|\*[^*]+?\*|_[^_]+?_)/g;
+  const tokenRegex = /(<s>[\s\S]*?<\/s>|<del>[\s\S]*?<\/del>|<strike>[\s\S]*?<\/strike>|~~[\s\S]+?~~|~[^\s~][^~\n]*?[^\s~]~|~[^\s~]~|<b>[\s\S]*?<\/b>|<strong>[\s\S]*?<\/strong>|\*\*[^*]+?\*\*|<i>[\s\S]*?<\/i>|<em>[\s\S]*?<\/em>|\*[^*]+?\*|_[^_]+?_)/g;
 
   const parts = text.split(tokenRegex);
 
   return parts.map((part, index) => {
     if (!part) return null;
 
-    // 1. Bold HTML
+    // 1. Strikethrough HTML <s>, <del>, <strike>
+    if (
+      (part.startsWith('<s>') && part.endsWith('</s>')) ||
+      (part.startsWith('<del>') && part.endsWith('</del>')) ||
+      (part.startsWith('<strike>') && part.endsWith('</strike>'))
+    ) {
+      const inner = part.replace(/^<(s|del|strike)>/, '').replace(/<\/(s|del|strike)>$/, '');
+      return (
+        <del key={index} className="line-through decoration-[#442F2A]/60 opacity-80">
+          {renderFormattedText(inner)}
+        </del>
+      );
+    }
+
+    // 2. Strikethrough Markdown ~~text~~
+    if (part.startsWith('~~') && part.endsWith('~~') && part.length >= 4) {
+      const inner = part.slice(2, -2);
+      return (
+        <del key={index} className="line-through decoration-[#442F2A]/60 opacity-80">
+          {renderFormattedText(inner)}
+        </del>
+      );
+    }
+
+    // 3. Strikethrough Markdown single ~text~
+    if (part.startsWith('~') && part.endsWith('~') && !part.startsWith('~~') && part.length >= 3) {
+      const inner = part.slice(1, -1);
+      return (
+        <del key={index} className="line-through decoration-[#442F2A]/60 opacity-80">
+          {renderFormattedText(inner)}
+        </del>
+      );
+    }
+
+    // 4. Bold HTML
     if (
       (part.startsWith('<b>') && part.endsWith('</b>')) ||
       (part.startsWith('<strong>') && part.endsWith('</strong>'))
@@ -25,22 +61,22 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.replace(/^<(b|strong)>/, '').replace(/<\/(b|strong)>$/, '');
       return (
         <strong key={index} className="font-bold">
-          {inner}
+          {renderFormattedText(inner)}
         </strong>
       );
     }
 
-    // 2. Bold Markdown **text**
+    // 5. Bold Markdown **text**
     if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
       const inner = part.slice(2, -2);
       return (
         <strong key={index} className="font-bold">
-          {inner}
+          {renderFormattedText(inner)}
         </strong>
       );
     }
 
-    // 3. Italic HTML <i> or <em>
+    // 6. Italic HTML <i> or <em>
     if (
       (part.startsWith('<i>') && part.endsWith('</i>')) ||
       (part.startsWith('<em>') && part.endsWith('</em>'))
@@ -48,27 +84,27 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.replace(/^<(i|em)>/, '').replace(/<\/(i|em)>$/, '');
       return (
         <em key={index} className="italic inline-block font-normal">
-          {inner}
+          {renderFormattedText(inner)}
         </em>
       );
     }
 
-    // 4. Italic Markdown *text*
+    // 7. Italic Markdown *text*
     if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
       const inner = part.slice(1, -1);
       return (
         <em key={index} className="italic inline-block font-normal">
-          {inner}
+          {renderFormattedText(inner)}
         </em>
       );
     }
 
-    // 5. Italic Markdown _text_
+    // 8. Italic Markdown _text_
     if (part.startsWith('_') && part.endsWith('_') && part.length >= 2) {
       const inner = part.slice(1, -1);
       return (
         <em key={index} className="italic inline-block font-normal">
-          {inner}
+          {renderFormattedText(inner)}
         </em>
       );
     }

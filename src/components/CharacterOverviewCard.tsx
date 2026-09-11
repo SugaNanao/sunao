@@ -1,6 +1,7 @@
 import React from 'react';
 import { Character } from '../types';
 import { PixelHeart } from './PixelHeart';
+import { renderFormattedText } from '../utils/textFormatter';
 
 interface CharacterOverviewCardProps {
   character: Character;
@@ -215,7 +216,7 @@ export const CharacterOverviewCard: React.FC<CharacterOverviewCardProps> = ({
             </div>
             <div className="text-xs text-[#442F2A] leading-[1.65] whitespace-pre-line">
               {sec.content && sec.content.trim() ? (
-                sec.content
+                renderFormattedText(sec.content)
               ) : (
                 <div className="inline-block bg-[#FFF8F5] border border-[#442F2A] text-[#442F2A] px-2.5 py-0.5 rounded text-[10px] font-pixel font-bold">
                   ［ 敬請期待 ］

@@ -184,7 +184,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                     </span>
                     <span className="text-[#442F2A]/35 shrink-0 select-none">｜</span>
                     <span className="font-normal text-[#442F2A] flex-1 leading-relaxed">
-                      {val}
+                      {renderFormattedText(val)}
                     </span>
                   </div>
                 );
@@ -199,7 +199,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#442F2A] shrink-0" />
                   <span className="font-normal text-[#442F2A] flex-1 leading-relaxed">
-                    {cleanItem}
+                    {renderFormattedText(cleanItem)}
                   </span>
                 </div>
               );
@@ -320,7 +320,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                             className="text-[11px] sm:text-xs font-normal leading-relaxed break-words block"
                             style={{ color: commenterColor }}
                           >
-                            {tItem.comment}
+                            {renderFormattedText(tItem.comment)}
                           </span>
                         </div>
                       )}
@@ -491,7 +491,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                           </div>
                           <div className="text-xs text-[#442F2A] leading-relaxed whitespace-pre-line">
                             {item.charAValue && item.charAValue.trim() ? (
-                              item.charAValue
+                              renderFormattedText(item.charAValue)
                             ) : (
                               <div className="inline-block bg-[#FFF8F5] border-2 border-[#442F2A] text-[#442F2A] px-3 py-1 rounded text-xs font-pixel font-bold">
                                 ［ 敬請期待 ］
@@ -505,7 +505,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                           <div className="bg-[#442F2A]/5 p-2 rounded border border-[#442F2A]/15 text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
                             <span className="font-bold text-[#C89398] mr-1">✦</span>
                             <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
-                            <span>{noteA}</span>
+                            <span>{renderFormattedText(noteA)}</span>
                           </div>
                         ) : null}
                       </div>
@@ -519,7 +519,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                           </div>
                           <div className="text-xs text-[#442F2A] leading-relaxed whitespace-pre-line">
                             {item.charBValue && item.charBValue.trim() ? (
-                              item.charBValue
+                              renderFormattedText(item.charBValue)
                             ) : (
                               <div className="inline-block bg-[#FFF8F5] border-2 border-[#442F2A] text-[#442F2A] px-3 py-1 rounded text-xs font-pixel font-bold">
                                 ［ 敬請期待 ］
@@ -533,7 +533,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                           <div className="bg-[#C89398]/15 p-2 rounded border border-[#C89398]/30 text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
                             <span className="font-bold text-[#C89398] mr-1">✦</span>
                             <span className="font-bold text-[#9D5A64] mr-1">解讀：</span>
-                            <span>{noteB}</span>
+                            <span>{renderFormattedText(noteB)}</span>
                           </div>
                         ) : null}
                       </div>
@@ -547,7 +547,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                               <span>菅緒</span>
                             </div>
                             <div className="text-xs text-[#442F2A] leading-relaxed whitespace-pre-line font-medium">
-                              {item.sugaNanaValue}
+                              {renderFormattedText(item.sugaNanaValue)}
                             </div>
                           </div>
 
@@ -556,7 +556,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                             <div className="bg-[#E0BAC7]/25 p-2 rounded border border-[#E0BAC7] text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
                               <span className="font-bold text-[#C89398] mr-1">✦</span>
                               <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
-                              <span>{noteSugaNana}</span>
+                              <span>{renderFormattedText(noteSugaNana)}</span>
                             </div>
                           ) : null}
                         </div>

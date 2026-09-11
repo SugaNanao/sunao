@@ -265,6 +265,20 @@ export const EditModal: React.FC<EditModalProps> = ({
                       const quote = formData.introQuote || '';
                       setFormData({
                         ...formData,
+                        introQuote: quote ? `${quote} ~~劃掉文字~~` : '~~劃掉文字~~',
+                      });
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/40 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold flex items-center gap-1 line-through"
+                  >
+                    <span>S</span>
+                    <span className="no-underline">插入刪除線 (~~文字~~)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const quote = formData.introQuote || '';
+                      setFormData({
+                        ...formData,
                         introQuote: quote ? `${quote} *斜體文字*` : '*斜體文字*',
                       });
                     }}
@@ -283,17 +297,31 @@ export const EditModal: React.FC<EditModalProps> = ({
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-bold text-[#442F2A] block">首頁完整介紹 (Intro Description)：</label>
                   <span className="text-[10px] text-[#442F2A]/70">
-                    可直接按 Enter 換行 ｜ 斜體前後加 * 或 _
+                    可直接按 Enter 換行 ｜ 支援刪除線 ~~文字~~ 與斜體 *文字*
                   </span>
                 </div>
                 <textarea
                   rows={3}
                   value={formData.introDescription}
                   onChange={(e) => setFormData({ ...formData, introDescription: e.target.value })}
-                  placeholder="可在此輸入內文，支援按 Enter 換行與 *斜體語法*"
+                  placeholder="可在此輸入內文，支援按 Enter 換行、~~刪除線~~ 與 *斜體語法*"
                   className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs leading-relaxed"
                 />
                 <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const desc = formData.introDescription || '';
+                      setFormData({
+                        ...formData,
+                        introDescription: desc ? `${desc} ~~劃掉文字~~` : '~~劃掉文字~~',
+                      });
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/40 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold flex items-center gap-1 line-through"
+                  >
+                    <span>S</span>
+                    <span className="no-underline">插入刪除線 (~~文字~~)</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

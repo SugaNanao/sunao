@@ -181,15 +181,107 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
           <span>詳細檔案設定 (金句・基本資料・外貌・性格剖析・人際・冷知識)</span>
         </span>
 
+        {/* 文字排版小提示（刪除線、粗體、斜體） */}
+        <div className="bg-white p-2.5 rounded-lg border border-[#442F2A]/20 space-y-1.5 text-xs">
+          <div className="font-bold text-[11px] text-[#442F2A] flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-[#C89398]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>內文排版語法支援（基本資料、外貌、性格、人際、冷知識皆通用）</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px] text-[#442F2A]/85 leading-normal">
+            <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/15 flex items-center justify-between">
+              <span>
+                <strong className="line-through">刪除線</strong>：在字前後加 <code className="text-[#9D5A64] font-bold font-mono">~~</code>
+              </span>
+              <code className="text-[#9D5A64] bg-white px-1.5 py-0.5 rounded border border-[#442F2A]/10 font-bold">
+                ~~劃掉文字~~
+              </code>
+            </div>
+            <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/15 flex items-center justify-between">
+              <span>
+                <strong>粗體</strong>：在字前後加 <code className="text-[#9D5A64] font-bold font-mono">**</code>
+              </span>
+              <code className="text-[#9D5A64] bg-white px-1.5 py-0.5 rounded border border-[#442F2A]/10 font-bold">
+                **重點粗體**
+              </code>
+            </div>
+            <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/15 flex items-center justify-between">
+              <span>
+                <em className="italic">斜體</em>：在字前後加 <code className="text-[#9D5A64] font-bold font-mono">*</code>
+              </span>
+              <code className="text-[#9D5A64] bg-white px-1.5 py-0.5 rounded border border-[#442F2A]/10 font-bold">
+                *文藝斜體*
+              </code>
+            </div>
+            <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/15 flex items-center justify-between">
+              <span>
+                <span>粉色星芒</span>：自動高亮星星
+              </span>
+              <code className="text-[#C89398] font-bold bg-white px-1.5 py-0.5 rounded border border-[#442F2A]/10">
+                ✦
+              </code>
+            </div>
+          </div>
+        </div>
+
         {/* 1. 一句引用金句 */}
         <div>
-          <label className="block text-[10px] font-bold text-[#442F2A]">
-            一句引用金句 (Quote - 前方有棕色豎線)：
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-[10px] font-bold text-[#442F2A]">
+              一句引用金句 (Quote - 前方有棕色豎線)：
+            </label>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.quote || '';
+                  onUpdate({ ...character, quote: val ? `${val} ~~刪除線~~` : '~~刪除線~~' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold line-through"
+                title="插入刪除線 (~~文字~~)"
+              >
+                S
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.quote || '';
+                  onUpdate({ ...character, quote: val ? `${val} **粗體**` : '**粗體**' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                title="插入粗體 (**文字**)"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.quote || '';
+                  onUpdate({ ...character, quote: val ? `${val} *斜體*` : '*斜體*' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold italic"
+                title="插入斜體 (*文字*)"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.quote || '';
+                  onUpdate({ ...character, quote: val ? `${val}✦` : '✦' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#C89398] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                title="插入星芒 (✦)"
+              >
+                ✦
+              </button>
+            </div>
+          </div>
           <textarea
             rows={2}
             value={character.quote || ''}
-            placeholder="請輸入一句引用金句..."
+            placeholder="請輸入一句引用金句...（可點上方按鈕或手動輸入 ~~刪除線~~）"
             onChange={(e) => onUpdate({ ...character, quote: e.target.value })}
             className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
           />
@@ -235,7 +327,7 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
             </button>
           </div>
           <p className="text-[9px] text-[#442F2A]/70 leading-normal">
-            提示：有小標題請使用全形「｜」或半形「|」隔開（例：隊中位置｜舉球員（Ｓ））；無小標題直接填寫即可（例：烏野高校 ３年４組）。
+            提示：有小標題請使用「｜」隔開；想加刪除線請在文字兩側加「~~」（例：<code className="text-[#9D5A64]">體重｜秘密 ~~約45kg~~</code>），點右側 <span className="line-through font-bold">S</span> 按鈕可快速加入刪除線。
           </p>
 
           <div className="space-y-1.5">
@@ -321,6 +413,41 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
                               '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
                             ])),
                     ];
+                    const val = current[idx] || '';
+                    current[idx] = val ? `${val} ~~刪除文字~~` : '項目｜~~刪除文字~~';
+                    onUpdate({ ...character, basicInfoList: current });
+                  }}
+                  className="px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold text-[10px] line-through shrink-0"
+                  title="插入刪除線語法 (~~文字~~)"
+                >
+                  S
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = [
+                      ...(character.basicInfoList ||
+                        (charKey === 'characterA'
+                          ? [
+                              '烏野高校 ３年４組',
+                              '男子排球部副主將',
+                              '隊中位置｜舉球員（Ｓ）',
+                              '身高｜１７４.３ｃｍ',
+                              '體重｜６３.５ｋｇ',
+                              '誕生日｜６月１３日',
+                              '好物｜激辛麻婆豆腐',
+                              '最近的煩惱｜有很多後輩的個頭都比自己高',
+                            ]
+                          : [
+                              '烏野高校 ３年４組',
+                              '男子排球部經理兼攝影',
+                              '身高｜１６０ｃｍ',
+                              '體重｜秘密 (約４５ｋｇ)',
+                              '誕生日｜４月１２日',
+                              '好物｜草莓大福・水果千層',
+                              '最近的煩惱｜某人經常趁自己專注拍照時偷戳臉頰',
+                            ])),
+                    ];
                     current.splice(idx, 1);
                     onUpdate({ ...character, basicInfoList: current });
                   }}
@@ -336,11 +463,59 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
 
         {/* 3. 外貌描述 */}
         <div>
-          <label className="block text-[10px] font-bold text-[#442F2A]">外貌描述 (Appearance)：</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-[10px] font-bold text-[#442F2A]">外貌描述 (Appearance)：</label>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.appearance || '';
+                  onUpdate({ ...character, appearance: val ? `${val} ~~刪除文字~~` : '~~刪除文字~~' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold line-through"
+                title="插入刪除線 (~~文字~~)"
+              >
+                S
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.appearance || '';
+                  onUpdate({ ...character, appearance: val ? `${val} **粗體**` : '**粗體**' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                title="插入粗體 (**文字**)"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.appearance || '';
+                  onUpdate({ ...character, appearance: val ? `${val} *斜體*` : '*斜體*' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold italic"
+                title="插入斜體 (*文字*)"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const val = character.appearance || '';
+                  onUpdate({ ...character, appearance: val ? `${val}✦` : '✦' });
+                }}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#C89398] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                title="插入星芒 (✦)"
+              >
+                ✦
+              </button>
+            </div>
+          </div>
           <textarea
             rows={2}
             value={character.appearance || ''}
-            placeholder="請輸入外貌描述（髮型、五官特徵、身材、穿搭等）..."
+            placeholder="請輸入外貌描述（髮型、五官特徵、身材、穿搭等，支援 ~~刪除線~~）..."
             onChange={(e) => onUpdate({ ...character, appearance: e.target.value })}
             className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
           />
