@@ -75,7 +75,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
         <div className="bg-[#442F2A] text-[#FFF8F5] px-3 py-1.5 flex items-center justify-between font-pixel text-xs tracking-wider">
           <div className="flex items-center gap-2">
             <PixelHeart color="#C89398" size={16} />
-            <span>SYSTEM_INITIALIZING.EXE</span>
+            <span>SUNAO.LOVE</span>
           </div>
           <div className="flex items-center gap-1.5 text-[11px]">
             <span className="w-4 h-4 bg-[#FFF8F5] text-[#442F2A] flex items-center justify-center font-bold leading-none">_</span>
@@ -93,7 +93,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
 
             {/* Top Left Badge */}
             <div className="absolute top-3 left-3 bg-[#FFF8F5] border border-[#442F2A] px-2 py-0.5 rounded text-[11px] font-pixel text-[#442F2A] shadow-xs">
-              ★ LOVE ARCHIVE OS
+              ★ 君の心を映す
             </div>
 
             {/* Top Right Mini Floating Pink Heart */}

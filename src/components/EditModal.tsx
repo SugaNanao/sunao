@@ -30,6 +30,7 @@ import {
   MessageSquare,
   FileText,
   Star,
+  Tag,
 } from 'lucide-react';
 import { exportDataAsJSON, resetCoupleData } from '../utils/storage';
 
@@ -52,6 +53,42 @@ export const EditModal: React.FC<EditModalProps> = ({
   const [profileViewMode, setProfileViewMode] = useState<'both' | 'a' | 'b'>('both');
   const [formData, setFormData] = useState<CoupleSiteData>(() => JSON.parse(JSON.stringify(data)));
   const [saveSuccessNotice, setSaveSuccessNotice] = useState(false);
+  const [newAlbumTagInput, setNewAlbumTagInput] = useState('');
+
+  // Collect all available album tags for editing
+  const allAvailableAlbumTags = React.useMemo(() => {
+    const baseTags = ['いつもの景色', '季節のしるし', 'ともに過ごした日々'];
+    const tagSet = new Set<string>(baseTags);
+    if (formData.albumCustomTags) {
+      formData.albumCustomTags.forEach((t) => {
+        const clean = t.replace(/^#/, '').trim();
+        if (clean) tagSet.add(clean);
+      });
+    }
+    formData.album.forEach((photo) => {
+      const clean = (photo.tag || '').replace(/^#/, '').trim();
+      if (clean && clean !== '記憶のかけら' && clean !== '全部') {
+        tagSet.add(clean);
+      }
+    });
+    return Array.from(tagSet);
+  }, [formData.album, formData.albumCustomTags]);
+
+  const handleAddNewAlbumTag = () => {
+    const clean = newAlbumTagInput.replace(/^#/, '').trim();
+    if (!clean) return;
+    const currentTags = formData.albumCustomTags
+      ? [...formData.albumCustomTags]
+      : ['いつもの景色', '季節のしるし', 'ともに過ごした日々'];
+    if (!currentTags.includes(clean)) {
+      currentTags.push(clean);
+    }
+    setFormData({
+      ...formData,
+      albumCustomTags: currentTags,
+    });
+    setNewAlbumTagInput('');
+  };
 
   React.useEffect(() => {
     setActiveSubTab(initialTab === 'anniversary' ? 'basic' : initialTab);
@@ -647,7 +684,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                   <input
                     type="text"
                     value={formData.coverTopStatus || ''}
-                    placeholder="CONNECTED TO DESKTOP // LOVE ARCHIVE OS"
+                    placeholder="CONNECTED TO DESKTOP // SUNAO"
                     onChange={(e) => setFormData({ ...formData, coverTopStatus: e.target.value })}
                     className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs"
                   />
@@ -1257,6 +1294,56 @@ export const EditModal: React.FC<EditModalProps> = ({
                 </button>
               </div>
 
+              {/* 照片分類 # 管理與自訂新增 */}
+              <div className="p-2.5 bg-[#FFF8F5] rounded border-2 border-[#442F2A] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#442F2A] flex items-center gap-1">
+                    <Tag className="w-3.5 h-3.5 text-[#C89398]" />
+                    <span>相片分類標籤 (#)：</span>
+                  </span>
+                  <span className="text-[10px] text-[#442F2A]/65 font-pixel">
+                    共 {allAvailableAlbumTags.length} 個分類
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {allAvailableAlbumTags.map((t) => (
+                    <span
+                      key={t}
+                      className="px-2 py-0.5 rounded text-[11px] bg-white border border-[#442F2A]/30 text-[#442F2A] font-pixel"
+                    >
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 items-center pt-0.5">
+                  <div className="flex-1 flex items-center bg-white border border-[#442F2A] rounded px-2 py-1">
+                    <span className="text-xs text-[#442F2A] font-bold">#</span>
+                    <input
+                      type="text"
+                      placeholder="自訂新增新的分類標籤名稱 (例如: 約會日常、夏祭)..."
+                      value={newAlbumTagInput}
+                      onChange={(e) => setNewAlbumTagInput(e.target.value.replace(/^#/, ''))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddNewAlbumTag();
+                        }
+                      }}
+                      className="w-full bg-transparent pl-1 text-xs outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddNewAlbumTag}
+                    className="pixel-btn px-3 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-xs font-bold cursor-pointer shrink-0"
+                  >
+                    + 新增分類
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {formData.album.map((photo, idx) => (
                   <div key={photo.id || idx} className="p-3 bg-white rounded border-2 border-[#442F2A] space-y-2">
@@ -1322,31 +1409,63 @@ export const EditModal: React.FC<EditModalProps> = ({
                       placeholder="相片標題"
                     />
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        value={photo.date}
-                        onChange={(e) => {
-                          const next = [...formData.album];
-                          next[idx].date = e.target.value;
-                          setFormData({ ...formData, album: next });
-                        }}
-                        className="w-full bg-[#FFF8F5] border border-[#442F2A]/40 rounded p-1 text-xs"
-                        placeholder="日期 (YYYY.MM.DD)"
-                      />
-                      <select
-                        value={(photo.tag || '').replace(/^#/, '') || 'いつもの景色'}
-                        onChange={(e) => {
-                          const next = [...formData.album];
-                          next[idx].tag = e.target.value;
-                          setFormData({ ...formData, album: next });
-                        }}
-                        className="w-full bg-[#FFF8F5] border border-[#442F2A]/40 rounded p-1 text-xs font-pixel"
-                      >
-                        <option value="いつもの景色">#いつもの景色</option>
-                        <option value="季節のしるし">#季節のしるし</option>
-                        <option value="ともに過ごした日々">#ともに過ごした日々</option>
-                      </select>
+                    <div className="space-y-1.5">
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={photo.date}
+                          onChange={(e) => {
+                            const next = [...formData.album];
+                            next[idx].date = e.target.value;
+                            setFormData({ ...formData, album: next });
+                          }}
+                          className="w-full bg-[#FFF8F5] border border-[#442F2A]/40 rounded p-1 text-xs"
+                          placeholder="日期 (YYYY.MM.DD)"
+                        />
+                        <select
+                          value={
+                            allAvailableAlbumTags.includes((photo.tag || '').replace(/^#/, ''))
+                              ? (photo.tag || '').replace(/^#/, '')
+                              : '__CUSTOM__'
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val !== '__CUSTOM__') {
+                              const next = [...formData.album];
+                              next[idx].tag = val;
+                              setFormData({ ...formData, album: next });
+                            }
+                          }}
+                          className="w-full bg-[#FFF8F5] border border-[#442F2A]/40 rounded p-1 text-xs font-pixel truncate"
+                        >
+                          {allAvailableAlbumTags.map((t) => (
+                            <option key={t} value={t}>
+                              #{t}
+                            </option>
+                          ))}
+                          <option value="__CUSTOM__">✏️ 自訂新分類...</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center bg-[#FFF8F5] border border-[#442F2A]/40 rounded px-1.5 py-0.5">
+                        <span className="text-[10px] text-[#442F2A]/70 font-bold mr-1 shrink-0">#分類：</span>
+                        <input
+                          type="text"
+                          value={(photo.tag || '').replace(/^#/, '')}
+                          placeholder="可直接輸入自訂分類標籤"
+                          onChange={(e) => {
+                            const clean = e.target.value.replace(/^#/, '');
+                            const next = [...formData.album];
+                            next[idx].tag = clean;
+                            const customTags = formData.albumCustomTags ? [...formData.albumCustomTags] : [];
+                            if (clean.trim() && !customTags.includes(clean.trim())) {
+                              customTags.push(clean.trim());
+                            }
+                            setFormData({ ...formData, album: next, albumCustomTags: customTags });
+                          }}
+                          className="w-full bg-transparent text-xs text-[#442F2A] outline-none"
+                        />
+                      </div>
                     </div>
 
                     <div>

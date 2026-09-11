@@ -20,13 +20,17 @@ export const CoverScreen: React.FC<CoverScreenProps> = ({ data, onEnter }) => {
       <div className="relative z-10 flex items-center justify-between">
         <div className="bg-[#FFF8F5]/90 border-2 border-[#442F2A] px-3 py-1.5 rounded text-xs font-pixel font-bold text-[#442F2A] shadow-sm flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{data.coverTopStatus || 'CONNECTED TO DESKTOP // LOVE ARCHIVE OS'}</span>
+          <span>
+            {data.coverTopStatus
+              ? data.coverTopStatus.replace(/LOVE ARCHIVE OS/gi, 'SUNAO').replace(/sunao/g, 'SUNAO')
+              : 'CONNECTED TO DESKTOP // SUNAO'}
+          </span>
         </div>
 
         {/* Top Right Mini Music Widget Icon */}
         <div className="bg-[#FFF8F5]/90 border-2 border-[#442F2A] px-3 py-1 rounded text-xs font-pixel text-[#442F2A] shadow-sm flex items-center gap-2">
           <Music className="w-3.5 h-3.5 text-[#442F2A]" />
-          <span>BGM: READY</span>
+          <span>BGM: 今、恋がはじまれ</span>
           <div className="flex items-end gap-0.5 h-3">
             <span className="w-1 bg-[#442F2A] h-2 animate-pulse" />
             <span className="w-1 bg-[#442F2A] h-3 animate-pulse delay-75" />

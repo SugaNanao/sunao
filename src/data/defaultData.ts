@@ -18,7 +18,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
   anniversaryNote: '相識於2024.02.22',
   coverTitle: 'OUR SPECIAL MEMORIES',
   coverPromptText: '點選任意區域即可進入主介面',
-  coverTopStatus: 'CONNECTED TO DESKTOP // LOVE ARCHIVE OS',
+  coverTopStatus: 'CONNECTED TO DESKTOP // SUNAO',
   coverNoteTitle: '菅原孝支 X 宮原七緒',
   coverWelcomeText: '歡迎來到我們的浪漫秘密基地',
   coverQuoteText: '存放和夢有關的一切。正在講述一對青梅竹馬從互不順眼到兩情相悅的故事。',
@@ -142,6 +142,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
         fact: '雖然常常故意逗七緒，但只要七緒眼眶稍微一泛紅，會比任何人都慌張地立刻舉雙手投降。',
       },
     ],
+    cornerImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' fill='none'%3E%3Cpath d='M35 55 C35 30, 85 30, 85 55 C85 85, 35 85, 35 55 Z' fill='%23FFF8F5' stroke='%23442F2A' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M30 42 L42 26 L48 40' fill='%23C89398' stroke='%23442F2A' stroke-width='2.5'/%3E%3Cpath d='M90 42 L78 26 L72 40' fill='%23C89398' stroke='%23442F2A' stroke-width='2.5'/%3E%3Ccircle cx='48' cy='52' r='3.5' fill='%23442F2A'/%3E%3Ccircle cx='72' cy='52' r='3.5' fill='%23442F2A'/%3E%3Cellipse cx='42' cy='58' rx='4' ry='2.5' fill='%23E0BAC7'/%3E%3Cellipse cx='78' cy='58' rx='4' ry='2.5' fill='%23E0BAC7'/%3E%3Cpath d='M56 58 Q60 62 64 58' stroke='%23442F2A' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3Cpath d='M95 70 L98 62 L106 66 L98 70 Z' fill='%23FFD166' stroke='%23442F2A' stroke-width='1.5'/%3E%3Crect x='38' y='82' width='44' height='16' rx='8' fill='%23442F2A'/%3E%3Ctext x='60' y='93' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='8' fill='%23FFF8F5'%3E✦ KOSHI ✦%3C/text%3E%3C/svg%3E",
   },
 
   characterB: {
@@ -253,6 +254,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
         commenterName: '孝支吐槽',
       },
     ],
+    cornerImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' fill='none'%3E%3Cpath d='M35 55 C35 30, 85 30, 85 55 C85 85, 35 85, 35 55 Z' fill='%23FFF8F5' stroke='%23442F2A' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M32 40 L44 24 L48 38' fill='%23E0BAC7' stroke='%23442F2A' stroke-width='2.5'/%3E%3Cpath d='M88 40 L76 24 L72 38' fill='%23E0BAC7' stroke='%23442F2A' stroke-width='2.5'/%3E%3Cpath d='M75 32 C82 32 86 36 84 42 C80 44 76 38 75 32 Z' fill='%23C89398' stroke='%23442F2A' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='52' r='3.5' fill='%23442F2A'/%3E%3Ccircle cx='72' cy='52' r='3.5' fill='%23442F2A'/%3E%3Cellipse cx='42' cy='58' rx='4' ry='2.5' fill='%23C89398'/%3E%3Cellipse cx='78' cy='58' rx='4' ry='2.5' fill='%23C89398'/%3E%3Cpath d='M56 58 Q60 62 64 58' stroke='%23442F2A' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3Cpath d='M18 68 L22 60 L28 64 L22 68 Z' fill='%23FFD166' stroke='%23442F2A' stroke-width='1.5'/%3E%3Crect x='38' y='82' width='44' height='16' rx='8' fill='%23C89398' stroke='%23442F2A' stroke-width='1.5'/%3E%3Ctext x='60' y='93' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='8' fill='%23FFF8F5'%3E♥ NANAO ♥%3C/text%3E%3C/svg%3E",
   },
 
   dialogues: [
@@ -325,6 +327,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     },
   ],
 
+  albumCustomTags: ['いつもの景色', '季節のしるし', 'ともに過ごした日々'],
   album: [
     {
       id: 'p1',

@@ -22,12 +22,31 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
   onEditSection,
   onAddPhoto,
 }) => {
-  const ALBUM_CATEGORIES = [
-    { key: '記憶のかけら', label: '記憶のかけら', isAll: true },
-    { key: 'いつもの景色', label: 'いつもの景色', isAll: false },
-    { key: '季節のしるし', label: '季節のしるし', isAll: false },
-    { key: 'ともに過ごした日々', label: 'ともに過ごした日々', isAll: false },
-  ];
+  // Collect all unique tags from preset, custom tags list, and existing photos
+  const availableTags = React.useMemo(() => {
+    const baseTags = ['いつもの景色', '季節のしるし', 'ともに過ごした日々'];
+    const tagSet = new Set<string>(baseTags);
+    if (data.albumCustomTags) {
+      data.albumCustomTags.forEach((t) => {
+        const clean = t.replace(/^#/, '').trim();
+        if (clean) tagSet.add(clean);
+      });
+    }
+    data.album.forEach((photo) => {
+      const clean = (photo.tag || '').replace(/^#/, '').trim();
+      if (clean && clean !== '記憶のかけら' && clean !== '全部') {
+        tagSet.add(clean);
+      }
+    });
+    return Array.from(tagSet);
+  }, [data.album, data.albumCustomTags]);
+
+  const albumCategories = React.useMemo(() => {
+    return [
+      { key: '記憶のかけら', label: '記憶のかけら', isAll: true },
+      ...availableTags.map((tag) => ({ key: tag, label: tag, isAll: false })),
+    ];
+  }, [availableTags]);
 
   const [selectedTag, setSelectedTag] = useState<string>('記憶のかけら');
   const [lightboxPhoto, setLightboxPhoto] = useState<AlbumPhoto | null>(null);
@@ -39,6 +58,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
   const [newPhotoDate, setNewPhotoDate] = useState(new Date().toISOString().slice(0, 10).replace(/-/g, '.'));
   const [newPhotoLocation, setNewPhotoLocation] = useState('');
   const [newPhotoTag, setNewPhotoTag] = useState<string>('いつもの景色');
+  const [customTagInput, setCustomTagInput] = useState('');
 
   // Filter photos based on selection
   const filteredPhotos = data.album.filter((photo) => {
@@ -51,14 +71,19 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
 
   const handleQuickAddPhoto = () => {
     if (!newPhotoUrl.trim()) return;
+    const finalTag = customTagInput.trim() || newPhotoTag.trim() || 'いつもの景色';
     const photo: AlbumPhoto = {
       id: 'p-' + Date.now(),
       url: newPhotoUrl.trim(),
       caption: newPhotoCaption.trim() || '甜蜜心動瞬間',
       date: newPhotoDate.trim() || '2026.01.01',
       location: newPhotoLocation.trim(),
-      tag: newPhotoTag,
+      tag: finalTag,
     };
+
+    if (data.albumCustomTags && !data.albumCustomTags.includes(finalTag)) {
+      data.albumCustomTags.push(finalTag);
+    }
 
     if (onAddPhoto) {
       onAddPhoto(photo);
@@ -69,6 +94,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
     setNewPhotoUrl('');
     setNewPhotoCaption('');
     setNewPhotoLocation('');
+    setCustomTagInput('');
     setIsAddingPhoto(false);
   };
 
@@ -120,9 +146,9 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
         </div>
       </div>
 
-      {/* Tag Filters: Strictly ONLY 4 tags */}
+      {/* Tag Filters: Dynamic tags including preset and custom tags */}
       <div className="flex items-center gap-2 flex-wrap">
-        {ALBUM_CATEGORIES.map((cat) => {
+        {albumCategories.map((cat) => {
           const isSelected = selectedTag === cat.key;
           const count = cat.isAll
             ? data.album.length
@@ -254,19 +280,23 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
                 </div>
               )}
 
-              {/* Tag Selection (Selectable chips & dropdown so no manual typing) */}
+              {/* Tag Selection & Custom Tag Creation */}
               <div>
                 <label className="font-bold block mb-1">
-                  選擇標籤 (Select Preset Tag - 免手打)：
+                  相片分類標籤 (可點選既有 # 標籤，亦可自訂輸入新增)：
                 </label>
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  {PRESET_PHOTO_TAGS.map((tag) => (
+                {/* 既有標籤快捷點選 */}
+                <div className="flex flex-wrap gap-1.5 mb-2 max-h-24 overflow-y-auto p-1 bg-white/60 rounded border border-[#442F2A]/20">
+                  {availableTags.map((tag) => (
                     <button
                       key={tag}
                       type="button"
-                      onClick={() => setNewPhotoTag(tag)}
-                      className={`p-2 rounded text-xs font-pixel font-bold border transition text-center cursor-pointer ${
-                        newPhotoTag === tag
+                      onClick={() => {
+                        setNewPhotoTag(tag);
+                        setCustomTagInput('');
+                      }}
+                      className={`px-2.5 py-1 rounded text-xs font-pixel font-bold border transition text-center cursor-pointer ${
+                        newPhotoTag === tag && !customTagInput.trim()
                           ? 'bg-[#442F2A] text-white border-[#442F2A] shadow-inner'
                           : 'bg-white text-[#442F2A] border-[#442F2A]/30 hover:bg-[#E0BAC7]/40'
                       }`}
@@ -275,17 +305,35 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
                     </button>
                   ))}
                 </div>
-                <select
-                  value={newPhotoTag}
-                  onChange={(e) => setNewPhotoTag(e.target.value)}
-                  className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs font-pixel"
-                >
-                  {PRESET_PHOTO_TAGS.map((tag) => (
-                    <option key={tag} value={tag}>
-                      #{tag}
-                    </option>
-                  ))}
-                </select>
+
+                {/* 自訂新標籤輸入 */}
+                <div className="flex items-center gap-1.5 bg-white border-2 border-[#442F2A] rounded p-1.5">
+                  <span className="font-bold text-[#442F2A] text-xs pl-1">#</span>
+                  <input
+                    type="text"
+                    placeholder="輸入自訂新標籤名稱 (例: 約會日常、夏祭煙火)"
+                    value={customTagInput}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/^#/, '');
+                      setCustomTagInput(val);
+                      if (val.trim()) {
+                        setNewPhotoTag(val.trim());
+                      }
+                    }}
+                    className="flex-1 bg-transparent text-xs text-[#442F2A] outline-none"
+                  />
+                  {customTagInput.trim() && (
+                    <span className="text-[10px] bg-[#E0BAC7] text-[#442F2A] px-2 py-0.5 rounded font-bold shrink-0">
+                      自訂新分類
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 text-[10px] text-[#442F2A]/70 flex items-center gap-1">
+                  <span>目前指定標籤：</span>
+                  <span className="font-bold text-[#9D5A64]">
+                    #{customTagInput.trim() || newPhotoTag || 'いつもの景色'}
+                  </span>
+                </div>
               </div>
 
               {/* Caption */}

@@ -132,8 +132,8 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
             </div>
           </div>
 
-          {/* 2 & 3. 姓名與引用金句 */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center self-stretch">
+          {/* 2 & 3. 姓名與引用金句，以及右下角透明底圖片 */}
+          <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch relative">
             <div>
               {/* 2. 姓名 (無額外身份稱號標籤) */}
               <div className="flex items-center gap-2 flex-wrap">
@@ -149,12 +149,34 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               </div>
 
               {/* 3. 一句引用金句 (前方棕色豎線｜) */}
-              <div className="border-l-[3px] border-[#442F2A] pl-3 py-1.5 bg-[#FFF8F5]/80 rounded-r-lg my-2.5">
+              <div className="border-l-[3px] border-[#442F2A] pl-3 py-1.5 bg-[#FFF8F5]/80 rounded-r-lg my-2.5 sm:mr-20">
                 <p className="font-bold text-[#442F2A] text-xs sm:text-[13px] leading-[1.7] whitespace-pre-line">
                   {renderFormattedText(quoteText)}
                 </p>
               </div>
             </div>
+
+            {/* 右下角放置透明底的圖片 (兩個人的區塊都要) */}
+            {char.cornerImage ? (
+              <div className="flex justify-end mt-1 sm:mt-0 sm:absolute sm:right-0 sm:bottom-0 pointer-events-none select-none z-10">
+                <img
+                  src={char.cornerImage}
+                  alt={`${char.name} 裝飾圖片`}
+                  className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[110px] sm:max-w-[140px] drop-shadow-xs"
+                />
+              </div>
+            ) : isEditMode ? (
+              <div className="flex justify-end mt-2 sm:mt-0 sm:absolute sm:right-0 sm:bottom-0">
+                <button
+                  type="button"
+                  onClick={() => onEditSection(isA ? 'characterA' : 'characterB')}
+                  className="px-2 py-1 bg-[#FFF8F5] border border-dashed border-[#442F2A]/40 text-[#442F2A]/70 hover:text-[#442F2A] hover:border-[#442F2A] rounded text-[10px] font-pixel flex items-center gap-1 cursor-pointer transition shadow-2xs"
+                >
+                  <Sparkles className="w-3 h-3 text-[#C89398]" />
+                  <span>+ 設定右下角透明圖</span>
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
 

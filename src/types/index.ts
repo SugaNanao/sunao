@@ -62,6 +62,7 @@ export interface Character {
   triviaItems?: CharacterTriviaItem[]; // 冷知識列表 (含吐槽小視窗)
   basicInfoList?: string[]; // 基本資料條列 (高校３年現在)
   highSchoolStatus?: string; // 高校３年現在
+  cornerImage?: string; // 人物姓名區右下角透明底圖片 (Corner Transparent Image)
 }
 
 export interface CoupleProfileItem {
@@ -195,6 +196,7 @@ export interface CoupleSiteData {
   dialogues: Dialogue[];
   milestones: Milestone[];
   album: AlbumPhoto[];
+  albumCustomTags?: string[];
   stories: StoryChapter[];
   alternativeUniverses: AlternativeUniverse[];
   chatHistory: ChatMessage[];

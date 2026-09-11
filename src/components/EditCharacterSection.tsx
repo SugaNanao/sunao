@@ -101,6 +101,57 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
             </div>
           </div>
         </div>
+
+        {/* 1.5 人物姓名區右下角透明底圖片 (Transparent Corner Image) */}
+        <div className="p-2.5 bg-[#FFF8F5] rounded border border-[#442F2A]/30 space-y-1.5">
+          <label className="block text-[11px] font-bold text-[#442F2A] flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#C89398]" />
+            <span>人物姓名區右下角透明底圖片 (Transparent Corner Image)：</span>
+          </label>
+          <p className="text-[10px] text-[#442F2A]/70 leading-normal">
+            ※ 放置於角色分頁中人物姓名與金句右下角的透明插圖（如 Q版人物/透明貼圖/代表小物，建議上傳去背透明 PNG）
+          </p>
+          <div className="flex gap-2 items-center">
+            {character.cornerImage ? (
+              <div className="w-12 h-12 rounded border border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0 shadow-xs flex items-center justify-center p-1">
+                <img src={character.cornerImage} alt="Corner Sticker" className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-12 h-12 rounded border border-dashed border-[#442F2A]/40 bg-white shrink-0 flex items-center justify-center text-[9px] text-[#442F2A]/40 text-center font-pixel">
+                未設定
+              </div>
+            )}
+            <div className="flex-1 flex gap-1">
+              <input
+                type="text"
+                value={character.cornerImage || ''}
+                onChange={(e) => onUpdate({ ...character, cornerImage: e.target.value })}
+                className="flex-1 bg-white border border-[#442F2A] rounded p-1.5 text-xs truncate"
+                placeholder="https://... 或點擊上傳透明 PNG 圖片"
+              />
+              <label className="pixel-btn px-2.5 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-[11px] flex items-center gap-1 cursor-pointer shrink-0 font-bold">
+                <Upload className="w-3 h-3" />
+                <span>上傳</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e, (url) => onUpdate({ ...character, cornerImage: url }))}
+                />
+              </label>
+              {character.cornerImage && (
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ ...character, cornerImage: '' })}
+                  className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs cursor-pointer"
+                  title="清除圖片"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 2. 基本資料 (Dossier / Basic Info - English Labels Only as Requested) */}
