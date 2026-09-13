@@ -40,12 +40,26 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       reader.onload = (uploadEvent) => {
         const result = uploadEvent.target?.result as string;
         if (result) {
+          const isTransparentFormat =
+            file.type === 'image/png' ||
+            file.type === 'image/webp' ||
+            file.type === 'image/svg+xml' ||
+            file.type === 'image/gif';
+
           const img = new Image();
           img.onload = () => {
             const maxDim = 800;
             let width = img.width;
             let height = img.height;
-            if (width > maxDim || height > maxDim) {
+            const needsResize = width > maxDim || height > maxDim;
+
+            if (isTransparentFormat && !needsResize) {
+              setPreviewAvatar(result);
+              setAvatarInputUrl('');
+              return;
+            }
+
+            if (needsResize) {
               if (width > height) {
                 height = Math.round((height * maxDim) / width);
                 width = maxDim;
@@ -59,8 +73,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             if (ctx) {
+              ctx.clearRect(0, 0, width, height);
               ctx.drawImage(img, 0, 0, width, height);
-              const compressed = canvas.toDataURL('image/jpeg', 0.85);
+              const outputFormat = isTransparentFormat ? 'image/png' : 'image/jpeg';
+              const quality = isTransparentFormat ? undefined : 0.85;
+              const compressed = canvas.toDataURL(outputFormat, quality);
               setPreviewAvatar(compressed);
               setAvatarInputUrl('');
               return;

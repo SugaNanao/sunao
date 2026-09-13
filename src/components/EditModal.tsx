@@ -161,7 +161,7 @@ export const EditModal: React.FC<EditModalProps> = ({
     }
   };
 
-  // Helper for uploading local image file with automatic canvas compression
+  // Helper for uploading local image file with preservation of transparency
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     callback: (base64Url: string) => void
@@ -172,13 +172,28 @@ export const EditModal: React.FC<EditModalProps> = ({
       reader.onload = (uploadEvent) => {
         const result = uploadEvent.target?.result as string;
         if (result) {
+          // If already PNG, WebP, SVG, GIF or has transparency, preserve transparency
+          const isTransparentFormat =
+            file.type === 'image/png' ||
+            file.type === 'image/webp' ||
+            file.type === 'image/svg+xml' ||
+            file.type === 'image/gif';
+
           if (file.type.startsWith('image/')) {
             const img = new Image();
             img.onload = () => {
               const maxDim = 1280;
               let width = img.width;
               let height = img.height;
-              if (width > maxDim || height > maxDim) {
+              const needsResize = width > maxDim || height > maxDim;
+
+              // If transparent format and doesn't exceed dimensions, keep original dataUrl directly to prevent any loss
+              if (isTransparentFormat && !needsResize) {
+                callback(result);
+                return;
+              }
+
+              if (needsResize) {
                 if (width > height) {
                   height = Math.round((height * maxDim) / width);
                   width = maxDim;
@@ -187,13 +202,19 @@ export const EditModal: React.FC<EditModalProps> = ({
                   height = maxDim;
                 }
               }
+
               const canvas = document.createElement('canvas');
               canvas.width = width;
               canvas.height = height;
               const ctx = canvas.getContext('2d');
               if (ctx) {
+                // Clear rect explicitly to ensure alpha channel remains transparent
+                ctx.clearRect(0, 0, width, height);
                 ctx.drawImage(img, 0, 0, width, height);
-                const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                // If the file is PNG/WebP/GIF, export as PNG to preserve transparent alpha channel!
+                const outputFormat = isTransparentFormat ? 'image/png' : 'image/jpeg';
+                const quality = isTransparentFormat ? undefined : 0.85;
+                const compressed = canvas.toDataURL(outputFormat, quality);
                 callback(compressed);
                 return;
               }

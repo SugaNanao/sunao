@@ -71,6 +71,10 @@ export interface Character {
   basicInfoList?: string[]; // 基本資料條列 (高校３年現在)
   highSchoolStatus?: string; // 高校３年現在
   cornerImage?: string; // 人物姓名區右下角透明底圖片 (Corner Transparent Image)
+  cornerImagePosition?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'custom'; // 圖片擺放位置
+  cornerImageScale?: number; // 圖片縮放大小 (70 ~ 150%)
+  cornerImageOffsetX?: number; // 水平微調偏移 (px)
+  cornerImageOffsetY?: number; // 垂直微調偏移 (px)
 }
 
 export interface CoupleProfileItem {

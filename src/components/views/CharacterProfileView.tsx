@@ -201,13 +201,38 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               </div>
             </div>
 
-            {/* 右下角放置透明底的圖片 (兩個人的區塊都要) */}
+            {/* 放置透明底的圖片 (兩個人的區塊都要，支援編輯模式調整位置與大小) */}
             {char.cornerImage ? (
-              <div className="flex justify-end mt-1 sm:mt-0 sm:absolute sm:right-0 sm:bottom-0 pointer-events-none select-none z-10">
+              <div
+                className={`flex mt-1 sm:mt-0 select-none z-10 ${
+                  char.cornerImagePosition === 'top-right'
+                    ? 'sm:absolute sm:right-0 sm:top-0 justify-end'
+                    : char.cornerImagePosition === 'top-left'
+                    ? 'sm:absolute sm:left-0 sm:top-0 justify-start'
+                    : char.cornerImagePosition === 'bottom-left'
+                    ? 'sm:absolute sm:left-0 sm:bottom-0 justify-start'
+                    : 'sm:absolute sm:right-0 sm:bottom-0 justify-end'
+                }`}
+                style={{
+                  transform: `translate(${char.cornerImageOffsetX || 0}px, ${char.cornerImageOffsetY || 0}px)`,
+                }}
+              >
                 <img
                   src={char.cornerImage}
                   alt={`${char.name} 裝飾圖片`}
-                  className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[110px] sm:max-w-[140px] drop-shadow-xs"
+                  className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[130px] sm:max-w-[160px] drop-shadow-xs transition-transform duration-150"
+                  style={{
+                    backgroundColor: 'transparent',
+                    transform: `scale(${(char.cornerImageScale || 100) / 100})`,
+                    transformOrigin:
+                      char.cornerImagePosition === 'top-right'
+                        ? 'top right'
+                        : char.cornerImagePosition === 'top-left'
+                        ? 'top left'
+                        : char.cornerImagePosition === 'bottom-left'
+                        ? 'bottom left'
+                        : 'bottom right',
+                  }}
                 />
               </div>
             ) : isEditMode ? (
@@ -218,7 +243,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                   className="px-2 py-1 bg-[#FFF8F5] border border-dashed border-[#442F2A]/40 text-[#442F2A]/70 hover:text-[#442F2A] hover:border-[#442F2A] rounded text-[10px] font-pixel flex items-center gap-1 cursor-pointer transition shadow-2xs"
                 >
                   <Sparkles className="w-3 h-3 text-[#C89398]" />
-                  <span>+ 設定右下角透明圖</span>
+                  <span>+ 設定透明圖</span>
                 </button>
               </div>
             ) : null}

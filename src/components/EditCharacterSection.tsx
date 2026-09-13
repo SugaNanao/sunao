@@ -9,7 +9,7 @@ import {
   ProfileBulletItem,
 } from '../types';
 import { PixelHeart } from './PixelHeart';
-import { Plus, Trash2, Upload, Palette, Sliders, FileText, User, MessageSquare, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Upload, Palette, Sliders, FileText, User, MessageSquare, Sparkles, Move, ZoomIn, RotateCcw } from 'lucide-react';
 import { DEFAULT_COUPLE_DATA } from '../data/defaultData';
 
 const getInitialBulletItems = (
@@ -134,18 +134,25 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
           </div>
         </div>
 
-        {/* 1.5 人物姓名區右下角透明底圖片 (Transparent Corner Image) */}
-        <div className="p-2.5 bg-[#FFF8F5] rounded border border-[#442F2A]/30 space-y-1.5">
-          <label className="block text-[11px] font-bold text-[#442F2A] flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#C89398]" />
-            <span>人物姓名區右下角透明底圖片 (Transparent Corner Image)：</span>
-          </label>
+        {/* 1.5 人物姓名區透明底圖片 (Transparent Corner Image & Position Controls) */}
+        <div className="p-2.5 bg-[#FFF8F5] rounded border border-[#442F2A]/30 space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-[#442F2A] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#C89398]" />
+              <span>人物姓名區透明底圖片 (Transparent Corner Image)：</span>
+            </label>
+            {character.cornerImage && (
+              <span className="text-[10px] text-[#9D5A64] bg-[#F8EDF1] px-1.5 py-0.5 rounded font-pixel font-bold">
+                ✓ 支援透明底 PNG
+              </span>
+            )}
+          </div>
           <p className="text-[10px] text-[#442F2A]/70 leading-normal">
-            ※ 放置於角色分頁中人物姓名與金句右下角的透明插圖（如 Q版人物/透明貼圖/代表小物，建議上傳去背透明 PNG）
+            ※ 放置於角色分頁中人物姓名與金句區塊的透明插圖（如 Q版人物/透明貼圖/代表小物，上傳 PNG 保持透明底，背景與網頁完全一致）
           </p>
           <div className="flex gap-2 items-center">
             {character.cornerImage ? (
-              <div className="w-12 h-12 rounded border border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0 shadow-xs flex items-center justify-center p-1">
+              <div className="w-12 h-12 rounded border border-[#442F2A] overflow-hidden bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:6px_6px] bg-white shrink-0 shadow-xs flex items-center justify-center p-1">
                 <img src={character.cornerImage} alt="Corner Sticker" className="w-full h-full object-contain" />
               </div>
             ) : (
@@ -163,10 +170,10 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               />
               <label className="pixel-btn px-2.5 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-[11px] flex items-center gap-1 cursor-pointer shrink-0 font-bold">
                 <Upload className="w-3 h-3" />
-                <span>上傳</span>
+                <span>上傳透明圖</span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/webp,image/svg+xml,image/*"
                   className="hidden"
                   onChange={(e) => handleFileUpload(e, (url) => onUpdate({ ...character, cornerImage: url }))}
                 />
@@ -174,7 +181,14 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               {character.cornerImage && (
                 <button
                   type="button"
-                  onClick={() => onUpdate({ ...character, cornerImage: '' })}
+                  onClick={() => onUpdate({
+                    ...character,
+                    cornerImage: '',
+                    cornerImagePosition: 'bottom-right',
+                    cornerImageScale: 100,
+                    cornerImageOffsetX: 0,
+                    cornerImageOffsetY: 0,
+                  })}
                   className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs cursor-pointer"
                   title="清除圖片"
                 >
@@ -183,6 +197,155 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               )}
             </div>
           </div>
+
+          {/* 圖片擺放位置與大小微調控制項 (當有圖片時顯示) */}
+          {character.cornerImage && (
+            <div className="mt-2 pt-2 border-t border-[#442F2A]/15 bg-white/70 p-2.5 rounded-lg border border-[#442F2A]/15 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-[#442F2A] flex items-center gap-1">
+                  <Move className="w-3 h-3 text-[#C89398]" />
+                  <span>調整圖片擺放位置與大小</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onUpdate({
+                      ...character,
+                      cornerImagePosition: 'bottom-right',
+                      cornerImageScale: 100,
+                      cornerImageOffsetX: 0,
+                      cornerImageOffsetY: 0,
+                    })
+                  }
+                  className="text-[10px] text-[#442F2A]/60 hover:text-[#442F2A] flex items-center gap-0.5 cursor-pointer underline"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>重設位置</span>
+                </button>
+              </div>
+
+              {/* 1. 方位預設選擇 */}
+              <div>
+                <label className="block text-[10px] font-bold text-[#442F2A]/80 mb-1">
+                  擺放基準位置：
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { id: 'bottom-right', label: '右下角 (預設)' },
+                    { id: 'bottom-left', label: '左下角' },
+                    { id: 'top-right', label: '右上角' },
+                    { id: 'top-left', label: '左上角' },
+                  ].map((pos) => {
+                    const currentPos = character.cornerImagePosition || 'bottom-right';
+                    const isSelected = currentPos === pos.id;
+                    return (
+                      <button
+                        key={pos.id}
+                        type="button"
+                        onClick={() =>
+                          onUpdate({
+                            ...character,
+                            cornerImagePosition: pos.id as any,
+                          })
+                        }
+                        className={`px-2 py-1 rounded text-[10px] font-pixel transition cursor-pointer border ${
+                          isSelected
+                            ? 'bg-[#442F2A] text-white border-[#442F2A] font-bold shadow-2xs'
+                            : 'bg-white text-[#442F2A] border-[#442F2A]/30 hover:bg-[#F8EDF1]'
+                        }`}
+                      >
+                        {pos.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. 水平 / 垂直微調偏移與大小縮放 */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                {/* 水平位置微調 (X) */}
+                <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/20">
+                  <div className="flex justify-between items-center text-[10px] font-bold text-[#442F2A] mb-1">
+                    <span>水平微調 (X)：</span>
+                    <span className="font-mono text-[#9D5A64]">
+                      {character.cornerImageOffsetX ?? 0} px
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="range"
+                      min="-60"
+                      max="60"
+                      step="2"
+                      value={character.cornerImageOffsetX ?? 0}
+                      onChange={(e) =>
+                        onUpdate({
+                          ...character,
+                          cornerImageOffsetX: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full accent-[#C89398] cursor-pointer h-1.5 bg-neutral-200 rounded"
+                    />
+                  </div>
+                </div>
+
+                {/* 垂直位置微調 (Y) */}
+                <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/20">
+                  <div className="flex justify-between items-center text-[10px] font-bold text-[#442F2A] mb-1">
+                    <span>垂直微調 (Y)：</span>
+                    <span className="font-mono text-[#9D5A64]">
+                      {character.cornerImageOffsetY ?? 0} px
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="range"
+                      min="-50"
+                      max="50"
+                      step="2"
+                      value={character.cornerImageOffsetY ?? 0}
+                      onChange={(e) =>
+                        onUpdate({
+                          ...character,
+                          cornerImageOffsetY: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full accent-[#C89398] cursor-pointer h-1.5 bg-neutral-200 rounded"
+                    />
+                  </div>
+                </div>
+
+                {/* 圖片大小縮放 (Scale) */}
+                <div className="bg-[#FFF8F5] p-1.5 rounded border border-[#442F2A]/20">
+                  <div className="flex justify-between items-center text-[10px] font-bold text-[#442F2A] mb-1">
+                    <span className="flex items-center gap-1">
+                      <ZoomIn className="w-2.5 h-2.5 text-[#C89398]" />
+                      <span>尺寸大小：</span>
+                    </span>
+                    <span className="font-mono text-[#9D5A64]">
+                      {character.cornerImageScale ?? 100} %
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="range"
+                      min="60"
+                      max="160"
+                      step="5"
+                      value={character.cornerImageScale ?? 100}
+                      onChange={(e) =>
+                        onUpdate({
+                          ...character,
+                          cornerImageScale: parseInt(e.target.value) || 100,
+                        })
+                      }
+                      className="w-full accent-[#C89398] cursor-pointer h-1.5 bg-neutral-200 rounded"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
