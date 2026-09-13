@@ -229,64 +229,64 @@ export default function App() {
           onTabChange={setActiveTab}
           isEditMode={effectiveEditMode}
           onEditSection={handleOpenEditSection}
+          onUpdateData={handleUpdateData}
         />
 
-       {/* Center Main Stage Area (Router Views) */}
+        {/* Center Main Stage Area (Router Views) */}
         <div className="flex-1 w-full min-w-0" id="main-content-view">
-            {activeTab === 'HOME' && (
-              <HomeView
-                data={data}
-                onNavigateTab={(tab) => {
-                  if (tab === 'CHARACTER') {
-                    setCharacterProfileTarget('BOTH');
-                  }
-                  setActiveTab(tab);
-                }}
-                isEditMode={effectiveEditMode}
-                onEditSection={handleOpenEditSection}
-                onOpenMusicModal={() => setIsMusicModalOpen(true)}
-                onOpenChat={() => setIsChatOpen(true)}
-                onNavigateToCharacter={(char) => {
-                  setCharacterProfileTarget(char);
-                  setActiveTab('CHARACTER');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              />
-            )}
+          {activeTab === 'HOME' && (
+            <HomeView
+              data={data}
+              onNavigateTab={(tab) => {
+                if (tab === 'CHARACTER') {
+                  setCharacterProfileTarget('BOTH');
+                }
+                setActiveTab(tab);
+              }}
+              isEditMode={effectiveEditMode}
+              onEditSection={handleOpenEditSection}
+              onOpenMusicModal={() => setIsMusicModalOpen(true)}
+              onOpenChat={() => setIsChatOpen(true)}
+              onNavigateToCharacter={(char) => {
+                setCharacterProfileTarget(char);
+                setActiveTab('CHARACTER');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
 
-            {(activeTab === 'CHARACTER' || activeTab === 'CHARACTER PROFILE') && (
-              <CharacterProfileView
-                data={data}
-                isEditMode={effectiveEditMode}
-                onEditSection={handleOpenEditSection}
-                targetCharacter={characterProfileTarget}
-              />
-            )}
+          {(activeTab === 'CHARACTER' || activeTab === 'CHARACTER PROFILE') && (
+            <CharacterProfileView
+              data={data}
+              isEditMode={effectiveEditMode}
+              onEditSection={handleOpenEditSection}
+              targetCharacter={characterProfileTarget}
+            />
+          )}
 
-            {activeTab === 'STORY' && (
-              <StoryView
-                data={data}
-                isEditMode={effectiveEditMode}
-                onEditSection={handleOpenEditSection}
-              />
-            )}
+          {activeTab === 'STORY' && (
+            <StoryView
+              data={data}
+              isEditMode={effectiveEditMode}
+              onEditSection={handleOpenEditSection}
+            />
+          )}
 
-            {activeTab === 'ALBUM' && (
-              <AlbumView
-                data={data}
-                isEditMode={effectiveEditMode}
-                onEditSection={handleOpenEditSection}
-              />
-            )}
+          {activeTab === 'ALBUM' && (
+            <AlbumView
+              data={data}
+              isEditMode={effectiveEditMode}
+              onEditSection={handleOpenEditSection}
+            />
+          )}
 
-            {(activeTab === 'AU' || activeTab === 'ALTERNATIVE UNIVERSE') && (
-              <AUView
-                data={data}
-                isEditMode={effectiveEditMode}
-                onEditSection={handleOpenEditSection}
-              />
-            )}
-        
+          {(activeTab === 'AU' || activeTab === 'ALTERNATIVE UNIVERSE') && (
+            <AUView
+              data={data}
+              isEditMode={effectiveEditMode}
+              onEditSection={handleOpenEditSection}
+            />
+          )}
         </div>
 
         {/* Right Column Widgets */}

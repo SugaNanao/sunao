@@ -8,7 +8,10 @@ import React from 'react';
  * 4. Sparkle: ✦ (rendered in accent color #C89398)
  * 5. Preserves newlines and spaces
  */
-export const renderFormattedText = (text: string | undefined | null): React.ReactNode => {
+export const renderFormattedText = (
+  text: string | undefined | null,
+  sparkleColor: string = '#C89398'
+): React.ReactNode => {
   if (!text) return null;
 
   // Tokenize formatted segments
@@ -28,7 +31,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.replace(/^<(s|del|strike)>/, '').replace(/<\/(s|del|strike)>$/, '');
       return (
         <del key={index} className="line-through decoration-[#442F2A]/60 opacity-80">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </del>
       );
     }
@@ -38,7 +41,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.slice(2, -2);
       return (
         <del key={index} className="line-through decoration-[#442F2A]/60 opacity-80">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </del>
       );
     }
@@ -48,7 +51,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.slice(1, -1);
       return (
         <del key={index} className="line-through decoration-[#442F2A]/60 opacity-80">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </del>
       );
     }
@@ -61,7 +64,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.replace(/^<(b|strong)>/, '').replace(/<\/(b|strong)>$/, '');
       return (
         <strong key={index} className="font-bold">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </strong>
       );
     }
@@ -71,7 +74,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.slice(2, -2);
       return (
         <strong key={index} className="font-bold">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </strong>
       );
     }
@@ -84,7 +87,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.replace(/^<(i|em)>/, '').replace(/<\/(i|em)>$/, '');
       return (
         <em key={index} className="italic inline-block font-normal">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </em>
       );
     }
@@ -94,7 +97,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.slice(1, -1);
       return (
         <em key={index} className="italic inline-block font-normal">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </em>
       );
     }
@@ -104,7 +107,7 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
       const inner = part.slice(1, -1);
       return (
         <em key={index} className="italic inline-block font-normal">
-          {renderFormattedText(inner)}
+          {renderFormattedText(inner, sparkleColor)}
         </em>
       );
     }
@@ -117,7 +120,15 @@ export const renderFormattedText = (text: string | undefined | null): React.Reac
             <React.Fragment key={sIdx}>
               {sub}
               {sIdx < subParts.length - 1 && (
-                <span className="text-[#C89398] font-bold">✦</span>
+                <span
+                  className={
+                    sparkleColor === '#442F2A'
+                      ? 'text-[#442F2A] font-bold'
+                      : 'text-[#C89398] font-bold'
+                  }
+                >
+                  ✦
+                </span>
               )}
             </React.Fragment>
           ))}

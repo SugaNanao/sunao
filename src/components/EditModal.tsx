@@ -406,6 +406,75 @@ export const EditModal: React.FC<EditModalProps> = ({
                 </div>
               </div>
 
+              {/* Sidebar Avatar Settings with File Upload */}
+              <div className="border-t border-[#442F2A]/20 pt-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                  <label className="font-bold text-[#442F2A] block">
+                    側邊欄個人頭貼 (Sidebar Avatar URL 或 本機上傳)：
+                  </label>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <span className="text-[#442F2A]/70">快速套用：</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, sidebarAvatar: formData.characterA.avatar })}
+                      className="px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/40 hover:bg-[#E0BAC7] text-[#442F2A] font-bold cursor-pointer"
+                    >
+                      {formData.characterA.name || '角色A'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, sidebarAvatar: formData.characterB.avatar })}
+                      className="px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/40 hover:bg-[#E0BAC7] text-[#442F2A] font-bold cursor-pointer"
+                    >
+                      {formData.characterB.name || '角色B'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, sidebarAvatar: formData.mainIllustration })}
+                      className="px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/40 hover:bg-[#E0BAC7] text-[#442F2A] font-bold cursor-pointer"
+                    >
+                      主插圖
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={formData.sidebarAvatar || ''}
+                    placeholder="可貼上圖片網址或由右側上傳本機照片"
+                    onChange={(e) => setFormData({ ...formData, sidebarAvatar: e.target.value })}
+                    className="flex-1 bg-white border-2 border-[#442F2A] rounded p-1.5 text-xs truncate"
+                  />
+                  <label className="pixel-btn px-2.5 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-[11px] flex items-center gap-1 cursor-pointer shrink-0 font-bold">
+                    <Upload className="w-3 h-3" />
+                    <span>上傳頭貼</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        handleFileUpload(e, (url) => setFormData({ ...formData, sidebarAvatar: url }))
+                      }
+                    />
+                  </label>
+                </div>
+                <div className="flex items-center gap-3 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40 shadow-xs">
+                  <div className="w-16 h-16 rounded-full border-3 border-[#442F2A] overflow-hidden bg-[#E0BAC7] shrink-0 shadow-sm">
+                    <img
+                      src={formData.sidebarAvatar || formData.mainIllustration || formData.characterB.avatar}
+                      alt="Sidebar Avatar Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="text-xs text-[#442F2A]">
+                    <p className="font-bold text-xs text-[#442F2A]">側邊欄圓形頭貼即時預覽</p>
+                    <p className="text-[11px] text-[#442F2A]/70 mt-0.5">
+                      支援自定義上傳本機圖片或網路連結，將同步呈現於左側導航欄的圓形相框內。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* NOTICE & MEMO POPUPS (站務須知與日常守則) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-[#442F2A]/20 pt-4">
                 <div className="p-3 bg-white rounded border-2 border-[#442F2A] space-y-2">

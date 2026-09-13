@@ -30,7 +30,7 @@ export const CoverScreen: React.FC<CoverScreenProps> = ({ data, onEnter }) => {
         {/* Top Right Mini Music Widget Icon */}
         <div className="bg-[#FFF8F5]/90 border-2 border-[#442F2A] px-3 py-1 rounded text-xs font-pixel text-[#442F2A] shadow-sm flex items-center gap-2">
           <Music className="w-3.5 h-3.5 text-[#442F2A]" />
-          <span>BGM: 今、恋がはじまれ</span>
+          <span>BGM: あいみょん</span>
           <div className="flex items-end gap-0.5 h-3">
             <span className="w-1 bg-[#442F2A] h-2 animate-pulse" />
             <span className="w-1 bg-[#442F2A] h-3 animate-pulse delay-75" />

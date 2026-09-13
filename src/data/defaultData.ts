@@ -25,6 +25,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
   coverBottomText: '點選任意區域即可進入主介面',
   // Pixel art anime couple holding 1st anniversary cake under fireworks (like Image 1)
   coverImage: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80',
+  sidebarAvatar: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1000&q=80',
   mainIllustration: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1000&q=80',
   weatherCity: 'Sendai 仙台',
   weatherTemp: '23°C',

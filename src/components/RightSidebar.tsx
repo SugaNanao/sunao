@@ -259,9 +259,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   >
                     {isHoliday ? (
                       <>
-                        {/* Brown filled star with pink date number (棕色星星顏色填滿，日期數字粉色) */}
-                        <Star className="w-[23px] h-[23px] fill-[#442F2A] stroke-[#442F2A] stroke-[1.5px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]" />
-                        <span className="relative z-10 text-[#E0BAC7] font-bold text-[8.5px] leading-none pt-0.5">
+                        {/* Brown filled star with pink date number (棕色星星稍微大一點點，顏色填滿，日期數字粉色) */}
+                        <Star className="w-[26px] h-[26px] fill-[#442F2A] stroke-[#442F2A] stroke-[1px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]" />
+                        <span className="relative z-10 text-[#E0BAC7] font-bold text-[9px] leading-none pt-0.5">
                           {cell.day}
                         </span>
                       </>
@@ -330,7 +330,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
         {/* Calendar Helper Note */}
         <div className="text-[10px] font-pixel text-[#442F2A]/80 border-t border-[#442F2A]/15 pt-1.5 flex items-center justify-center min-h-[22px] bg-[#F8EDF1]/60 px-1.5 rounded text-center">
-          <span className="truncate">✦ 點擊愛心 (紀念日) 或星星 (節日) 查看註記</span>
+          <span className="truncate">✦ 點擊日期查看詳情</span>
         </div>
       </div>
 
@@ -377,7 +377,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 </span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded font-bold border border-[#442F2A]/30 ${
-                    floatingDate.isHoliday ? 'bg-amber-100 text-[#442F2A]' : 'bg-[#E0BAC7] text-[#442F2A]'
+                    floatingDate.isHoliday ? 'bg-[#442F2A] text-[#E0BAC7]' : 'bg-[#E0BAC7] text-[#442F2A]'
                   }`}
                 >
                   {floatingDate.isAnniversary

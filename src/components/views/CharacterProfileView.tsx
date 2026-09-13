@@ -159,6 +159,9 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
         ? char.triviaItems
         : fallbackData.triviaItems || [];
 
+    const starClass = isA ? 'text-[#442F2A]' : 'text-[#C89398]';
+    const starColor = isA ? '#442F2A' : '#C89398';
+
     return (
       <div className="pixel-card p-4 sm:p-5 bg-white border-2 border-[#442F2A] rounded-xl shadow-md flex flex-col gap-4.5 font-pixel">
         {/* 1 & 2 & 3. 照片、姓名與一句引用金句 */}
@@ -193,7 +196,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               {/* 3. 一句引用金句 (前方棕色豎線｜) */}
               <div className="border-l-[3px] border-[#442F2A] pl-3 py-1.5 bg-[#FFF8F5]/80 rounded-r-lg my-2.5 sm:mr-20">
                 <p className="font-bold text-[#442F2A] text-xs sm:text-[13px] leading-[1.7] whitespace-pre-line">
-                  {renderFormattedText(quoteText)}
+                  {renderFormattedText(quoteText, starColor)}
                 </p>
               </div>
             </div>
@@ -248,7 +251,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                     </span>
                     <span className="text-[#442F2A]/35 shrink-0 select-none">｜</span>
                     <span className="font-normal text-[#442F2A] flex-1 leading-relaxed">
-                      {renderFormattedText(val)}
+                      {renderFormattedText(val, starColor)}
                     </span>
                   </div>
                 );
@@ -263,7 +266,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#442F2A] shrink-0" />
                   <span className="font-normal text-[#442F2A] flex-1 leading-relaxed">
-                    {renderFormattedText(cleanItem)}
+                    {renderFormattedText(cleanItem, starColor)}
                   </span>
                 </div>
               );
@@ -271,31 +274,36 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
           </div>
         </div>
 
-        {/* 5. 外貌描述 */}
-        <div className="space-y-1.5">
+        {/* 5. 外貌描述 (分格卡片呈現) */}
+        <div className="space-y-2">
           <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
             <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
             <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
               外貌描述
             </h4>
           </div>
-          <div className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 space-y-2">
+          <div className="space-y-2.5">
             {appearanceItems.map((item, idx) => (
               <div
                 key={item.id || idx}
-                className="text-xs sm:text-[13px] leading-relaxed flex items-start gap-2 text-[#442F2A]"
+                className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 space-y-1"
               >
-                <span className="text-[#C89398] font-bold shrink-0 mt-0.5 select-none">✦</span>
-                <div className="flex-1 font-normal">
-                  {item.title && item.title.trim() ? (
-                    <span className="font-bold text-[#442F2A] mr-1.5">
-                      {item.title}：
-                    </span>
-                  ) : null}
-                  <span className="text-[#442F2A]">
-                    {renderFormattedText(item.content)}
-                  </span>
-                </div>
+                {item.title && item.title.trim() ? (
+                  <>
+                    <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[#442F2A]">
+                      <span className={`${starClass} font-mono text-sm`}>✦</span>
+                      <span className="tracking-wide">{item.title}</span>
+                    </div>
+                    <div className="text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line pl-3.5 sm:pl-4 font-normal">
+                      {renderFormattedText(item.content, starColor)}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-xs sm:text-[13px] text-[#442F2A] leading-relaxed flex items-start gap-2 font-normal">
+                    <span className={`${starClass} font-bold shrink-0 mt-0.5 select-none`}>✦</span>
+                    <span className="flex-1">{renderFormattedText(item.content, starColor)}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -317,42 +325,47 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                 className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 space-y-1"
               >
                 <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[#442F2A]">
-                  <span className="text-[#C89398] font-mono text-sm">✦</span>
+                  <span className={`${starClass} font-mono text-sm`}>✦</span>
                   <span className="tracking-wide">{para.title}</span>
                 </div>
                 <div className="text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line pl-3.5 sm:pl-4 font-normal">
-                  {renderFormattedText(para.content)}
+                  {renderFormattedText(para.content, starColor)}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 7. 人際關係 */}
-        <div className="space-y-1.5">
+        {/* 7. 人際關係 (分格卡片呈現) */}
+        <div className="space-y-2">
           <div className="flex items-center gap-1.5 border-b border-[#442F2A]/20 pb-1">
             <span className="w-2 h-2 rounded-full bg-[#442F2A]" />
             <h4 className="font-bold text-xs sm:text-sm text-[#442F2A] tracking-wide">
               人際關係
             </h4>
           </div>
-          <div className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 space-y-2">
+          <div className="space-y-2.5">
             {relationshipItems.map((item, idx) => (
               <div
                 key={item.id || idx}
-                className="text-xs sm:text-[13px] leading-relaxed flex items-start gap-2 text-[#442F2A]"
+                className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 space-y-1"
               >
-                <span className="text-[#C89398] font-bold shrink-0 mt-0.5 select-none">✦</span>
-                <div className="flex-1 font-normal">
-                  {item.title && item.title.trim() ? (
-                    <span className="font-bold text-[#442F2A] mr-1.5">
-                      {item.title}：
-                    </span>
-                  ) : null}
-                  <span className="text-[#442F2A]">
-                    {renderFormattedText(item.content)}
-                  </span>
-                </div>
+                {item.title && item.title.trim() ? (
+                  <>
+                    <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[#442F2A]">
+                      <span className={`${starClass} font-mono text-sm`}>✦</span>
+                      <span className="tracking-wide">{item.title}</span>
+                    </div>
+                    <div className="text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line pl-3.5 sm:pl-4 font-normal">
+                      {renderFormattedText(item.content, starColor)}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-xs sm:text-[13px] text-[#442F2A] leading-relaxed flex items-start gap-2 font-normal">
+                    <span className={`${starClass} font-bold shrink-0 mt-0.5 select-none`}>✦</span>
+                    <span className="flex-1">{renderFormattedText(item.content, starColor)}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -382,8 +395,8 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                 >
                   {/* 冷知識本體 */}
                   <div className="flex-1 text-xs sm:text-[13px] text-[#442F2A] leading-relaxed flex items-start gap-2 font-normal">
-                    <span className="text-[#C89398] font-bold shrink-0 mt-0.5">✦</span>
-                    <span className="flex-1">{renderFormattedText(tItem.fact)}</span>
+                    <span className={`${starClass} font-bold shrink-0 mt-0.5`}>✦</span>
+                    <span className="flex-1">{renderFormattedText(tItem.fact, starColor)}</span>
                   </div>
 
                   {/* 對方的吐槽：預設只有像素愛心，點愛心後在愛心右邊展開吐槽框(不是浮窗) */}
@@ -418,7 +431,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                             className="text-[11px] sm:text-xs font-normal leading-relaxed break-words block"
                             style={{ color: commenterColor }}
                           >
-                            {renderFormattedText(tItem.comment)}
+                            {renderFormattedText(tItem.comment, isA ? '#C89398' : '#442F2A')}
                           </span>
                         </div>
                       )}
@@ -442,7 +455,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
             <span>CHARACTER PROFILE</span>
           </h2>
           <p className="text-[11px] font-pixel text-[#442F2A]/70 mt-0.5">
-            青梅竹馬的戀愛方程式 ・ 爽朗二傳手 × 元氣攝影經理
+            キャラクター情報解禁
           </p>
         </div>
 

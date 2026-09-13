@@ -37,7 +37,7 @@ export const AUView: React.FC<AUViewProps> = ({
             <span>ALTERNATIVE UNIVERSE</span>
           </h2>
           <p className="text-xs font-pixel text-[#442F2A]/70 mt-0.5">
-            在無數個平行世界裡，我們的靈魂終將在命運的軌道上再度重逢 ✨
+            縁下監督 最新作
           </p>
         </div>
 

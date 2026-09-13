@@ -194,6 +194,7 @@ export interface CoupleSiteData {
   coverWelcomeText?: string;
   coverQuoteText?: string;
   coverBottomText?: string;
+  sidebarAvatar?: string; // 側邊欄個人自訂頭貼 (Sidebar Avatar)
   mainIllustration: string;
   weatherCity: string;
   weatherTemp: string;

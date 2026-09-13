@@ -30,7 +30,7 @@ export const StoryView: React.FC<StoryViewProps> = ({
             <span>STORY</span>
           </h2>
           <p className="text-xs font-pixel text-[#442F2A]/70 mt-0.5">
-            記錄從相遇到相知的每一刻心動故事與甜蜜章節
+            烏野高校で、まだ描かれていない物語
           </p>
         </div>
 

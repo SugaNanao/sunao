@@ -120,7 +120,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
             <span>ALBUM</span>
           </h2>
           <p className="text-xs font-pixel text-[#442F2A]/70 mt-0.5">
-            每一張照片都是定格永恆的心動瞬間 📷✨
+            新規描き下ろしイラスト公開！
           </p>
         </div>
 
