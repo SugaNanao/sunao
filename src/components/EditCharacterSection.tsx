@@ -6,9 +6,41 @@ import {
   CharacterSection,
   PersonalityParagraph,
   CharacterTriviaItem,
+  ProfileBulletItem,
 } from '../types';
 import { PixelHeart } from './PixelHeart';
 import { Plus, Trash2, Upload, Palette, Sliders, FileText, User, MessageSquare, Sparkles } from 'lucide-react';
+import { DEFAULT_COUPLE_DATA } from '../data/defaultData';
+
+const getInitialBulletItems = (
+  items?: ProfileBulletItem[],
+  rawText?: string,
+  fallbackItems: ProfileBulletItem[] = []
+): ProfileBulletItem[] => {
+  if (items && items.length > 0) return items;
+  if (rawText && rawText.trim()) {
+    const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (lines.length > 0) {
+      return lines.map((line, idx) => {
+        const clean = line.replace(/^[✦•·・\s]+/, '').trim();
+        const match = clean.match(/^([^：:｜|]+)[：:｜|](.+)$/);
+        if (match) {
+          return {
+            id: `bullet-${idx}`,
+            title: match[1].trim(),
+            content: match[2].trim(),
+          };
+        }
+        return {
+          id: `bullet-${idx}`,
+          title: '',
+          content: clean,
+        };
+      });
+    }
+  }
+  return fallbackItems;
+};
 
 interface EditCharacterSectionProps {
   charKey: 'characterA' | 'characterB';
@@ -512,64 +544,224 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
           </div>
         </div>
 
-        {/* 3. 外貌描述 */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="block text-[10px] font-bold text-[#442F2A]">外貌描述 (Appearance)：</label>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  const val = character.appearance || '';
-                  onUpdate({ ...character, appearance: val ? `${val} ~~刪除文字~~` : '~~刪除文字~~' });
-                }}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold line-through"
-                title="插入刪除線 (~~文字~~)"
-              >
-                S
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const val = character.appearance || '';
-                  onUpdate({ ...character, appearance: val ? `${val} **粗體**` : '**粗體**' });
-                }}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
-                title="插入粗體 (**文字**)"
-              >
-                B
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const val = character.appearance || '';
-                  onUpdate({ ...character, appearance: val ? `${val} *斜體*` : '*斜體*' });
-                }}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold italic"
-                title="插入斜體 (*文字*)"
-              >
-                I
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const val = character.appearance || '';
-                  onUpdate({ ...character, appearance: val ? `${val}✦` : '✦' });
-                }}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#C89398] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
-                title="插入星芒 (✦)"
-              >
-                ✦
-              </button>
-            </div>
+        {/* 3. 外貌描述 (列點：✦ + 粗體小標 + 內文) */}
+        <div className="p-2 bg-white rounded border border-[#442F2A]/20 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#442F2A] flex items-center gap-1">
+              <span className="text-[#C89398] font-bold">✦</span>
+              <span>外貌描述 (列點：✦ + 粗體小標 + 內文)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const current = getInitialBulletItems(
+                  character.appearanceItems,
+                  character.appearance,
+                  DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                );
+                const nextList = [
+                  ...current,
+                  {
+                    id: `app-${Date.now()}`,
+                    title: '新小標',
+                    content: '',
+                  },
+                ];
+                onUpdate({
+                  ...character,
+                  appearanceItems: nextList,
+                  appearance: nextList
+                    .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                    .join('\n'),
+                });
+              }}
+              className="text-[9px] bg-[#442F2A] text-white px-2 py-0.5 rounded font-bold hover:bg-[#C89398] transition flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-2.5 h-2.5" />
+              <span>新增外貌列點</span>
+            </button>
           </div>
-          <textarea
-            rows={2}
-            value={character.appearance || ''}
-            placeholder="請輸入外貌描述（髮型、五官特徵、身材、穿搭等，支援 ~~刪除線~~）..."
-            onChange={(e) => onUpdate({ ...character, appearance: e.target.value })}
-            className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
-          />
+
+          <p className="text-[9px] text-[#442F2A]/70 leading-normal">
+            提示：每點格式為「✦ + 粗體小標 + 內文」；粗體小標將以粗體顯示，內文支援格式化按鈕。
+          </p>
+
+          <div className="space-y-2.5">
+            {getInitialBulletItems(
+              character.appearanceItems,
+              character.appearance,
+              DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+            ).map((item, aIdx) => (
+              <div
+                key={item.id || aIdx}
+                className="p-2 bg-[#FFF8F5] rounded border border-[#442F2A]/20 space-y-1.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <span className="text-[#C89398] font-bold text-xs">✦</span>
+                    <span className="text-[10px] font-bold text-[#442F2A] shrink-0">粗體小標：</span>
+                    <input
+                      type="text"
+                      value={item.title}
+                      placeholder="例：髮型與五官"
+                      onChange={(e) => {
+                        const current = getInitialBulletItems(
+                          character.appearanceItems,
+                          character.appearance,
+                          DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                        );
+                        const list = [...current];
+                        list[aIdx] = { ...list[aIdx], title: e.target.value };
+                        onUpdate({
+                          ...character,
+                          appearanceItems: list,
+                          appearance: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="flex-1 bg-white border border-[#442F2A]/30 rounded px-1.5 py-0.5 text-xs font-bold text-[#442F2A]"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.appearanceItems,
+                          character.appearance,
+                          DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                        );
+                        const list = [...current];
+                        const val = list[aIdx].content || '';
+                        list[aIdx] = {
+                          ...list[aIdx],
+                          content: val ? `${val} ~~刪除文字~~` : '~~刪除文字~~',
+                        };
+                        onUpdate({
+                          ...character,
+                          appearanceItems: list,
+                          appearance: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold line-through"
+                      title="插入刪除線"
+                    >
+                      S
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.appearanceItems,
+                          character.appearance,
+                          DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                        );
+                        const list = [...current];
+                        const val = list[aIdx].content || '';
+                        list[aIdx] = {
+                          ...list[aIdx],
+                          content: val ? `${val} **粗體**` : '**粗體**',
+                        };
+                        onUpdate({
+                          ...character,
+                          appearanceItems: list,
+                          appearance: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                      title="插入粗體"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.appearanceItems,
+                          character.appearance,
+                          DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                        );
+                        const list = [...current];
+                        const val = list[aIdx].content || '';
+                        list[aIdx] = {
+                          ...list[aIdx],
+                          content: val ? `${val} *斜體*` : '*斜體*',
+                        };
+                        onUpdate({
+                          ...character,
+                          appearanceItems: list,
+                          appearance: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold italic"
+                      title="插入斜體"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.appearanceItems,
+                          character.appearance,
+                          DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                        );
+                        const list = [...current];
+                        list.splice(aIdx, 1);
+                        onUpdate({
+                          ...character,
+                          appearanceItems: list,
+                          appearance: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                      title="刪除"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold text-[#442F2A]/80 mb-0.5">
+                    內文說明：
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={item.content}
+                    placeholder="請輸入描述內文..."
+                    onChange={(e) => {
+                      const current = getInitialBulletItems(
+                        character.appearanceItems,
+                        character.appearance,
+                        DEFAULT_COUPLE_DATA[charKey].appearanceItems || []
+                      );
+                      const list = [...current];
+                      list[aIdx] = { ...list[aIdx], content: e.target.value };
+                      onUpdate({
+                        ...character,
+                        appearanceItems: list,
+                        appearance: list
+                          .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                          .join('\n'),
+                      });
+                    }}
+                    className="w-full bg-white border border-[#442F2A]/30 rounded p-1.5 text-xs text-[#442F2A]"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 4. 性格剖析 (多個小段落與小標題，可自由新增) */}
@@ -693,16 +885,224 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
           </div>
         </div>
 
-        {/* 5. 人際關係 */}
-        <div>
-          <label className="block text-[10px] font-bold text-[#442F2A]">人際關係 (Relationships)：</label>
-          <textarea
-            rows={3}
-            value={character.relationships || ''}
-            placeholder="請輸入人際關係（支援按 Enter 換行）..."
-            onChange={(e) => onUpdate({ ...character, relationships: e.target.value })}
-            className="w-full bg-white border border-[#442F2A]/40 rounded p-1.5 text-xs leading-relaxed"
-          />
+        {/* 5. 人際關係 (列點：✦ + 粗體小標 + 內文) */}
+        <div className="p-2 bg-white rounded border border-[#442F2A]/20 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#442F2A] flex items-center gap-1">
+              <span className="text-[#C89398] font-bold">✦</span>
+              <span>人際關係 (列點：✦ + 粗體小標 + 內文)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const current = getInitialBulletItems(
+                  character.relationshipItems,
+                  character.relationships,
+                  DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                );
+                const nextList = [
+                  ...current,
+                  {
+                    id: `rel-${Date.now()}`,
+                    title: '新關係人',
+                    content: '',
+                  },
+                ];
+                onUpdate({
+                  ...character,
+                  relationshipItems: nextList,
+                  relationships: nextList
+                    .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                    .join('\n'),
+                });
+              }}
+              className="text-[9px] bg-[#442F2A] text-white px-2 py-0.5 rounded font-bold hover:bg-[#C89398] transition flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-2.5 h-2.5" />
+              <span>新增人際列點</span>
+            </button>
+          </div>
+
+          <p className="text-[9px] text-[#442F2A]/70 leading-normal">
+            提示：每點格式為「✦ + 粗體小標 + 內文」；粗體小標將以粗體顯示，內文支援格式化按鈕。
+          </p>
+
+          <div className="space-y-2.5">
+            {getInitialBulletItems(
+              character.relationshipItems,
+              character.relationships,
+              DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+            ).map((item, rIdx) => (
+              <div
+                key={item.id || rIdx}
+                className="p-2 bg-[#FFF8F5] rounded border border-[#442F2A]/20 space-y-1.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <span className="text-[#C89398] font-bold text-xs">✦</span>
+                    <span className="text-[10px] font-bold text-[#442F2A] shrink-0">粗體小標：</span>
+                    <input
+                      type="text"
+                      value={item.title}
+                      placeholder="例：澤村大地 / 東峰旭"
+                      onChange={(e) => {
+                        const current = getInitialBulletItems(
+                          character.relationshipItems,
+                          character.relationships,
+                          DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                        );
+                        const list = [...current];
+                        list[rIdx] = { ...list[rIdx], title: e.target.value };
+                        onUpdate({
+                          ...character,
+                          relationshipItems: list,
+                          relationships: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="flex-1 bg-white border border-[#442F2A]/30 rounded px-1.5 py-0.5 text-xs font-bold text-[#442F2A]"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.relationshipItems,
+                          character.relationships,
+                          DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                        );
+                        const list = [...current];
+                        const val = list[rIdx].content || '';
+                        list[rIdx] = {
+                          ...list[rIdx],
+                          content: val ? `${val} ~~刪除文字~~` : '~~刪除文字~~',
+                        };
+                        onUpdate({
+                          ...character,
+                          relationshipItems: list,
+                          relationships: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold line-through"
+                      title="插入刪除線"
+                    >
+                      S
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.relationshipItems,
+                          character.relationships,
+                          DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                        );
+                        const list = [...current];
+                        const val = list[rIdx].content || '';
+                        list[rIdx] = {
+                          ...list[rIdx],
+                          content: val ? `${val} **粗體**` : '**粗體**',
+                        };
+                        onUpdate({
+                          ...character,
+                          relationshipItems: list,
+                          relationships: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                      title="插入粗體"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.relationshipItems,
+                          character.relationships,
+                          DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                        );
+                        const list = [...current];
+                        const val = list[rIdx].content || '';
+                        list[rIdx] = {
+                          ...list[rIdx],
+                          content: val ? `${val} *斜體*` : '*斜體*',
+                        };
+                        onUpdate({
+                          ...character,
+                          relationshipItems: list,
+                          relationships: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-white border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold italic"
+                      title="插入斜體"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = getInitialBulletItems(
+                          character.relationshipItems,
+                          character.relationships,
+                          DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                        );
+                        const list = [...current];
+                        list.splice(rIdx, 1);
+                        onUpdate({
+                          ...character,
+                          relationshipItems: list,
+                          relationships: list
+                            .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                            .join('\n'),
+                        });
+                      }}
+                      className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                      title="刪除"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold text-[#442F2A]/80 mb-0.5">
+                    關係說明內文：
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={item.content}
+                    placeholder="請輸入關係說明內文..."
+                    onChange={(e) => {
+                      const current = getInitialBulletItems(
+                        character.relationshipItems,
+                        character.relationships,
+                        DEFAULT_COUPLE_DATA[charKey].relationshipItems || []
+                      );
+                      const list = [...current];
+                      list[rIdx] = { ...list[rIdx], content: e.target.value };
+                      onUpdate({
+                        ...character,
+                        relationshipItems: list,
+                        relationships: list
+                          .map((i) => (i.title ? `✦ ${i.title}：${i.content}` : `✦ ${i.content}`))
+                          .join('\n'),
+                      });
+                    }}
+                    className="w-full bg-white border border-[#442F2A]/30 rounded p-1.5 text-xs text-[#442F2A]"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 6. 冷知識 (含對方的吐槽小視窗，可自由新增) */}

@@ -28,6 +28,12 @@ export interface CharacterTriviaItem {
   commenterName?: string;
 }
 
+export interface ProfileBulletItem {
+  id: string;
+  title: string; // 粗體小標
+  content: string; // 內文
+}
+
 export interface Character {
   name: string;
   romajiName?: string;
@@ -55,9 +61,11 @@ export interface Character {
   fortuneNote: string;
   color: string;
   appearance?: string; // 外貌描述
+  appearanceItems?: ProfileBulletItem[]; // 外貌描述條列 (✦+粗體小標+內文)
   personalityAnalysis?: string; // 性格剖析 (legacy)
   personalityParagraphs?: PersonalityParagraph[]; // 性格剖析多段落
   relationships?: string; // 人際關係
+  relationshipItems?: ProfileBulletItem[]; // 人際關係條列 (✦+粗體小標+內文)
   trivia?: string; // 冷知識 (legacy)
   triviaItems?: CharacterTriviaItem[]; // 冷知識列表 (含吐槽小視窗)
   basicInfoList?: string[]; // 基本資料條列 (高校３年現在)

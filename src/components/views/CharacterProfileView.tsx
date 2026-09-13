@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CoupleSiteData, Character, CoupleProfileItem } from '../../types';
+import { CoupleSiteData, Character, CoupleProfileItem, ProfileBulletItem } from '../../types';
 import { PixelHeart } from '../PixelHeart';
 import { OverlappingHearts } from '../OverlappingHearts';
 import { Edit, Sparkles, Plus, Quote, User, Users, Calendar, Sparkle, Heart } from 'lucide-react';
@@ -23,6 +23,40 @@ const renderContentOrPlaceholder = (text?: string, placeholder = '敬請期待')
     );
   }
   return text;
+};
+
+// Helper to parse or fallback bullet items (✦ + 粗體小標 + 內文)
+const parseBulletItems = (
+  rawItems?: ProfileBulletItem[],
+  rawText?: string,
+  fallbackItems: ProfileBulletItem[] = []
+): ProfileBulletItem[] => {
+  if (rawItems && rawItems.length > 0) return rawItems;
+  if (!rawText || !rawText.trim()) return fallbackItems;
+
+  const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0) return fallbackItems;
+
+  const parsed: ProfileBulletItem[] = [];
+  lines.forEach((line, idx) => {
+    const clean = line.replace(/^[✦•·・\s]+/, '').trim();
+    const match = clean.match(/^([^：:｜|]+)[：:｜|](.+)$/);
+    if (match) {
+      parsed.push({
+        id: `bullet-${idx}`,
+        title: match[1].trim(),
+        content: match[2].trim(),
+      });
+    } else {
+      parsed.push({
+        id: `bullet-${idx}`,
+        title: '',
+        content: clean,
+      });
+    }
+  });
+
+  return parsed.length > 0 ? parsed : fallbackItems;
 };
 
 export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
@@ -67,8 +101,16 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
     const fallbackData = isA ? DEFAULT_COUPLE_DATA.characterA : DEFAULT_COUPLE_DATA.characterB;
 
     const quoteText = char.quote || fallbackData.quote;
-    const appearanceText = char.appearance || fallbackData.appearance || '';
-    const relationshipsText = char.relationships || fallbackData.relationships || '';
+    const appearanceItems = parseBulletItems(
+      char.appearanceItems,
+      char.appearance,
+      fallbackData.appearanceItems || []
+    );
+    const relationshipItems = parseBulletItems(
+      char.relationshipItems,
+      char.relationships,
+      fallbackData.relationshipItems || []
+    );
 
     // 1. 基本資料條列
     const basicInfoList: string[] =
@@ -237,8 +279,25 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               外貌描述
             </h4>
           </div>
-          <div className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line">
-            {renderFormattedText(appearanceText)}
+          <div className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 space-y-2">
+            {appearanceItems.map((item, idx) => (
+              <div
+                key={item.id || idx}
+                className="text-xs sm:text-[13px] leading-relaxed flex items-start gap-2 text-[#442F2A]"
+              >
+                <span className="text-[#C89398] font-bold shrink-0 mt-0.5 select-none">✦</span>
+                <div className="flex-1 font-normal">
+                  {item.title && item.title.trim() ? (
+                    <span className="font-bold text-[#442F2A] mr-1.5">
+                      {item.title}：
+                    </span>
+                  ) : null}
+                  <span className="text-[#442F2A]">
+                    {renderFormattedText(item.content)}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -277,8 +336,25 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               人際關係
             </h4>
           </div>
-          <div className="bg-[#FFF8F5] p-3 rounded-lg border border-[#442F2A]/15 text-xs sm:text-[13px] text-[#442F2A] leading-relaxed whitespace-pre-line space-y-1 font-normal">
-            {renderFormattedText(relationshipsText)}
+          <div className="bg-[#FFF8F5] p-3 sm:p-3.5 rounded-lg border border-[#442F2A]/15 space-y-2">
+            {relationshipItems.map((item, idx) => (
+              <div
+                key={item.id || idx}
+                className="text-xs sm:text-[13px] leading-relaxed flex items-start gap-2 text-[#442F2A]"
+              >
+                <span className="text-[#C89398] font-bold shrink-0 mt-0.5 select-none">✦</span>
+                <div className="flex-1 font-normal">
+                  {item.title && item.title.trim() ? (
+                    <span className="font-bold text-[#442F2A] mr-1.5">
+                      {item.title}：
+                    </span>
+                  ) : null}
+                  <span className="text-[#442F2A]">
+                    {renderFormattedText(item.content)}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -525,7 +601,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                         {/* 解讀 A (若無內容則不顯示) */}
                         {noteA ? (
                           <div className="bg-[#442F2A]/5 p-2 rounded border border-[#442F2A]/15 text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
-                            <span className="font-bold text-[#C89398] mr-1">✦</span>
+                            <span className="font-bold text-[#442F2A] mr-1">✦</span>
                             <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
                             <span>{renderFormattedText(noteA)}</span>
                           </div>
@@ -575,10 +651,15 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
 
                           {/* 解讀 菅緒 (若無內容則不顯示) */}
                           {noteSugaNana ? (
-                            <div className="bg-[#E0BAC7]/25 p-2 rounded border border-[#E0BAC7] text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed">
-                              <span className="font-bold text-[#C89398] mr-1">✦</span>
-                              <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
-                              <span>{renderFormattedText(noteSugaNana)}</span>
+                            <div className="bg-[#E0BAC7]/25 p-2 rounded border border-[#E0BAC7] text-[11px] text-[#442F2A]/90 mt-2.5 leading-relaxed flex items-start gap-1.5">
+                              <span className="relative inline-flex items-center justify-center shrink-0 w-4 h-3.5 select-none mt-0.5">
+                                <span className="text-[#442F2A] font-bold text-xs absolute left-0 top-0 leading-none">✦</span>
+                                <span className="text-[#C89398] font-bold text-xs absolute left-1.5 top-0 leading-none">✦</span>
+                              </span>
+                              <div className="flex-1">
+                                <span className="font-bold text-[#442F2A] mr-1">解讀：</span>
+                                <span>{renderFormattedText(noteSugaNana)}</span>
+                              </div>
                             </div>
                           ) : null}
                         </div>

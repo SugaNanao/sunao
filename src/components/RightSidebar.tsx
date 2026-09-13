@@ -259,9 +259,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   >
                     {isHoliday ? (
                       <>
-                        {/* Pink star outline with transparent fill (粉色星星線條框起，中間不上色) */}
-                        <Star className="w-[23px] h-[23px] fill-transparent stroke-[#E0BAC7] stroke-[2.2px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)] group-hover:stroke-[#C89398]" />
-                        <span className="relative z-10 text-[#442F2A] font-bold text-[8.5px] leading-none pt-0.5">
+                        {/* Brown filled star with pink date number (棕色星星顏色填滿，日期數字粉色) */}
+                        <Star className="w-[23px] h-[23px] fill-[#442F2A] stroke-[#442F2A] stroke-[1.5px] absolute inset-0 m-auto filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]" />
+                        <span className="relative z-10 text-[#E0BAC7] font-bold text-[8.5px] leading-none pt-0.5">
                           {cell.day}
                         </span>
                       </>
@@ -348,7 +348,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <div className="bg-[#442F2A] text-[#FFF8F5] px-3.5 py-2 flex items-center justify-between font-pixel text-xs">
               <div className="flex items-center gap-1.5 font-bold">
                 {floatingDate.isHoliday ? (
-                  <Star className="w-3.5 h-3.5 text-[#E0BAC7] stroke-[2px]" />
+                  <Star className="w-3.5 h-3.5 fill-[#E0BAC7] text-[#E0BAC7]" />
                 ) : (
                   <Heart className="w-3.5 h-3.5 fill-[#C89398] text-[#C89398]" />
                 )}
