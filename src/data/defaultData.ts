@@ -800,5 +800,24 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     ],
   },
 
+  pageTitles: {
+    character: {
+      title: 'CHARACTER PROFILE',
+      subtitle: 'キャラクター情報解禁',
+    },
+    story: {
+      title: 'STORY',
+      subtitle: '烏野高校で、まだ描かれていない物語',
+    },
+    album: {
+      title: 'ALBUM',
+      subtitle: '新規描き下ろしイラスト公開！',
+    },
+    au: {
+      title: 'ALTERNATIVE UNIVERSE',
+      subtitle: '縁下監督 最新作',
+    },
+  },
+
   bgMusicPlaying: false,
 };

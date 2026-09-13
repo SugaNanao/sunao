@@ -79,11 +79,9 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
         /* Expanded Retro Music Player Window */
         <div className="w-72 bg-[#FFF8F5] border-2 border-[#442F2A] rounded-lg shadow-[4px_4px_0px_#442F2A] overflow-hidden">
           {/* Title Bar */}
-          <div className="bg-[#442F2A] text-[#FFF8F5] px-2.5 py-1 flex items-center justify-between text-xs font-pixel">
+          <div className="bg-[#442F2A] text-[#FFF8F5] px-2.5 py-1.5 flex items-center justify-between text-xs font-pixel">
             <div className="flex items-center gap-1.5">
               <Music className="w-3.5 h-3.5 text-[#C89398]" />
-              <span className="font-bold">♪ RETRO JUKEBOX</span>
-              <span className="text-[9px] bg-[#E0BAC7] text-[#442F2A] px-1 rounded">8-BIT</span>
             </div>
             <div className="flex items-center gap-1">
               <button
@@ -112,9 +110,11 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
                   <p className="text-xs font-pixel font-bold text-[#442F2A] truncate">
                     {currentTrack?.title || '未選擇播放歌曲'}
                   </p>
-                  <p className="text-[10px] font-pixel text-[#442F2A]/70 truncate">
-                    {currentTrack?.artist || '請點擊選單或上傳音樂'}
-                  </p>
+                  {currentTrack?.artist && !/uploaded mp[34]/i.test(currentTrack.artist) && (
+                    <p className="text-[10px] font-pixel text-[#442F2A]/70 truncate">
+                      {currentTrack.artist}
+                    </p>
+                  )}
                 </div>
 
                 {/* Animated visualizer bars */}

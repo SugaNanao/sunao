@@ -146,6 +146,13 @@ class RetroChiptunePlayer {
         const parsed = JSON.parse(savedCustom);
         if (Array.isArray(parsed)) {
           customTracks = parsed;
+          // Clean up any "Uploaded MP3 Audio" / "Uploaded MP4 Audio" placeholder text
+          customTracks.forEach((t) => {
+            if (t.artist && /uploaded mp[34]/i.test(t.artist)) {
+              t.artist = '';
+            }
+          });
+          localStorage.setItem(STORAGE_CUSTOM_TRACKS_KEY, JSON.stringify(customTracks));
         }
       }
     } catch (e) {
@@ -175,8 +182,8 @@ class RetroChiptunePlayer {
   public addCustomTrack(title: string, artist: string, src: string): number {
     const newTrack: Track = {
       id: 'custom-' + Date.now(),
-      title: title || '自訂音樂 (Uploaded Audio)',
-      artist: artist || 'MP3/MP4 File',
+      title: title || '自訂音樂',
+      artist: artist && !/uploaded mp[34]/i.test(artist) ? artist : '',
       src,
       isCustom: true,
     };

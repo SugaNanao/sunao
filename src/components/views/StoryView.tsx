@@ -27,10 +27,10 @@ export const StoryView: React.FC<StoryViewProps> = ({
       <div className="pixel-card p-4 bg-white relative">
         <div className="text-center">
           <h2 className="text-lg font-pixel font-bold text-[#442F2A]">
-            <span>STORY</span>
+            <span>{data.pageTitles?.story?.title || 'STORY'}</span>
           </h2>
           <p className="text-xs font-pixel text-[#442F2A]/70 mt-0.5">
-            烏野高校で、まだ描かれていない物語
+            {data.pageTitles?.story?.subtitle || '烏野高校で、まだ描かれていない物語'}
           </p>
         </div>
 

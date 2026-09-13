@@ -117,10 +117,10 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
       <div className="pixel-card p-4 bg-white relative">
         <div className="text-center">
           <h2 className="text-lg font-pixel font-bold text-[#442F2A]">
-            <span>ALBUM</span>
+            <span>{data.pageTitles?.album?.title || 'ALBUM'}</span>
           </h2>
           <p className="text-xs font-pixel text-[#442F2A]/70 mt-0.5">
-            新規描き下ろしイラスト公開！
+            {data.pageTitles?.album?.subtitle || '新規描き下ろしイラスト公開！'}
           </p>
         </div>
 

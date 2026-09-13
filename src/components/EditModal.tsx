@@ -90,9 +90,56 @@ export const EditModal: React.FC<EditModalProps> = ({
     setNewAlbumTagInput('');
   };
 
+  const updatePageTitle = (
+    page: 'character' | 'story' | 'album' | 'au',
+    field: 'title' | 'subtitle',
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      pageTitles: {
+        ...prev.pageTitles,
+        [page]: {
+          title:
+            prev.pageTitles?.[page]?.title ||
+            (page === 'character'
+              ? 'CHARACTER PROFILE'
+              : page === 'story'
+              ? 'STORY'
+              : page === 'album'
+              ? 'ALBUM'
+              : 'ALTERNATIVE UNIVERSE'),
+          subtitle:
+            prev.pageTitles?.[page]?.subtitle ||
+            (page === 'character'
+              ? 'キャラクター情報解禁'
+              : page === 'story'
+              ? '烏野高校で、まだ描かれていない物語'
+              : page === 'album'
+              ? '新規描き下ろしイラスト公開！'
+              : '縁下監督 最新作'),
+          ...prev.pageTitles?.[page],
+          [field]: value,
+        },
+      },
+    }));
+  };
+
   React.useEffect(() => {
-    setActiveSubTab(initialTab === 'anniversary' ? 'basic' : initialTab);
-  }, [initialTab, isOpen]);
+    if (isOpen) {
+      const cloned = JSON.parse(JSON.stringify(data));
+      if (!cloned.pageTitles) {
+        cloned.pageTitles = {
+          character: { title: 'CHARACTER PROFILE', subtitle: 'キャラクター情報解禁' },
+          story: { title: 'STORY', subtitle: '烏野高校で、まだ描かれていない物語' },
+          album: { title: 'ALBUM', subtitle: '新規描き下ろしイラスト公開！' },
+          au: { title: 'ALTERNATIVE UNIVERSE', subtitle: '縁下監督 最新作' },
+        };
+      }
+      setFormData(cloned);
+      setActiveSubTab(initialTab === 'anniversary' ? 'basic' : initialTab);
+    }
+  }, [initialTab, isOpen, data]);
 
   if (!isOpen) return null;
 
@@ -187,6 +234,7 @@ export const EditModal: React.FC<EditModalProps> = ({
 
   const subTabs = [
     { id: 'basic', label: '基本資料與首頁' },
+    { id: 'pageTitles', label: '各分頁標題副標' },
     { id: 'cover', label: 'LOADING / 封面頁設定' },
     { id: 'profile', label: '雙人人設檔案' },
     { id: 'coupleProfile', label: '菅緒檔案' },
@@ -257,6 +305,24 @@ export const EditModal: React.FC<EditModalProps> = ({
                     className="w-full bg-white border-2 border-[#442F2A] rounded p-2 text-xs"
                   />
                 </div>
+              </div>
+
+              {/* 各分頁標題副標快速入口提示 */}
+              <div className="flex items-center justify-between p-2.5 bg-[#F8EDF1] border border-[#442F2A]/30 rounded text-xs">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#C89398]" />
+                  <span className="text-[#442F2A] font-bold">各分頁頂部標題與副標題：</span>
+                  <span className="text-[11px] text-[#442F2A]/70 hidden sm:inline">
+                    可切換至「各分頁標題副標」或各分頁標籤即時編輯
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveSubTab('pageTitles')}
+                  className="px-2.5 py-1 bg-[#442F2A] text-white hover:bg-[#5A3825] rounded text-[11px] font-bold cursor-pointer transition"
+                >
+                  前往編輯分頁標題 →
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -707,6 +773,205 @@ export const EditModal: React.FC<EditModalProps> = ({
             </div>
           )}
 
+          {/* TAB: 各分頁標題與副標題 (PAGE TITLES & SUBTITLES) */}
+          {activeSubTab === 'pageTitles' && (
+            <div className="space-y-4">
+              <div className="p-3 bg-[#E0BAC7]/30 rounded-lg border border-[#442F2A]/30">
+                <h4 className="font-bold text-[#442F2A] text-sm flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>各分頁頂部標題與副標題編輯 (Page Titles & Subtitles)</span>
+                </h4>
+                <p className="text-[11px] text-[#442F2A]/70">
+                  在此自定義切換至各主要分頁時，頂部橫幅卡片所顯示的英日文大標題與副標題文字。
+                </p>
+              </div>
+
+              {/* 1. CHARACTER PROFILE */}
+              <div className="p-3.5 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between border-b border-[#442F2A]/20 pb-1.5">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#C89398]" />
+                    <span>01. 角色人設檔案分頁 (CHARACTER PROFILE)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('character', 'title', 'CHARACTER PROFILE');
+                      updatePageTitle('character', 'subtitle', 'キャラクター情報解禁');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁主標題 (Page Title)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.character?.title ?? 'CHARACTER PROFILE'}
+                      onChange={(e) => updatePageTitle('character', 'title', e.target.value)}
+                      placeholder="CHARACTER PROFILE"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁副標題 (Page Subtitle)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.character?.subtitle ?? 'キャラクター情報解禁'}
+                      onChange={(e) => updatePageTitle('character', 'subtitle', e.target.value)}
+                      placeholder="キャラクター情報解禁"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. STORY */}
+              <div className="p-3.5 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between border-b border-[#442F2A]/20 pb-1.5">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#442F2A]" />
+                    <span>02. 故事章節分頁 (STORY)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('story', 'title', 'STORY');
+                      updatePageTitle('story', 'subtitle', '烏野高校で、まだ描かれていない物語');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁主標題 (Page Title)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.story?.title ?? 'STORY'}
+                      onChange={(e) => updatePageTitle('story', 'title', e.target.value)}
+                      placeholder="STORY"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁副標題 (Page Subtitle)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.story?.subtitle ?? '烏野高校で、まだ描かれていない物語'}
+                      onChange={(e) => updatePageTitle('story', 'subtitle', e.target.value)}
+                      placeholder="烏野高校で、まだ描かれていない物語"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. ALBUM */}
+              <div className="p-3.5 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between border-b border-[#442F2A]/20 pb-1.5">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#C89398]" />
+                    <span>03. 珍藏相簿分頁 (ALBUM)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('album', 'title', 'ALBUM');
+                      updatePageTitle('album', 'subtitle', '新規描き下ろしイラスト公開！');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁主標題 (Page Title)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.album?.title ?? 'ALBUM'}
+                      onChange={(e) => updatePageTitle('album', 'title', e.target.value)}
+                      placeholder="ALBUM"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁副標題 (Page Subtitle)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.album?.subtitle ?? '新規描き下ろしイラスト公開！'}
+                      onChange={(e) => updatePageTitle('album', 'subtitle', e.target.value)}
+                      placeholder="新規描き下ろしイラスト公開！"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. AU */}
+              <div className="p-3.5 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between border-b border-[#442F2A]/20 pb-1.5">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#442F2A]" />
+                    <span>04. 平行宇宙分頁 (ALTERNATIVE UNIVERSE / AU)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('au', 'title', 'ALTERNATIVE UNIVERSE');
+                      updatePageTitle('au', 'subtitle', '縁下監督 最新作');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁主標題 (Page Title)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.au?.title ?? 'ALTERNATIVE UNIVERSE'}
+                      onChange={(e) => updatePageTitle('au', 'title', e.target.value)}
+                      placeholder="ALTERNATIVE UNIVERSE"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-[11px] text-[#442F2A] block mb-1">
+                      分頁副標題 (Page Subtitle)：
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.au?.subtitle ?? '縁下監督 最新作'}
+                      onChange={(e) => updatePageTitle('au', 'subtitle', e.target.value)}
+                      placeholder="縁下監督 最新作"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-2 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TAB 2: LOADING / COVER SCREEN SETTINGS */}
           {activeSubTab === 'cover' && (
             <div className="space-y-4">
@@ -775,6 +1040,48 @@ export const EditModal: React.FC<EditModalProps> = ({
           {/* TAB 3: CHARACTER PROFILES (CHARACTERS) */}
           {activeSubTab === 'profile' && (
             <div className="space-y-4">
+              {/* Profile Page Title & Subtitle Card */}
+              <div className="p-3 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C89398]" />
+                    <span>角色人設分頁頂部標題與副標題 (Header Title & Subtitle)：</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('character', 'title', 'CHARACTER PROFILE');
+                      updatePageTitle('character', 'subtitle', 'キャラクター情報解禁');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">主標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.character?.title ?? 'CHARACTER PROFILE'}
+                      onChange={(e) => updatePageTitle('character', 'title', e.target.value)}
+                      placeholder="CHARACTER PROFILE"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">副標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.character?.subtitle ?? 'キャラクター情報解禁'}
+                      onChange={(e) => updatePageTitle('character', 'subtitle', e.target.value)}
+                      placeholder="キャラクター情報解禁"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Profile Sub-navigation Switcher */}
               <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border-2 border-[#442F2A]">
                 <div className="flex items-center gap-1.5">
@@ -1159,6 +1466,48 @@ export const EditModal: React.FC<EditModalProps> = ({
           {/* TAB 6: STORIES */}
           {activeSubTab === 'story' && (
             <div className="space-y-3">
+              {/* Story Page Title & Subtitle Card */}
+              <div className="p-3 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-[#C89398]" />
+                    <span>故事分頁頂部標題與副標題 (Story Page Title & Subtitle)：</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('story', 'title', 'STORY');
+                      updatePageTitle('story', 'subtitle', '烏野高校で、まだ描かれていない物語');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">主標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.story?.title ?? 'STORY'}
+                      onChange={(e) => updatePageTitle('story', 'title', e.target.value)}
+                      placeholder="STORY"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">副標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.story?.subtitle ?? '烏野高校で、まだ描かれていない物語'}
+                      onChange={(e) => updatePageTitle('story', 'subtitle', e.target.value)}
+                      placeholder="烏野高校で、まだ描かれていない物語"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#442F2A]">故事章節列表 (STORIES)：</span>
                 <button
@@ -1341,6 +1690,48 @@ export const EditModal: React.FC<EditModalProps> = ({
           {/* TAB 7: ALBUM */}
           {activeSubTab === 'album' && (
             <div className="space-y-3">
+              {/* Album Page Title & Subtitle Card */}
+              <div className="p-3 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-[#C89398]" />
+                    <span>相簿分頁頂部標題與副標題 (Album Page Title & Subtitle)：</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('album', 'title', 'ALBUM');
+                      updatePageTitle('album', 'subtitle', '新規描き下ろしイラスト公開！');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">主標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.album?.title ?? 'ALBUM'}
+                      onChange={(e) => updatePageTitle('album', 'title', e.target.value)}
+                      placeholder="ALBUM"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">副標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.album?.subtitle ?? '新規描き下ろしイラスト公開！'}
+                      onChange={(e) => updatePageTitle('album', 'subtitle', e.target.value)}
+                      placeholder="新規描き下ろしイラスト公開！"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#442F2A]">相簿相片清單 (ALBUM)：</span>
                 <button
@@ -1559,6 +1950,48 @@ export const EditModal: React.FC<EditModalProps> = ({
           {/* TAB 8: AU (ALTERNATIVE UNIVERSE) */}
           {activeSubTab === 'au' && (
             <div className="space-y-3">
+              {/* AU Page Title & Subtitle Card */}
+              <div className="p-3 bg-white rounded-lg border-2 border-[#442F2A] shadow-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-[#C89398]" />
+                    <span>平行宇宙分頁頂部標題與副標題 (AU Page Title & Subtitle)：</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePageTitle('au', 'title', 'ALTERNATIVE UNIVERSE');
+                      updatePageTitle('au', 'subtitle', '縁下監督 最新作');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-[#FFF8F5] border border-[#442F2A]/30 text-[#442F2A] hover:bg-[#E0BAC7]/40 cursor-pointer font-bold"
+                  >
+                    恢復預設文字
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">主標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.au?.title ?? 'ALTERNATIVE UNIVERSE'}
+                      onChange={(e) => updatePageTitle('au', 'title', e.target.value)}
+                      placeholder="ALTERNATIVE UNIVERSE"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#442F2A] block mb-0.5">副標題：</label>
+                    <input
+                      type="text"
+                      value={formData.pageTitles?.au?.subtitle ?? '縁下監督 最新作'}
+                      onChange={(e) => updatePageTitle('au', 'subtitle', e.target.value)}
+                      placeholder="縁下監督 最新作"
+                      className="w-full bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#442F2A]">平行宇宙 (AU) 設定列表：</span>
                 <button

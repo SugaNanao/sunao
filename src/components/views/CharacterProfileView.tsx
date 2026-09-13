@@ -452,10 +452,10 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
       <div className="pixel-card p-3 sm:p-3.5 bg-white relative">
         <div className="text-center">
           <h2 className="text-base font-pixel font-bold text-[#442F2A]">
-            <span>CHARACTER PROFILE</span>
+            <span>{data.pageTitles?.character?.title || 'CHARACTER PROFILE'}</span>
           </h2>
           <p className="text-[11px] font-pixel text-[#442F2A]/70 mt-0.5">
-            キャラクター情報解禁
+            {data.pageTitles?.character?.subtitle || 'キャラクター情報解禁'}
           </p>
         </div>
 

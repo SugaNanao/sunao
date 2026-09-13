@@ -177,6 +177,18 @@ export interface PopupModalData {
   content: string;
 }
 
+export interface PageHeaderTitle {
+  title: string;
+  subtitle: string;
+}
+
+export interface PageTitlesConfig {
+  character?: PageHeaderTitle;
+  story?: PageHeaderTitle;
+  album?: PageHeaderTitle;
+  au?: PageHeaderTitle;
+}
+
 export interface CoupleSiteData {
   siteTitle: string;
   siteSubtitle: string;
@@ -184,6 +196,7 @@ export interface CoupleSiteData {
   introDescription: string;
   introNotice?: PopupModalData;
   introMemo?: PopupModalData;
+  pageTitles?: PageTitlesConfig;
   anniversaryDate: string; // YYYY-MM-DD
   anniversaryNote?: string; // e.g. "相識於2024.02.22"
   coverImage: string;

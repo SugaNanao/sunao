@@ -34,10 +34,10 @@ export const AUView: React.FC<AUViewProps> = ({
       <div className="pixel-card p-4 bg-white relative">
         <div className="text-center">
           <h2 className="text-lg font-pixel font-bold text-[#442F2A]">
-            <span>ALTERNATIVE UNIVERSE</span>
+            <span>{data.pageTitles?.au?.title || 'ALTERNATIVE UNIVERSE'}</span>
           </h2>
           <p className="text-xs font-pixel text-[#442F2A]/70 mt-0.5">
-            縁下監督 最新作
+            {data.pageTitles?.au?.subtitle || '縁下監督 最新作'}
           </p>
         </div>
 

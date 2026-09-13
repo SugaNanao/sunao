@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Music, Play, Pause, Volume2, Disc, Upload, Trash2, RotateCcw, FileAudio } from 'lucide-react';
+import { Music, Play, Pause, Volume2, Disc, Trash2, RotateCcw } from 'lucide-react';
 import { soundPlayer, Track } from '../utils/audioSynth';
 
 interface MusicModalProps {
@@ -18,7 +18,6 @@ export const MusicModal: React.FC<MusicModalProps> = ({
   const [currentTrackIndex, setCurrentTrackIndex] = useState(soundPlayer.getCurrentTrackIndex());
   const [volume, setVolume] = useState(soundPlayer.getVolume());
   const [tracks, setTracks] = useState<Track[]>([...soundPlayer.tracks]);
-  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const updateTracks = () => {
@@ -44,27 +43,6 @@ export const MusicModal: React.FC<MusicModalProps> = ({
     soundPlayer.setVolume(newVol);
   };
 
-  // Handle uploading custom MP3 or MP4 file
-  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const fileName = file.name.replace(/\.[^/.]+$/, '');
-    const isVideoMp4 = file.type.includes('mp4') || file.name.toLowerCase().endsWith('.mp4');
-    
-    // Create an ObjectURL for local playback
-    const fileUrl = URL.createObjectURL(file);
-    const newIdx = soundPlayer.addCustomTrack(
-      fileName,
-      isVideoMp4 ? 'Uploaded MP4 Audio' : 'Uploaded MP3 Audio',
-      fileUrl
-    );
-    setTracks([...soundPlayer.tracks]);
-    setCurrentTrackIndex(newIdx);
-    setUploadNotice(`已載入：${file.name}`);
-    setTimeout(() => setUploadNotice(null), 3000);
-  };
-
   // User requested: delete ANY music including default music!
   const handleRemoveTrack = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -82,11 +60,10 @@ export const MusicModal: React.FC<MusicModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs select-none">
       <div className="pixel-window w-full max-w-md rounded-lg overflow-hidden shadow-2xl bg-[#FFF8F5]" id="music-jukebox-modal">
-        {/* Title Bar - English only */}
+        {/* Title Bar */}
         <div className="bg-[#442F2A] text-[#FFF8F5] px-3 py-2 flex items-center justify-between font-pixel text-xs tracking-wider">
           <div className="flex items-center gap-2">
             <Disc className="w-4 h-4 text-[#E0BAC7] animate-spin" />
-            <span className="font-bold">MUSIC JUKEBOX</span>
           </div>
           <button
             onClick={onClose}
@@ -111,18 +88,15 @@ export const MusicModal: React.FC<MusicModalProps> = ({
                 <span className="text-[10px] font-pixel text-[#C89398] font-bold block">
                   {isPlaying ? '♪ NOW PLAYING' : '❚❚ PAUSED'}
                 </span>
-                {currentTrack?.isCustom && (
-                  <span className="text-[9px] bg-[#F8EDF1] text-[#9D5A64] px-1.5 py-0.2 rounded border border-[#E0BAC7] font-bold">
-                    CUSTOM
-                  </span>
-                )}
               </div>
               <h4 className="font-pixel font-bold text-xs sm:text-sm text-[#442F2A] truncate">
                 {currentTrack?.title || '未選擇播放曲目'}
               </h4>
-              <p className="text-[11px] font-pixel text-[#442F2A]/70 truncate">
-                {currentTrack?.artist || '—'}
-              </p>
+              {currentTrack?.artist && !/uploaded mp[34]/i.test(currentTrack.artist) && (
+                <p className="text-[11px] font-pixel text-[#442F2A]/70 truncate">
+                  {currentTrack.artist}
+                </p>
+              )}
 
               {/* Animated retro visualizer bars */}
               <div className="flex items-end gap-1 h-4 mt-2">
@@ -155,43 +129,11 @@ export const MusicModal: React.FC<MusicModalProps> = ({
             <span className="w-8 text-right">{Math.round(volume * 100)}%</span>
           </div>
 
-          {/* MP3 / MP4 Upload Section */}
-          <div className="p-3 bg-[#F8EDF1] rounded-lg border-2 border-[#442F2A]/30">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <span className="text-xs font-pixel font-bold text-[#442F2A] flex items-center gap-1.5">
-                  <FileAudio className="w-3.5 h-3.5 text-[#C89398]" />
-                  <span>UPLOAD AUDIO (MP3 / MP4)</span>
-                </span>
-                <p className="text-[10px] font-pixel text-[#442F2A]/70 mt-0.5">
-                  支援上傳本機 MP3 或 MP4 檔案作為背景音樂
-                </p>
-              </div>
-
-              <label className="pixel-btn px-3 py-1.5 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-xs font-pixel font-bold flex items-center gap-1 cursor-pointer shrink-0 shadow-sm">
-                <Upload className="w-3.5 h-3.5" />
-                <span>上傳檔案</span>
-                <input
-                  type="file"
-                  accept="audio/mp3,audio/*,video/mp4,.mp3,.mp4"
-                  className="hidden"
-                  onChange={handleAudioUpload}
-                />
-              </label>
-            </div>
-
-            {uploadNotice && (
-              <p className="text-[11px] font-pixel text-emerald-800 mt-1.5 font-bold animate-fade-in">
-                ✓ {uploadNotice}
-              </p>
-            )}
-          </div>
-
           {/* Playlist Track Items */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-pixel font-bold text-[#442F2A] tracking-wider">
-                PLAYLIST (曲目清單)：
+                PLAYLIST：
               </span>
               <button
                 onClick={handleRestoreDefaults}
@@ -242,9 +184,11 @@ export const MusicModal: React.FC<MusicModalProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 ml-2">
-                        <span className="text-[10px] opacity-70 truncate max-w-[80px]">
-                          {track.artist}
-                        </span>
+                        {track.artist && !/uploaded mp[34]/i.test(track.artist) && (
+                          <span className="text-[10px] opacity-70 truncate max-w-[80px]">
+                            {track.artist}
+                          </span>
+                        )}
                         <button
                           onClick={(e) => handleRemoveTrack(e, track.id)}
                           className="p-1 hover:text-red-600 hover:bg-[#F8EDF1] rounded text-neutral-400 cursor-pointer transition"
