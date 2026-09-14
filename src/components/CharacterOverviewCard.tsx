@@ -223,12 +223,13 @@ export const CharacterOverviewCard: React.FC<CharacterOverviewCardProps> = ({
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-1.5 py-0.5 px-2 bg-[#FFF8F5] hover:bg-[#F8EDF1] active:scale-95 border border-[#442F2A] rounded shadow-[1px_1px_0px_#442F2A] hover:shadow-[1.5px_1.5px_0px_#442F2A] transition-all text-[10px] sm:text-[11px] text-[#442F2A] cursor-pointer group whitespace-nowrap"
+          className="inline-flex items-center justify-center gap-1.5 py-1 px-2.5 bg-[#FFF8F5] hover:bg-[#F8EDF1] active:scale-95 border border-[#442F2A] rounded shadow-[1px_1px_0px_#442F2A] hover:shadow-[1.5px_1.5px_0px_#442F2A] transition-all text-[11px] font-pixel font-bold text-[#442F2A] cursor-pointer group whitespace-nowrap"
           title={`點擊查看 ${character.name} 的故事與人設段落`}
         >
           <PixelHeart
             color={heartColor}
-            className="w-2.5 h-2.5 shrink-0 group-hover:scale-110 transition-transform"
+            size={13}
+            className="shrink-0 group-hover:scale-110 transition-transform"
           />
           <span className="tracking-wide leading-none">{buttonLabel}</span>
         </button>

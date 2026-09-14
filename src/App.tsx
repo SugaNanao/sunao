@@ -260,6 +260,7 @@ export default function App() {
               data={data}
               isEditMode={effectiveEditMode}
               onEditSection={handleOpenEditSection}
+              onUpdateData={handleUpdateData}
               targetCharacter={characterProfileTarget}
             />
           )}

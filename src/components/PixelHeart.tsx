@@ -2,63 +2,109 @@ import React from 'react';
 
 interface PixelHeartProps {
   color?: string;
+  borderColor?: string;
   className?: string;
   size?: number; // optional size in px
   outline?: boolean;
+  withBorder?: boolean;
 }
 
 /**
  * Authentic 8-bit retro pixel heart SVG component.
- * Uses crispEdges rendering for razor-sharp pixel aesthetic.
+ * Uses crispEdges rendering and discrete pixel blocks for razor-sharp pixel aesthetic.
  */
 export const PixelHeart: React.FC<PixelHeartProps> = ({
   color = '#C89398',
+  borderColor = '#442F2A',
   className = 'w-4 h-4',
   size,
   outline = false,
+  withBorder = false,
 }) => {
-  const style = size ? { width: size, height: size } : undefined;
+  const style: React.CSSProperties = {
+    imageRendering: 'pixelated',
+    ...(size ? { width: `${size}px`, height: `${size}px` } : {}),
+  };
 
   if (outline) {
     return (
       <svg
-        viewBox="0 0 12 11"
+        viewBox="0 0 10 9"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         shapeRendering="crispEdges"
-        className={`inline-block ${className}`}
+        className={`inline-block shrink-0 ${className}`}
         style={style}
       >
-        {/* Outline of 8-bit heart */}
-        <path
-          d="M2 1h2v1H2zm6 0h2v1H8zM1 2h1v1H1zm4 0h2v1H5zm5 0h1v1h-1zM0 3h1v3H0zm11 3h1V3h-1zM1 6h1v1H1zm9 0h1v1h-1zM2 7h1v1H2zm7 0h1v1H7zm-5 1h1v1H4zm3 0h1v1H7zm-2 1h2v1H5zm0 1h2v1H5z"
-          fill={color}
-        />
+        <rect x="1" y="0" width="3" height="1" fill={color} />
+        <rect x="6" y="0" width="3" height="1" fill={color} />
+        <rect x="0" y="1" width="1" height="3" fill={color} />
+        <rect x="4" y="1" width="2" height="1" fill={color} />
+        <rect x="9" y="1" width="1" height="3" fill={color} />
+        <rect x="1" y="4" width="1" height="1" fill={color} />
+        <rect x="8" y="4" width="1" height="1" fill={color} />
+        <rect x="2" y="5" width="1" height="1" fill={color} />
+        <rect x="7" y="5" width="1" height="1" fill={color} />
+        <rect x="3" y="6" width="1" height="1" fill={color} />
+        <rect x="6" y="6" width="1" height="1" fill={color} />
+        <rect x="4" y="7" width="2" height="1" fill={color} />
+        <rect x="4" y="8" width="2" height="1" fill={color} />
+      </svg>
+    );
+  }
+
+  if (withBorder) {
+    return (
+      <svg
+        viewBox="0 0 10 9"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        shapeRendering="crispEdges"
+        className={`inline-block shrink-0 ${className}`}
+        style={style}
+      >
+        {/* Dark pixel outline */}
+        <rect x="1" y="0" width="3" height="1" fill={borderColor} />
+        <rect x="6" y="0" width="3" height="1" fill={borderColor} />
+        <rect x="0" y="1" width="1" height="3" fill={borderColor} />
+        <rect x="4" y="1" width="2" height="1" fill={borderColor} />
+        <rect x="9" y="1" width="1" height="3" fill={borderColor} />
+        <rect x="1" y="4" width="1" height="1" fill={borderColor} />
+        <rect x="8" y="4" width="1" height="1" fill={borderColor} />
+        <rect x="2" y="5" width="1" height="1" fill={borderColor} />
+        <rect x="7" y="5" width="1" height="1" fill={borderColor} />
+        <rect x="3" y="6" width="1" height="1" fill={borderColor} />
+        <rect x="6" y="6" width="1" height="1" fill={borderColor} />
+        <rect x="4" y="7" width="2" height="1" fill={borderColor} />
+        {/* Inner colored fill */}
+        <rect x="1" y="1" width="3" height="3" fill={color} />
+        <rect x="6" y="1" width="3" height="3" fill={color} />
+        <rect x="4" y="2" width="2" height="2" fill={color} />
+        <rect x="2" y="4" width="6" height="1" fill={color} />
+        <rect x="3" y="5" width="4" height="1" fill={color} />
+        <rect x="4" y="6" width="2" height="1" fill={color} />
       </svg>
     );
   }
 
   return (
     <svg
-      viewBox="0 0 12 11"
-      fill={color}
+      viewBox="0 0 10 9"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       shapeRendering="crispEdges"
       className={`inline-block shrink-0 ${className}`}
       style={style}
     >
-      {/* 
-        Symmetrical 12x11 retro pixel heart
-        Row 1: 2..3, 8..9
-        Row 2: 1..4, 7..10
-        Row 3-5: 0..11
-        Row 6: 1..10
-        Row 7: 2..9
-        Row 8: 3..8
-        Row 9: 4..7
-        Row 10: 5..6
-      */}
-      <path d="M2 1h2v1H2zm6 0h2v1H8zM1 2h4v1H1zm6 0h4v1H7zM0 3h12v3H0zm1 3h10v1H1zm1 1h8v1H2zm1 1h6v1H3zm1 1h4v1H4zm1 1h2v1H5z" />
+      {/* Crisp 8-bit stepped pixel blocks */}
+      <rect x="1" y="0" width="3" height="1" fill={color} />
+      <rect x="6" y="0" width="3" height="1" fill={color} />
+      <rect x="0" y="1" width="10" height="3" fill={color} />
+      <rect x="1" y="4" width="8" height="1" fill={color} />
+      <rect x="2" y="5" width="6" height="1" fill={color} />
+      <rect x="3" y="6" width="4" height="1" fill={color} />
+      <rect x="4" y="7" width="2" height="1" fill={color} />
     </svg>
   );
 };
+

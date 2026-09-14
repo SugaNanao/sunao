@@ -192,9 +192,20 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
                   src={photo.url}
                   alt={photo.caption}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500 filter contrast-105"
+                  style={{
+                    objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                    transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                  }}
                 />
-                <div className="absolute top-2 right-2 bg-white/90 border border-[#442F2A] text-[10px] font-pixel px-1.5 py-0.5 rounded shadow-sm">
-                  #{photo.tag ? photo.tag.replace(/^#/, '') : 'いつもの景色'}
+                <div className="absolute top-2 right-2 flex items-center gap-1">
+                  {(photo.showOnHome || (data.homeAlbumPhotoIds && data.homeAlbumPhotoIds.includes(photo.id))) && (
+                    <span className="bg-[#442F2A] text-[#FFF8F5] border border-[#442F2A] text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm">
+                      🏠 首頁
+                    </span>
+                  )}
+                  <span className="bg-white/90 border border-[#442F2A] text-[10px] font-pixel px-1.5 py-0.5 rounded shadow-sm">
+                    #{photo.tag ? photo.tag.replace(/^#/, '') : 'いつもの景色'}
+                  </span>
                 </div>
               </div>
 

@@ -31,6 +31,12 @@ import {
   FileText,
   Star,
   Tag,
+  Check,
+  Home,
+  Sliders,
+  Crop,
+  RotateCcw,
+  ZoomIn,
 } from 'lucide-react';
 import { exportDataAsJSON, resetCoupleData } from '../utils/storage';
 
@@ -1825,11 +1831,203 @@ export const EditModal: React.FC<EditModalProps> = ({
                 </div>
               </div>
 
+              {/* HOME 頁展示相片自訂選擇區塊 (Requirement 2) */}
+              <div className="p-3 bg-[#FFF8F5] rounded-lg border-2 border-[#442F2A] shadow-xs space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#442F2A]/20 pb-2">
+                  <div>
+                    <div className="font-bold text-xs text-[#442F2A] flex items-center gap-1.5">
+                      <Home className="w-3.5 h-3.5 text-[#C89398]" />
+                      <span>首頁展示相片自訂選擇 (HOME ALBUM SELECTION)</span>
+                    </div>
+                    <p className="text-[11px] text-[#442F2A]/70 mt-0.5">
+                      點擊相片縮圖即可「勾選 / 取消」是否在首頁展示。
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const top3 = formData.album.slice(0, 3).map((p) => p.id);
+                        const updatedAlbum = formData.album.map((p, i) => ({
+                          ...p,
+                          showOnHome: i < 3,
+                        }));
+                        setFormData({
+                          ...formData,
+                          album: updatedAlbum,
+                          homeAlbumPhotoIds: top3,
+                        });
+                      }}
+                      className="px-2 py-1 bg-white hover:bg-[#F8EDF1] border border-[#442F2A]/40 rounded text-[10px] font-pixel cursor-pointer"
+                    >
+                      選取前 3 張
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allIds = formData.album.map((p) => p.id);
+                        const updatedAlbum = formData.album.map((p) => ({
+                          ...p,
+                          showOnHome: true,
+                        }));
+                        setFormData({
+                          ...formData,
+                          album: updatedAlbum,
+                          homeAlbumPhotoIds: allIds,
+                        });
+                      }}
+                      className="px-2 py-1 bg-white hover:bg-[#F8EDF1] border border-[#442F2A]/40 rounded text-[10px] font-pixel cursor-pointer"
+                    >
+                      全選
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updatedAlbum = formData.album.map((p) => ({
+                          ...p,
+                          showOnHome: false,
+                        }));
+                        setFormData({
+                          ...formData,
+                          album: updatedAlbum,
+                          homeAlbumPhotoIds: [],
+                        });
+                      }}
+                      className="px-2 py-1 bg-white hover:bg-[#F8EDF1] border border-[#442F2A]/40 rounded text-[10px] font-pixel cursor-pointer text-[#C89398]"
+                    >
+                      全部清空
+                    </button>
+                  </div>
+                </div>
+
+                {/* 相片快速勾選列 */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5">
+                  {formData.album.map((photo, idx) => {
+                    const isSelected =
+                      formData.homeAlbumPhotoIds && formData.homeAlbumPhotoIds.length > 0
+                        ? formData.homeAlbumPhotoIds.includes(photo.id)
+                        : photo.showOnHome !== undefined
+                        ? photo.showOnHome
+                        : idx < 3;
+
+                    return (
+                      <button
+                        key={photo.id || idx}
+                        type="button"
+                        onClick={() => {
+                          let currentIds: string[] = [];
+                          if (formData.homeAlbumPhotoIds && formData.homeAlbumPhotoIds.length > 0) {
+                            currentIds = [...formData.homeAlbumPhotoIds];
+                          } else {
+                            currentIds = formData.album
+                              .filter((p, i) => (p.showOnHome !== undefined ? p.showOnHome : i < 3))
+                              .map((p) => p.id);
+                          }
+
+                          let nextIds: string[];
+                          if (currentIds.includes(photo.id)) {
+                            nextIds = currentIds.filter((id) => id !== photo.id);
+                          } else {
+                            nextIds = [...currentIds, photo.id];
+                          }
+
+                          const updatedAlbum = formData.album.map((p) => ({
+                            ...p,
+                            showOnHome: nextIds.includes(p.id),
+                          }));
+
+                          setFormData({
+                            ...formData,
+                            album: updatedAlbum,
+                            homeAlbumPhotoIds: nextIds,
+                          });
+                        }}
+                        className={`relative shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all cursor-pointer group ${
+                          isSelected
+                            ? 'border-[#442F2A] ring-2 ring-[#C89398] shadow-sm'
+                            : 'border-neutral-300 opacity-60 hover:opacity-100'
+                        }`}
+                        title={`點擊切換在首頁展示: ${photo.caption || '相片 #' + (idx + 1)}`}
+                      >
+                        <img
+                          src={photo.url}
+                          alt={photo.caption}
+                          className="w-full h-full object-cover"
+                          style={{
+                            objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                            transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                          }}
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-[#442F2A]/35 flex items-center justify-center">
+                            <span className="bg-[#442F2A] text-white rounded-full p-0.5 shadow-sm">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </span>
+                          </div>
+                        )}
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] font-pixel text-center py-0.2 truncate px-0.5">
+                          #{idx + 1}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {formData.album.map((photo, idx) => (
+                {formData.album.map((photo, idx) => {
+                  const isSelectedOnHome =
+                    formData.homeAlbumPhotoIds && formData.homeAlbumPhotoIds.length > 0
+                      ? formData.homeAlbumPhotoIds.includes(photo.id)
+                      : photo.showOnHome !== undefined
+                      ? photo.showOnHome
+                      : idx < 3;
+
+                  return (
                   <div key={photo.id || idx} className="p-3 bg-white rounded border-2 border-[#442F2A] space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#9D5A64]">相片 #{idx + 1}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[#9D5A64]">相片 #{idx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            let currentIds: string[] = [];
+                            if (formData.homeAlbumPhotoIds && formData.homeAlbumPhotoIds.length > 0) {
+                              currentIds = [...formData.homeAlbumPhotoIds];
+                            } else {
+                              currentIds = formData.album
+                                .filter((p, i) => (p.showOnHome !== undefined ? p.showOnHome : i < 3))
+                                .map((p) => p.id);
+                            }
+                            let nextIds: string[];
+                            if (currentIds.includes(photo.id)) {
+                              nextIds = currentIds.filter((id) => id !== photo.id);
+                            } else {
+                              nextIds = [...currentIds, photo.id];
+                            }
+                            const updatedAlbum = formData.album.map((p) => ({
+                              ...p,
+                              showOnHome: nextIds.includes(p.id),
+                            }));
+                            setFormData({
+                              ...formData,
+                              album: updatedAlbum,
+                              homeAlbumPhotoIds: nextIds,
+                            });
+                          }}
+                          className={`px-2 py-0.5 rounded text-[10px] font-pixel flex items-center gap-1 cursor-pointer transition border ${
+                            isSelectedOnHome
+                              ? 'bg-[#442F2A] text-white border-[#442F2A]'
+                              : 'bg-neutral-100 text-[#442F2A]/70 border-[#442F2A]/30 hover:bg-[#F8EDF1]'
+                          }`}
+                          title="切換首頁展示"
+                        >
+                          <Home className="w-2.5 h-2.5" />
+                          <span>{isSelectedOnHome ? '✓ 首頁展示中' : '+ 加入首頁'}</span>
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() =>
@@ -1844,8 +2042,160 @@ export const EditModal: React.FC<EditModalProps> = ({
                       </button>
                     </div>
 
-                    <div className="h-32 rounded border border-[#442F2A] overflow-hidden bg-neutral-100">
-                      <img src={photo.url} alt="preview" className="w-full h-full object-cover" />
+                    {/* 預覽照片範圍與對焦點調節 (Requirement 3) */}
+                    <div className="p-2 bg-[#FFF8F5] rounded border border-[#442F2A]/20 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-[#442F2A] flex items-center gap-1">
+                          <Crop className="w-3 h-3 text-[#C89398]" />
+                          <span>預覽範圍與對焦點 (點圖直接對焦)</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = [...formData.album];
+                            next[idx] = {
+                              ...next[idx],
+                              previewPositionX: 50,
+                              previewPositionY: 50,
+                              previewScale: 100,
+                            };
+                            setFormData({ ...formData, album: next });
+                          }}
+                          className="text-[9px] text-[#442F2A]/60 hover:text-[#442F2A] flex items-center gap-0.5 cursor-pointer underline"
+                        >
+                          <RotateCcw className="w-2.5 h-2.5" />
+                          <span>重設</span>
+                        </button>
+                      </div>
+
+                      {/* 即時互動對焦框 */}
+                      <div
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const clickX = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                          const clickY = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                          const next = [...formData.album];
+                          next[idx] = {
+                            ...next[idx],
+                            previewPositionX: Math.max(0, Math.min(100, clickX)),
+                            previewPositionY: Math.max(0, Math.min(100, clickY)),
+                          };
+                          setFormData({ ...formData, album: next });
+                        }}
+                        className="h-32 w-full rounded border border-[#442F2A] overflow-hidden bg-neutral-100 relative cursor-crosshair group shadow-inner"
+                        title="點擊圖片任意處可直接將焦點移至該位置"
+                      >
+                        <img
+                          src={photo.url}
+                          alt="preview"
+                          className="w-full h-full object-cover transition-all duration-150"
+                          style={{
+                            objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                            transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                          }}
+                        />
+                        {/* 焦點十字圓圈 */}
+                        <div
+                          className="absolute w-3.5 h-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#C89398]/80 shadow-md pointer-events-none transition-all duration-100"
+                          style={{
+                            left: `${photo.previewPositionX ?? 50}%`,
+                            top: `${photo.previewPositionY ?? 50}%`,
+                          }}
+                        />
+                        <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] font-pixel px-1 py-0.2 rounded pointer-events-none">
+                          {photo.previewPositionX ?? 50}%, {photo.previewPositionY ?? 50}%
+                        </div>
+                      </div>
+
+                      {/* 快速對焦選項 */}
+                      <div className="flex items-center gap-1 flex-wrap text-[9px]">
+                        <span className="text-[#442F2A]/70 font-bold shrink-0">快速對焦:</span>
+                        {[
+                          { label: '頭部/臉部', x: 50, y: 15 },
+                          { label: '置中', x: 50, y: 50 },
+                          { label: '底部', x: 50, y: 85 },
+                          { label: '偏左', x: 25, y: 50 },
+                          { label: '偏右', x: 75, y: 50 },
+                        ].map((preset) => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => {
+                              const next = [...formData.album];
+                              next[idx] = {
+                                ...next[idx],
+                                previewPositionX: preset.x,
+                                previewPositionY: preset.y,
+                              };
+                              setFormData({ ...formData, album: next });
+                            }}
+                            className="px-1 py-0.5 bg-white hover:bg-[#F8EDF1] border border-[#442F2A]/30 rounded text-[#442F2A] cursor-pointer"
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* 縮放與對焦微調滑桿 */}
+                      <div className="grid grid-cols-3 gap-1 pt-0.5 text-[9px]">
+                        <div>
+                          <div className="flex justify-between text-[#442F2A]">
+                            <span>X焦點:</span>
+                            <span className="font-mono text-[#9D5A64]">{photo.previewPositionX ?? 50}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={photo.previewPositionX ?? 50}
+                            onChange={(e) => {
+                              const next = [...formData.album];
+                              next[idx] = { ...next[idx], previewPositionX: parseInt(e.target.value) || 0 };
+                              setFormData({ ...formData, album: next });
+                            }}
+                            className="w-full accent-[#C89398] cursor-pointer h-1 bg-neutral-200 rounded"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[#442F2A]">
+                            <span>Y焦點:</span>
+                            <span className="font-mono text-[#9D5A64]">{photo.previewPositionY ?? 50}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={photo.previewPositionY ?? 50}
+                            onChange={(e) => {
+                              const next = [...formData.album];
+                              next[idx] = { ...next[idx], previewPositionY: parseInt(e.target.value) || 0 };
+                              setFormData({ ...formData, album: next });
+                            }}
+                            className="w-full accent-[#C89398] cursor-pointer h-1 bg-neutral-200 rounded"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[#442F2A]">
+                            <span>縮放:</span>
+                            <span className="font-mono text-[#9D5A64]">{photo.previewScale ?? 100}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="100"
+                            max="200"
+                            step="5"
+                            value={photo.previewScale ?? 100}
+                            onChange={(e) => {
+                              const next = [...formData.album];
+                              next[idx] = { ...next[idx], previewScale: parseInt(e.target.value) || 100 };
+                              setFormData({ ...formData, album: next });
+                            }}
+                            className="w-full accent-[#C89398] cursor-pointer h-1 bg-neutral-200 rounded"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex gap-1">
@@ -1963,7 +2313,8 @@ export const EditModal: React.FC<EditModalProps> = ({
                       />
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

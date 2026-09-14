@@ -75,6 +75,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
     { bg: 'bg-[#E0BAC7]', text: 'text-[#442F2A]' },
   ];
 
+  // 3. Album Highlights Preview (Support user selecting which photos to showcase & preview range)
+  const homeDisplayPhotos = React.useMemo(() => {
+    if (data.homeAlbumPhotoIds && data.homeAlbumPhotoIds.length > 0) {
+      const selected = data.homeAlbumPhotoIds
+        .map((id) => data.album.find((p) => p.id === id))
+        .filter((p): p is typeof data.album[0] => Boolean(p));
+      if (selected.length > 0) return selected;
+    }
+    const markedPhotos = data.album.filter((p) => p.showOnHome);
+    if (markedPhotos.length > 0) return markedPhotos;
+    return data.album.slice(0, 3);
+  }, [data.album, data.homeAlbumPhotoIds]);
+
   return (
     <div className="flex flex-col gap-6" id="home-view-container">
       {/* 1. Main Welcome Feature Card (Proportionally scaled referencing Loading screen block) */}
@@ -374,18 +387,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Polaroid style cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {data.album.slice(0, 3).map((photo) => (
+        <div
+          className={`grid gap-4 ${
+            homeDisplayPhotos.length === 1
+              ? 'grid-cols-1 max-w-sm mx-auto'
+              : homeDisplayPhotos.length === 2
+              ? 'grid-cols-1 sm:grid-cols-2 max-w-xl mx-auto'
+              : homeDisplayPhotos.length === 4
+              ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4'
+              : 'grid-cols-1 sm:grid-cols-3'
+          }`}
+        >
+          {homeDisplayPhotos.map((photo) => (
             <div
               key={photo.id}
               onClick={() => onNavigateTab('ALBUM')}
               className="bg-[#FFF8F5] border-2 border-[#442F2A] p-2 rounded shadow hover:rotate-1 hover:scale-102 transition duration-200 cursor-pointer flex flex-col"
             >
-              <div className="h-40 w-full overflow-hidden border border-[#442F2A]/20 rounded mb-2 bg-neutral-100">
+              <div className="h-40 w-full overflow-hidden border border-[#442F2A]/20 rounded mb-2 bg-neutral-100 relative">
                 <img
                   src={photo.url}
                   alt={photo.caption}
-                  className="w-full h-full object-cover filter contrast-105"
+                  className="w-full h-full object-cover filter contrast-105 transition-transform duration-300"
+                  style={{
+                    objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                    transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                  }}
                 />
               </div>
               <p className="font-pixel text-xs font-bold text-[#442F2A] truncate">
@@ -397,6 +424,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
           ))}
+
+          {homeDisplayPhotos.length === 0 && (
+            <div className="col-span-full py-8 text-center bg-[#FFF8F5] rounded border border-dashed border-[#442F2A]/40 font-pixel text-xs text-[#442F2A]/70">
+              目前尚未勾選首頁展示相片，請點擊上方 EDIT 選擇要展示的相片。
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -125,6 +125,11 @@ export interface AlbumPhoto {
   date: string;
   location?: string;
   tag: string;
+  showOnHome?: boolean; // 是否展示於 HOME 首頁 (可自行勾選/選擇)
+  homeOrder?: number; // 首頁展示排序
+  previewPositionX?: number; // 水平對齊/對焦點 0% ~ 100% (預設 50%)
+  previewPositionY?: number; // 垂直對齊/對焦點 0% ~ 100% (預設 50%)
+  previewScale?: number; // 縮放比例 100% ~ 200% (預設 100%)
 }
 
 export interface StoryChapter {
@@ -223,6 +228,7 @@ export interface CoupleSiteData {
   milestones: Milestone[];
   album: AlbumPhoto[];
   albumCustomTags?: string[];
+  homeAlbumPhotoIds?: string[]; // 自選首頁展示相片 ID 清單
   stories: StoryChapter[];
   alternativeUniverses: AlternativeUniverse[];
   chatHistory: ChatMessage[];

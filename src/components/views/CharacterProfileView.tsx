@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CoupleSiteData, Character, CoupleProfileItem, ProfileBulletItem } from '../../types';
 import { PixelHeart } from '../PixelHeart';
 import { OverlappingHearts } from '../OverlappingHearts';
-import { Edit, Sparkles, Plus, Quote, User, Users, Calendar, Sparkle, Heart } from 'lucide-react';
+import { Edit, Sparkles, Plus, Quote, User, Users, Calendar, Sparkle, Heart, Move, RotateCcw } from 'lucide-react';
 import { renderFormattedText } from '../../utils/textFormatter';
 import { DEFAULT_COUPLE_DATA } from '../../data/defaultData';
 
@@ -10,6 +10,7 @@ interface CharacterProfileViewProps {
   data: CoupleSiteData;
   isEditMode: boolean;
   onEditSection: (section: string) => void;
+  onUpdateData?: (newData: CoupleSiteData) => void;
   targetCharacter?: 'BOTH' | 'CHAR_A' | 'CHAR_B';
 }
 
@@ -63,6 +64,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
   data,
   isEditMode,
   onEditSection,
+  onUpdateData,
   targetCharacter,
 }) => {
   const [subTab, setSubTab] = useState<'PERSONAL' | 'COUPLE'>('PERSONAL');
@@ -72,6 +74,62 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
   );
 
   const [expandedTrivia, setExpandedTrivia] = useState<Record<string, boolean>>({});
+
+  // Active dragging state for transparent corner sticker in edit mode
+  const [activeDrag, setActiveDrag] = useState<{
+    charKey: 'characterA' | 'characterB';
+    startX: number;
+    startY: number;
+    initialOffsetX: number;
+    initialOffsetY: number;
+    currentOffsetX: number;
+    currentOffsetY: number;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (!activeDrag) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      const dx = e.clientX - activeDrag.startX;
+      const dy = e.clientY - activeDrag.startY;
+      setActiveDrag((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentOffsetX: Math.round(prev.initialOffsetX + dx),
+          currentOffsetY: Math.round(prev.initialOffsetY + dy),
+        };
+      });
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      if (!activeDrag) return;
+      const dx = e.clientX - activeDrag.startX;
+      const dy = e.clientY - activeDrag.startY;
+      const finalX = Math.round(activeDrag.initialOffsetX + dx);
+      const finalY = Math.round(activeDrag.initialOffsetY + dy);
+
+      if (onUpdateData) {
+        const targetChar = data[activeDrag.charKey];
+        onUpdateData({
+          ...data,
+          [activeDrag.charKey]: {
+            ...targetChar,
+            cornerImageOffsetX: finalX,
+            cornerImageOffsetY: finalY,
+          },
+        });
+      }
+      setActiveDrag(null);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [activeDrag, data, onUpdateData]);
 
   const toggleTrivia = (key: string) => {
     setExpandedTrivia((prev) => ({
@@ -201,41 +259,102 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               </div>
             </div>
 
-            {/* 放置透明底的圖片 (兩個人的區塊都要，支援編輯模式調整位置與大小) */}
-            {char.cornerImage ? (
-              <div
-                className={`flex mt-1 sm:mt-0 select-none z-10 ${
-                  char.cornerImagePosition === 'top-right'
-                    ? 'sm:absolute sm:right-0 sm:top-0 justify-end'
-                    : char.cornerImagePosition === 'top-left'
-                    ? 'sm:absolute sm:left-0 sm:top-0 justify-start'
-                    : char.cornerImagePosition === 'bottom-left'
-                    ? 'sm:absolute sm:left-0 sm:bottom-0 justify-start'
-                    : 'sm:absolute sm:right-0 sm:bottom-0 justify-end'
-                }`}
-                style={{
-                  transform: `translate(${char.cornerImageOffsetX || 0}px, ${char.cornerImageOffsetY || 0}px)`,
-                }}
-              >
-                <img
-                  src={char.cornerImage}
-                  alt={`${char.name} 裝飾圖片`}
-                  className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[130px] sm:max-w-[160px] drop-shadow-xs transition-transform duration-150"
+            {/* 放置透明底的圖片 (兩個人的區塊都要，支援編輯模式直接在卡片上自由拖曳調整位置) */}
+            {char.cornerImage ? (() => {
+              const charKey = isA ? 'characterA' : 'characterB';
+              const isThisDragging = activeDrag?.charKey === charKey;
+              const currentOffsetX = isThisDragging ? activeDrag.currentOffsetX : (char.cornerImageOffsetX || 0);
+              const currentOffsetY = isThisDragging ? activeDrag.currentOffsetY : (char.cornerImageOffsetY || 0);
+
+              return (
+                <div
+                  className={`flex mt-1 sm:mt-0 select-none z-10 ${
+                    char.cornerImagePosition === 'top-right'
+                      ? 'sm:absolute sm:right-0 sm:top-0 justify-end'
+                      : char.cornerImagePosition === 'top-left'
+                      ? 'sm:absolute sm:left-0 sm:top-0 justify-start'
+                      : char.cornerImagePosition === 'bottom-left'
+                      ? 'sm:absolute sm:left-0 sm:bottom-0 justify-start'
+                      : 'sm:absolute sm:right-0 sm:bottom-0 justify-end'
+                  }`}
                   style={{
-                    backgroundColor: 'transparent',
-                    transform: `scale(${(char.cornerImageScale || 100) / 100})`,
-                    transformOrigin:
-                      char.cornerImagePosition === 'top-right'
-                        ? 'top right'
-                        : char.cornerImagePosition === 'top-left'
-                        ? 'top left'
-                        : char.cornerImagePosition === 'bottom-left'
-                        ? 'bottom left'
-                        : 'bottom right',
+                    transform: `translate(${currentOffsetX}px, ${currentOffsetY}px)`,
+                    touchAction: isEditMode ? 'none' : 'auto',
                   }}
-                />
-              </div>
-            ) : isEditMode ? (
+                >
+                  <div
+                    onPointerDown={(e) => {
+                      if (!isEditMode) return;
+                      e.preventDefault();
+                      setActiveDrag({
+                        charKey,
+                        startX: e.clientX,
+                        startY: e.clientY,
+                        initialOffsetX: char.cornerImageOffsetX || 0,
+                        initialOffsetY: char.cornerImageOffsetY || 0,
+                        currentOffsetX: char.cornerImageOffsetX || 0,
+                        currentOffsetY: char.cornerImageOffsetY || 0,
+                      });
+                    }}
+                    className={`relative group ${
+                      isEditMode
+                        ? 'cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#C89398] hover:ring-dashed rounded-lg p-1 transition-all'
+                        : ''
+                    }`}
+                    title={isEditMode ? '按住滑鼠或觸控直接拖拽至任意位置' : undefined}
+                  >
+                    <img
+                      src={char.cornerImage}
+                      alt={`${char.name} 裝飾圖片`}
+                      className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[130px] sm:max-w-[160px] drop-shadow-xs pointer-events-none transition-transform duration-100"
+                      style={{
+                        backgroundColor: 'transparent',
+                        transform: `scale(${(char.cornerImageScale || 100) / 100})`,
+                        transformOrigin:
+                          char.cornerImagePosition === 'top-right'
+                            ? 'top right'
+                            : char.cornerImagePosition === 'top-left'
+                            ? 'top left'
+                            : char.cornerImagePosition === 'bottom-left'
+                            ? 'bottom left'
+                            : 'bottom right',
+                      }}
+                    />
+
+                    {/* 編輯模式下的拖拽與重設快捷小標籤 */}
+                    {isEditMode && (
+                      <div className="absolute -bottom-5 right-0 flex items-center gap-1 bg-[#442F2A] text-white text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm opacity-85 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        <Move className="w-2.5 h-2.5 text-[#E0BAC7]" />
+                        <span>{isThisDragging ? '拖曳中...' : '可直接拖拽'}</span>
+                        {(char.cornerImageOffsetX !== 0 || char.cornerImageOffsetY !== 0) && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onUpdateData) {
+                                onUpdateData({
+                                  ...data,
+                                  [charKey]: {
+                                    ...char,
+                                    cornerImageOffsetX: 0,
+                                    cornerImageOffsetY: 0,
+                                  },
+                                });
+                              }
+                            }}
+                            className="ml-1 text-[#E0BAC7] hover:underline cursor-pointer flex items-center gap-0.5"
+                            title="重設位置回原位"
+                          >
+                            <RotateCcw className="w-2 h-2" />
+                            <span>原位</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })() : isEditMode ? (
               <div className="flex justify-end mt-2 sm:mt-0 sm:absolute sm:right-0 sm:bottom-0">
                 <button
                   type="button"
