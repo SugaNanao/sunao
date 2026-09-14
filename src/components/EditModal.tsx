@@ -38,7 +38,8 @@ import {
   RotateCcw,
   ZoomIn,
 } from 'lucide-react';
-import { exportDataAsJSON, resetCoupleData } from '../utils/storage';
+import { exportDataAsJSON, exportLightweightBackupJSON, resetCoupleData } from '../utils/storage';
+import { compressImage } from '../utils/imageOptimizer';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -167,73 +168,29 @@ export const EditModal: React.FC<EditModalProps> = ({
     }
   };
 
-  // Helper for uploading local image file with preservation of transparency
+  // Helper for uploading local image file with intelligent compression (WebP/JPEG)
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     callback: (base64Url: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const result = uploadEvent.target?.result as string;
-        if (result) {
-          // If already PNG, WebP, SVG, GIF or has transparency, preserve transparency
-          const isTransparentFormat =
-            file.type === 'image/png' ||
-            file.type === 'image/webp' ||
-            file.type === 'image/svg+xml' ||
-            file.type === 'image/gif';
-
-          if (file.type.startsWith('image/')) {
-            const img = new Image();
-            img.onload = () => {
-              const maxDim = 1280;
-              let width = img.width;
-              let height = img.height;
-              const needsResize = width > maxDim || height > maxDim;
-
-              // If transparent format and doesn't exceed dimensions, keep original dataUrl directly to prevent any loss
-              if (isTransparentFormat && !needsResize) {
-                callback(result);
-                return;
-              }
-
-              if (needsResize) {
-                if (width > height) {
-                  height = Math.round((height * maxDim) / width);
-                  width = maxDim;
-                } else {
-                  width = Math.round((width * maxDim) / height);
-                  height = maxDim;
-                }
-              }
-
-              const canvas = document.createElement('canvas');
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                // Clear rect explicitly to ensure alpha channel remains transparent
-                ctx.clearRect(0, 0, width, height);
-                ctx.drawImage(img, 0, 0, width, height);
-                // If the file is PNG/WebP/GIF, export as PNG to preserve transparent alpha channel!
-                const outputFormat = isTransparentFormat ? 'image/png' : 'image/jpeg';
-                const quality = isTransparentFormat ? undefined : 0.85;
-                const compressed = canvas.toDataURL(outputFormat, quality);
-                callback(compressed);
-                return;
-              }
-              callback(result);
-            };
-            img.onerror = () => callback(result);
-            img.src = result;
-          } else {
-            callback(result);
-          }
-        }
-      };
-      reader.readAsDataURL(file);
+      compressImage(file, { maxDim: 1080, quality: 0.80 })
+        .then((compressedUrl) => {
+          callback(compressedUrl);
+        })
+        .catch((err) => {
+          console.warn('Image compression fallback:', err);
+          const reader = new FileReader();
+          reader.onload = (uploadEvent) => {
+            const result = uploadEvent.target?.result as string;
+            if (result) callback(result);
+          };
+          reader.readAsDataURL(file);
+        })
+        .finally(() => {
+          e.target.value = '';
+        });
     }
   };
 
@@ -2650,15 +2607,25 @@ export const EditModal: React.FC<EditModalProps> = ({
 
         {/* Footer Actions: Save, Reset, Export, Import */}
         <div className="bg-[#FFF8F5] border-t-2 border-[#442F2A] p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs font-pixel">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => exportDataAsJSON(formData)}
               className="pixel-btn px-2.5 py-1 bg-white rounded flex items-center gap-1 cursor-pointer"
-              title="下載目前所有設定備份成 JSON 檔案"
+              title="下載完整備份（包含所有相片與設定）"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>匯出備份</span>
+              <span>完整備份</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => exportLightweightBackupJSON(formData)}
+              className="pixel-btn px-2.5 py-1 bg-white text-emerald-800 rounded flex items-center gap-1 cursor-pointer"
+              title="下載輕量純文字備份（排除本地大圖，僅約30KB，下載秒開）"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-600" />
+              <span>輕量備份(&lt;50KB)</span>
             </button>
 
             <label

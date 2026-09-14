@@ -1,5 +1,6 @@
 import { CoupleSiteData } from '../types';
 import { DEFAULT_COUPLE_DATA } from '../data/defaultData';
+import { stripBase64ForLightweightBackup } from './imageOptimizer';
 
 const STORAGE_KEY = 'love_archive_couple_data_v1';
 const DB_NAME = 'LoveArchiveDB';
@@ -89,19 +90,11 @@ function createLightweightFallback(data: CoupleSiteData): CoupleSiteData {
 
 /**
  * Safely encode couple data for shareable URL without causing RangeError or URIError.
- * Text and structure are completely preserved; massive inline base64 images (>40KB) are trimmed for URL safety.
+ * Text and structure are completely preserved; all inline base64 images are stripped to keep URL short and safe.
  */
 export function encodeShareData(data: CoupleSiteData): string {
   try {
-    const compact: CoupleSiteData = {
-      ...data,
-      album: (data.album || []).map((photo) => ({
-        ...photo,
-        url: photo.url?.startsWith('data:') && photo.url.length > 40000 ? '' : photo.url,
-      })),
-      coverImage: data.coverImage?.startsWith('data:') && data.coverImage.length > 40000 ? '' : data.coverImage,
-      mainIllustration: data.mainIllustration?.startsWith('data:') && data.mainIllustration.length > 40000 ? '' : data.mainIllustration,
-    };
+    const compact = stripBase64ForLightweightBackup(data);
     const jsonStr = JSON.stringify(compact);
     const utf8Bytes = new TextEncoder().encode(jsonStr);
     let binary = '';
@@ -264,9 +257,29 @@ export function exportDataAsJSON(data: CoupleSiteData): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `love_archive_${data.siteTitle.replace(/\s+/g, '_')}_backup.json`;
+  a.download = `love_archive_${data.siteTitle.replace(/\s+/g, '_')}_full_backup.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export function exportLightweightBackupJSON(data: CoupleSiteData): void {
+  const lightweight = stripBase64ForLightweightBackup(data);
+  const jsonStr = JSON.stringify(lightweight, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `love_archive_${data.siteTitle.replace(/\s+/g, '_')}_lightweight.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function getCleanSiteUrl(): string {
+  try {
+    return window.location.origin + window.location.pathname;
+  } catch {
+    return window.location.href.split('#')[0].split('?')[0];
+  }
 }
 
 export function generateShareableUrl(data: CoupleSiteData): string {

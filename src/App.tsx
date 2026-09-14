@@ -162,11 +162,6 @@ export default function App() {
 
   const handleShare = () => {
     setIsShareModalOpen(true);
-    const url = generateShareableUrl(data);
-    navigator.clipboard.writeText(url).then(() => {
-      setCopiedNotice(true);
-      setTimeout(() => setCopiedNotice(false), 2500);
-    }).catch(() => {});
   };
 
   // 1. Loading screen
@@ -339,6 +334,7 @@ export default function App() {
         onClose={() => setIsShareModalOpen(false)}
         data={data}
         onImportData={handleUpdateData}
+        onUpdateData={handleUpdateData}
       />
 
       {/* Admin Authentication & Console Modal */}
