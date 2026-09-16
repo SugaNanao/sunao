@@ -171,6 +171,24 @@ export interface ChatMessage {
   sticker?: string;
 }
 
+export type DecorationPageTarget = 'ALL' | 'HOME' | 'CHARACTER' | 'ALBUM' | 'STORY' | 'AU';
+
+export interface PageDecorationItem {
+  id: string;
+  name: string; // 貼圖名稱或備註
+  imageUrl: string; // 圖片連結或本機上傳
+  targetPage: DecorationPageTarget; // 顯示分頁
+  targetCharacter?: 'BOTH' | 'CHAR_A' | 'CHAR_B'; // 若在角色頁面，可指定角色姓名區
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'free-drag';
+  scale?: number; // 縮放大小 50 ~ 200% (預設 100)
+  rotation?: number; // 旋轉角度 -180 ~ 180 (預設 0)
+  offsetX?: number; // 水平偏移 px
+  offsetY?: number; // 垂直偏移 px
+  opacity?: number; // 不透明度 0.1 ~ 1.0 (預設 1.0)
+  visible?: boolean; // 是否啟用顯示 (預設 true)
+  zIndex?: number; // 圖層深度
+}
+
 export interface SpecialDate {
   id: string;
   date: string; // MM-DD or YYYY-MM-DD (e.g. "09-28" or "2026-09-28")
@@ -235,6 +253,7 @@ export interface CoupleSiteData {
   chatGroups?: ChatConversationGroup[];
   specialDates?: SpecialDate[];
   coupleProfile?: CoupleProfile;
+  decorations?: PageDecorationItem[]; // 全站各分頁透明底裝飾貼圖清單
   bgMusicPlaying: boolean;
 }
 

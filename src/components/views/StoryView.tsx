@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CoupleSiteData, StoryChapter } from '../../types';
 import { PixelHeart } from '../PixelHeart';
 import { BookOpen, Calendar, Edit, Sparkles, X } from 'lucide-react';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../../utils/imageOptimizer';
 
 interface StoryViewProps {
   data: CoupleSiteData;
@@ -58,8 +59,11 @@ export const StoryView: React.FC<StoryViewProps> = ({
               {chapter.coverImage && (
                 <div className="h-44 w-full overflow-hidden border-b-2 border-[#442F2A] bg-neutral-100 relative">
                   <img
-                    src={chapter.coverImage}
+                    src={normalizeImageUrl(chapter.coverImage)}
                     alt={chapter.title}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => handleImageLoadError(e, chapter.coverImage)}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
                   <div className="absolute top-2 left-2 bg-[#FFF8F5]/90 border border-[#442F2A] px-2 py-0.5 rounded text-[10px] font-pixel text-[#442F2A] font-bold">
@@ -124,8 +128,11 @@ export const StoryView: React.FC<StoryViewProps> = ({
               {selectedChapter.coverImage && (
                 <div className="h-60 w-full rounded-lg border-2 border-[#442F2A] overflow-hidden">
                   <img
-                    src={selectedChapter.coverImage}
+                    src={normalizeImageUrl(selectedChapter.coverImage)}
                     alt={selectedChapter.title}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => handleImageLoadError(e, selectedChapter.coverImage)}
                     className="w-full h-full object-cover"
                   />
                 </div>

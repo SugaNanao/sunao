@@ -11,6 +11,7 @@ import {
 import { PixelHeart } from './PixelHeart';
 import { Plus, Trash2, Upload, Palette, Sliders, FileText, User, MessageSquare, Sparkles, Move, ZoomIn, RotateCcw } from 'lucide-react';
 import { DEFAULT_COUPLE_DATA } from '../data/defaultData';
+import { normalizeImageUrl, handleImageLoadError } from '../utils/imageOptimizer';
 
 const getInitialBulletItems = (
   items?: ProfileBulletItem[],
@@ -110,13 +111,20 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
           <label className="block text-[11px] font-bold text-[#442F2A]">頭像 (Avatar URL 或 本機上傳)：</label>
           <div className="flex gap-2 items-center">
             <div className="w-12 h-12 rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0 shadow-xs">
-              <img src={character.avatar} alt="Avatar Preview" className="w-full h-full object-cover" />
+              <img
+                src={normalizeImageUrl(character.avatar)}
+                alt="Avatar Preview"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                onError={(e) => handleImageLoadError(e, character.avatar)}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1 flex gap-1">
               <input
                 type="text"
                 value={character.avatar || ''}
-                onChange={(e) => onUpdate({ ...character, avatar: e.target.value })}
+                onChange={(e) => onUpdate({ ...character, avatar: normalizeImageUrl(e.target.value) })}
                 className="flex-1 bg-[#FFF8F5] border border-[#442F2A] rounded p-1.5 text-xs truncate"
                 placeholder="https://..."
               />
@@ -147,13 +155,23 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               </span>
             )}
           </div>
+          <div className="p-2 bg-pink-50/80 border border-[#C89398]/50 rounded text-[10.5px] text-[#442F2A] flex items-center justify-between gap-2">
+            <span>✨ <strong>想要上傳不只一張透明底貼圖？</strong> 請切換至編輯器頂部的【<strong>✨ 頁面裝飾貼圖</strong>】新分類，可自由新增多張並指派至任意分頁！</span>
+          </div>
           <p className="text-[10px] text-[#442F2A]/70 leading-normal">
             ※ 放置於角色分頁中人物姓名與金句區塊的透明插圖（如 Q版人物/透明貼圖/代表小物，上傳 PNG 保持透明底，背景與網頁完全一致）
           </p>
           <div className="flex gap-2 items-center">
             {character.cornerImage ? (
               <div className="w-12 h-12 rounded border border-[#442F2A] overflow-hidden bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:6px_6px] bg-white shrink-0 shadow-xs flex items-center justify-center p-1">
-                <img src={character.cornerImage} alt="Corner Sticker" className="w-full h-full object-contain" />
+                <img
+                  src={normalizeImageUrl(character.cornerImage)}
+                  alt="Corner Sticker"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleImageLoadError(e, character.cornerImage)}
+                  className="w-full h-full object-contain"
+                />
               </div>
             ) : (
               <div className="w-12 h-12 rounded border border-dashed border-[#442F2A]/40 bg-white shrink-0 flex items-center justify-center text-[9px] text-[#442F2A]/40 text-center font-pixel">
@@ -164,7 +182,7 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
               <input
                 type="text"
                 value={character.cornerImage || ''}
-                onChange={(e) => onUpdate({ ...character, cornerImage: e.target.value })}
+                onChange={(e) => onUpdate({ ...character, cornerImage: normalizeImageUrl(e.target.value) })}
                 className="flex-1 bg-white border border-[#442F2A] rounded p-1.5 text-xs truncate"
                 placeholder="https://... 或點擊上傳透明 PNG 圖片"
               />

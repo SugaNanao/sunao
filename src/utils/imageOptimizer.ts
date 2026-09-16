@@ -1,3 +1,4 @@
+import React from 'react';
 import { CoupleSiteData } from '../types';
 
 /**
@@ -5,6 +6,116 @@ import { CoupleSiteData } from '../types';
  */
 export function isBase64Image(url?: string): boolean {
   return typeof url === 'string' && url.startsWith('data:image/');
+}
+
+/**
+ * Extracts Google Drive file ID from any standard Google Drive URL format
+ */
+export function getGoogleDriveFileId(url?: string): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+
+  // 1. https://drive.google.com/file/d/FILE_ID/...
+  const matchFile = trimmed.match(/https?:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
+  if (matchFile && matchFile[1]) return matchFile[1];
+
+  // 2. https://drive.google.com/open?id=FILE_ID or uc?id=FILE_ID or thumbnail?id=FILE_ID
+  const matchIdParam = trimmed.match(/https?:\/\/(?:drive|docs)\.google\.com\/(?:open|uc|thumbnail)\?(?:[a-zA-Z0-9_=&-]*?)id=([a-zA-Z0-9_-]+)/i);
+  if (matchIdParam && matchIdParam[1]) return matchIdParam[1];
+
+  // 3. https://lh3.googleusercontent.com/d/FILE_ID
+  const matchLh3 = trimmed.match(/https?:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/i);
+  if (matchLh3 && matchLh3[1]) return matchLh3[1];
+
+  return null;
+}
+
+/**
+ * Detects cloud storage URLs (Google Drive, Dropbox) and automatically converts
+ * them into direct image stream links that can be rendered in an <img> tag.
+ */
+export function normalizeImageUrl(url?: string): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+
+  // If base64 or blob, return directly
+  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return trimmed;
+  }
+
+  // 1. Google Drive direct CDN
+  const driveId = getGoogleDriveFileId(trimmed);
+  if (driveId) {
+    // Return high-compatibility Google direct content thumbnail endpoint by default
+    return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1200`;
+  }
+
+  // 2. Dropbox: ?dl=0 -> ?raw=1
+  if (trimmed.includes('dropbox.com')) {
+    if (trimmed.includes('?dl=0')) {
+      return trimmed.replace('?dl=0', '?raw=1');
+    }
+    if (trimmed.includes('&dl=0')) {
+      return trimmed.replace('&dl=0', '&raw=1');
+    }
+    if (!trimmed.includes('raw=1') && !trimmed.includes('dl=1')) {
+      const sep = trimmed.includes('?') ? '&' : '?';
+      return `${trimmed}${sep}raw=1`;
+    }
+  }
+
+  return trimmed;
+}
+
+/**
+ * Inspect a URL and provide diagnostic information for the UI
+ */
+export function detectCloudService(url?: string): {
+  isGoogleDrive: boolean;
+  isDropbox: boolean;
+  convertedUrl: string;
+  hasConverted: boolean;
+  fileId?: string | null;
+} {
+  const raw = url?.trim() || '';
+  const driveId = getGoogleDriveFileId(raw);
+  const normalized = normalizeImageUrl(raw);
+  const isGoogleDrive = !!driveId || raw.includes('drive.google.com') || raw.includes('docs.google.com');
+  const isDropbox = raw.includes('dropbox.com');
+  const hasConverted = normalized !== raw;
+
+  return {
+    isGoogleDrive,
+    isDropbox,
+    convertedUrl: normalized,
+    hasConverted,
+    fileId: driveId,
+  };
+}
+
+/**
+ * Robust image error handler with multi-stage Google Drive and Cloud image fallbacks
+ */
+export function handleImageLoadError(
+  e: React.SyntheticEvent<HTMLImageElement, Event>,
+  originalUrl?: string
+) {
+  const target = e.currentTarget;
+  const driveId = getGoogleDriveFileId(originalUrl || target.src);
+  if (!driveId) return;
+
+  const currentStep = parseInt(target.dataset.fallbackStep || '0', 10);
+  if (currentStep === 0) {
+    target.dataset.fallbackStep = '1';
+    target.src = `https://lh3.googleusercontent.com/d/${driveId}`;
+  } else if (currentStep === 1) {
+    target.dataset.fallbackStep = '2';
+    // Global CDN bypass proxy for Google Drive
+    target.src = `https://images.weserv.nl/?url=drive.google.com/uc?id=${driveId}`;
+  } else if (currentStep === 2) {
+    target.dataset.fallbackStep = '3';
+    target.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
+  }
 }
 
 /**

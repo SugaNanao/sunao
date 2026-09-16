@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CoupleSiteData, AlternativeUniverse } from '../../types';
 import { PixelHeart } from '../PixelHeart';
 import { Globe, Sparkles, Wand2, BookOpen, Edit, X } from 'lucide-react';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../../utils/imageOptimizer';
 
 interface AUViewProps {
   data: CoupleSiteData;
@@ -69,8 +70,11 @@ export const AUView: React.FC<AUViewProps> = ({
               {au.coverImage && (
                 <div className="h-44 w-full overflow-hidden border-b-2 border-[#442F2A] relative bg-neutral-100">
                   <img
-                    src={au.coverImage}
+                    src={normalizeImageUrl(au.coverImage)}
                     alt={au.title}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => handleImageLoadError(e, au.coverImage)}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
                 </div>
@@ -150,8 +154,11 @@ export const AUView: React.FC<AUViewProps> = ({
               {selectedAU.coverImage && (
                 <div className="h-56 w-full rounded-lg border-2 border-[#442F2A] overflow-hidden">
                   <img
-                    src={selectedAU.coverImage}
+                    src={normalizeImageUrl(selectedAU.coverImage)}
                     alt={selectedAU.title}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => handleImageLoadError(e, selectedAU.coverImage)}
                     className="w-full h-full object-cover"
                   />
                 </div>

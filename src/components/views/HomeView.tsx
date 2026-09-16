@@ -3,6 +3,7 @@ import { CoupleSiteData, ActiveTab } from '../../types';
 import { ChevronRight, Edit, Pencil, Save, AlertTriangle } from 'lucide-react';
 import { renderFormattedText } from '../../utils/textFormatter';
 import { CharacterOverviewCard } from '../CharacterOverviewCard';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../../utils/imageOptimizer';
 
 interface HomeViewProps {
   data: CoupleSiteData;
@@ -109,8 +110,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="w-full md:w-1/2 shrink-0 flex flex-col">
             <div className="relative rounded-xl border-2 border-[#442F2A] overflow-hidden shadow-sm bg-[#F8EDF1] group flex-1 min-h-[210px] sm:min-h-[220px]">
               <img
-                src={data.mainIllustration}
+                src={normalizeImageUrl(data.mainIllustration)}
                 alt="Couple Main Portrait"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                onError={(e) => handleImageLoadError(e, data.mainIllustration)}
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#442F2A]/20 via-transparent to-transparent pointer-events-none" />
@@ -406,8 +410,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             >
               <div className="h-40 w-full overflow-hidden border border-[#442F2A]/20 rounded mb-2 bg-neutral-100 relative">
                 <img
-                  src={photo.url}
+                  src={normalizeImageUrl(photo.url)}
                   alt={photo.caption}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleImageLoadError(e, photo.url)}
                   className="w-full h-full object-cover filter contrast-105 transition-transform duration-300"
                   style={{
                     objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,

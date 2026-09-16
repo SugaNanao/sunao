@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Heart, Monitor, FileText, Image as ImageIcon, Folder, Music } from 'lucide-react';
 import { CoupleSiteData } from '../types';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../utils/imageOptimizer';
 
 interface CoverScreenProps {
   data: CoupleSiteData;
@@ -96,8 +97,11 @@ export const CoverScreen: React.FC<CoverScreenProps> = ({ data, onEnter }) => {
           {/* Picture Box - Proportionally scaled to match Loading screen window */}
           <div className="relative h-60 sm:h-72 w-full bg-[#3D2723] overflow-hidden group">
             <img
-              src={data.coverImage}
+              src={normalizeImageUrl(data.coverImage)}
               alt="Couple Cover"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              onError={(e) => handleImageLoadError(e, data.coverImage)}
               className="w-full h-full object-cover object-center filter brightness-95 contrast-105 transition duration-500 group-hover:scale-105"
             />
           </div>

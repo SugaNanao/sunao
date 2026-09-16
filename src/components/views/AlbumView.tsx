@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CoupleSiteData, AlbumPhoto } from '../../types';
 import { PixelHeart } from '../PixelHeart';
 import { Camera, Image as ImageIcon, MapPin, Calendar, Plus, Edit, X, Upload } from 'lucide-react';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../../utils/imageOptimizer';
 
 interface AlbumViewProps {
   data: CoupleSiteData;
@@ -189,8 +190,11 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
             <div>
               <div className="h-52 w-full overflow-hidden border border-[#442F2A]/30 rounded bg-neutral-100 relative">
                 <img
-                  src={photo.url}
+                  src={normalizeImageUrl(photo.url)}
                   alt={photo.caption}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleImageLoadError(e, photo.url)}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500 filter contrast-105"
                   style={{
                     objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
@@ -287,7 +291,14 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
               {/* Preview if url provided */}
               {newPhotoUrl && (
                 <div className="h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100">
-                  <img src={newPhotoUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img
+                    src={normalizeImageUrl(newPhotoUrl)}
+                    alt="Preview"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => handleImageLoadError(e, newPhotoUrl)}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
 
@@ -422,8 +433,11 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
             <div className="p-4 bg-[#FFF8F5]">
               <div className="max-h-[60vh] w-full rounded border-2 border-[#442F2A] overflow-hidden bg-black/5 flex items-center justify-center">
                 <img
-                  src={lightboxPhoto.url}
+                  src={normalizeImageUrl(lightboxPhoto.url)}
                   alt={lightboxPhoto.caption}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleImageLoadError(e, lightboxPhoto.url)}
                   className="w-full max-h-[60vh] object-contain"
                 />
               </div>

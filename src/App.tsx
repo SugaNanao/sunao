@@ -19,6 +19,7 @@ import { ShareModal } from './components/ShareModal';
 import { TaskBar } from './components/TaskBar';
 import { FloatingMusicPlayer } from './components/FloatingMusicPlayer';
 import { AdminAuthModal } from './components/AdminAuthModal';
+import { PageDecorationsOverlay } from './components/PageDecorationsOverlay';
 
 export default function App() {
   const [data, setData] = useState<CoupleSiteData>(loadCoupleData);
@@ -228,7 +229,25 @@ export default function App() {
         />
 
         {/* Center Main Stage Area (Router Views) */}
-        <div className="flex-1 w-full min-w-0" id="main-content-view">
+        <div className="flex-1 w-full min-w-0 relative" id="main-content-view">
+          {/* Page Decorations Overlay (貼圖覆蓋層，支援多張貼圖自由指派分頁與拖曳調整) */}
+          <PageDecorationsOverlay
+            data={data}
+            currentPage={
+              activeTab === 'HOME'
+                ? 'HOME'
+                : activeTab === 'CHARACTER' || activeTab === 'CHARACTER PROFILE'
+                ? 'CHARACTER'
+                : activeTab === 'STORY'
+                ? 'STORY'
+                : activeTab === 'ALBUM'
+                ? 'ALBUM'
+                : 'AU'
+            }
+            isEditMode={effectiveEditMode}
+            onUpdateData={handleUpdateData}
+          />
+
           {activeTab === 'HOME' && (
             <HomeView
               data={data}

@@ -1,7 +1,27 @@
 import React, { useState } from 'react';
 import { CoupleSiteData, ActiveTab } from '../types';
-import { Edit, Camera, Upload, X, Check, Image as ImageIcon, Sparkles, RefreshCw } from 'lucide-react';
+import {
+  Edit,
+  Camera,
+  Upload,
+  X,
+  Check,
+  Image as ImageIcon,
+  Sparkles,
+  RefreshCw,
+  AlertTriangle,
+  Info,
+  CheckCircle2,
+  ExternalLink,
+} from 'lucide-react';
 import { DEFAULT_COUPLE_DATA } from '../data/defaultData';
+import {
+  normalizeImageUrl,
+  detectCloudService,
+  getGoogleDriveFileId,
+  compressImage,
+  handleImageLoadError,
+} from '../utils/imageOptimizer';
 
 interface LeftSidebarProps {
   data: CoupleSiteData;
@@ -25,79 +45,64 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   const [avatarInputUrl, setAvatarInputUrl] = useState('');
   const [previewAvatar, setPreviewAvatar] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [imgLoadError, setImgLoadError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Analyze cloud service info of current input
+  const cloudInfo = detectCloudService(avatarInputUrl);
 
   const openAvatarModal = () => {
     const current = data.sidebarAvatar || data.mainIllustration || data.characterB.avatar;
     setPreviewAvatar(current);
     setAvatarInputUrl(data.sidebarAvatar || '');
+    setImgLoadError(false);
     setIsAvatarModalOpen(true);
+  };
+
+  const handleUrlChange = (val: string) => {
+    setAvatarInputUrl(val);
+    setImgLoadError(false);
+    if (!val.trim()) {
+      setPreviewAvatar(currentAvatar);
+      return;
+    }
+    const normalized = normalizeImageUrl(val);
+    setPreviewAvatar(normalized);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const result = uploadEvent.target?.result as string;
-        if (result) {
-          const isTransparentFormat =
-            file.type === 'image/png' ||
-            file.type === 'image/webp' ||
-            file.type === 'image/svg+xml' ||
-            file.type === 'image/gif';
-
-          const img = new Image();
-          img.onload = () => {
-            const maxDim = 800;
-            let width = img.width;
-            let height = img.height;
-            const needsResize = width > maxDim || height > maxDim;
-
-            if (isTransparentFormat && !needsResize) {
+      setIsUploading(true);
+      compressImage(file, { maxDim: 800, quality: 0.85 })
+        .then((compressedUrl) => {
+          setPreviewAvatar(compressedUrl);
+          setAvatarInputUrl('');
+          setImgLoadError(false);
+        })
+        .catch((err) => {
+          console.warn('Image compression fallback:', err);
+          const reader = new FileReader();
+          reader.onload = (uploadEvent) => {
+            const result = uploadEvent.target?.result as string;
+            if (result) {
               setPreviewAvatar(result);
               setAvatarInputUrl('');
-              return;
+              setImgLoadError(false);
             }
-
-            if (needsResize) {
-              if (width > height) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              } else {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.clearRect(0, 0, width, height);
-              ctx.drawImage(img, 0, 0, width, height);
-              const outputFormat = isTransparentFormat ? 'image/png' : 'image/jpeg';
-              const quality = isTransparentFormat ? undefined : 0.85;
-              const compressed = canvas.toDataURL(outputFormat, quality);
-              setPreviewAvatar(compressed);
-              setAvatarInputUrl('');
-              return;
-            }
-            setPreviewAvatar(result);
-            setAvatarInputUrl('');
           };
-          img.onerror = () => {
-            setPreviewAvatar(result);
-            setAvatarInputUrl('');
-          };
-          img.src = result;
-        }
-      };
-      reader.readAsDataURL(file);
+          reader.readAsDataURL(file);
+        })
+        .finally(() => {
+          setIsUploading(false);
+          e.target.value = '';
+        });
     }
   };
 
   const handleSaveAvatar = () => {
-    const targetUrl = previewAvatar.trim() || avatarInputUrl.trim() || currentAvatar;
+    const normalizedInput = normalizeImageUrl(avatarInputUrl.trim());
+    const targetUrl = normalizedInput || previewAvatar.trim() || currentAvatar;
     if (onUpdateData) {
       onUpdateData({
         ...data,
@@ -108,7 +113,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
     setTimeout(() => {
       setSaveSuccess(false);
       setIsAvatarModalOpen(false);
-    }, 600);
+    }, 1000);
   };
 
   const navButtons: { id: ActiveTab; label: string }[] = [
@@ -195,8 +200,13 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             title={isEditMode ? '點擊自定義個人頭貼' : undefined}
           >
             <img
-              src={currentAvatar}
+              src={normalizeImageUrl(currentAvatar)}
               alt={`${data.characterA.name} & ${data.characterB.name}`}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              onError={(e) => {
+                handleImageLoadError(e, currentAvatar);
+              }}
               className="w-full h-full object-cover rounded-full"
             />
             {isEditMode && (
@@ -288,52 +298,122 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
             {/* Avatar Preview */}
             <div className="flex flex-col items-center py-2">
-              <div className="w-24 h-24 rounded-full border-3 border-[#442F2A] p-0.5 bg-[#E0BAC7] overflow-hidden shadow-md">
-                <img
-                  src={previewAvatar || currentAvatar}
-                  alt="Avatar Preview"
-                  className="w-full h-full object-cover rounded-full"
-                />
+              <div className="relative w-24 h-24 rounded-full border-3 border-[#442F2A] p-0.5 bg-[#E0BAC7] overflow-hidden shadow-md flex items-center justify-center">
+                {previewAvatar ? (
+                  <img
+                    key={previewAvatar}
+                    src={previewAvatar}
+                    alt="Avatar Preview"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      const driveId = getGoogleDriveFileId(avatarInputUrl || previewAvatar);
+                      const target = e.currentTarget;
+                      const step = parseInt(target.dataset.fallbackStep || '0', 10);
+                      if (driveId && step < 3) {
+                        handleImageLoadError(e, avatarInputUrl || previewAvatar);
+                        return;
+                      }
+                      setImgLoadError(true);
+                    }}
+                    onLoad={() => setImgLoadError(false)}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-[11px] text-[#442F2A]/60 font-pixel">無頭像</span>
+                )}
+                {imgLoadError && (
+                  <div className="absolute inset-0 bg-[#442F2A]/80 flex flex-col items-center justify-center p-1 text-center text-white">
+                    <AlertTriangle className="w-5 h-5 text-amber-300 animate-bounce mb-0.5" />
+                    <span className="text-[9px] font-bold text-amber-200">讀取失敗</span>
+                  </div>
+                )}
               </div>
               <span className="text-[11px] text-[#442F2A]/70 mt-1.5">側邊欄圓形頭貼預覽</span>
             </div>
 
             {/* Method 1: Upload File */}
-            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40">
-              <label className="text-xs font-bold text-[#442F2A] block">
-                方式一：本機上傳圖片
-              </label>
+            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40 shadow-xs">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#442F2A] block">
+                  方式一：本機上傳圖片
+                </label>
+                <span className="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">
+                  ✓ 推薦・自動輕量化
+                </span>
+              </div>
               <label className="w-full py-2 px-3 bg-[#E0BAC7] hover:bg-[#d49bb0] border-2 border-[#442F2A] rounded-md text-xs font-bold text-[#442F2A] flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition">
                 <Upload className="w-3.5 h-3.5" />
-                <span>選擇本機照片上傳</span>
+                <span>{isUploading ? '正在壓縮優化中...' : '選擇本機照片上傳'}</span>
                 <input
                   type="file"
                   accept="image/*"
+                  disabled={isUploading}
                   className="hidden"
                   onChange={handleFileUpload}
                 />
               </label>
+              <p className="text-[10px] text-[#442F2A]/70 leading-tight">
+                ※ 系統會自動壓縮為 WebP/JPEG 輕量規格（約 50~100KB），絕不佔空間且秒載入！
+              </p>
             </div>
 
             {/* Method 2: Image URL */}
-            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40">
-              <label className="text-xs font-bold text-[#442F2A] block">
-                方式二：輸入圖片網址 (URL)
-              </label>
+            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40 shadow-xs">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#442F2A] block">
+                  方式二：輸入圖片網址 (URL)
+                </label>
+                {cloudInfo.isGoogleDrive && (
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                    ✓ 已自動轉換直連
+                  </span>
+                )}
+              </div>
               <div className="flex gap-1.5">
                 <input
                   type="text"
                   value={avatarInputUrl}
-                  placeholder="https://example.com/photo.jpg"
-                  onChange={(e) => {
-                    setAvatarInputUrl(e.target.value);
-                    if (e.target.value.trim()) {
-                      setPreviewAvatar(e.target.value.trim());
-                    }
-                  }}
-                  className="flex-1 bg-[#FFF8F5] border-2 border-[#442F2A] rounded p-1.5 text-xs"
+                  placeholder="可貼上 Google 雲端、Imgur 或網路圖片網址"
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  className="flex-1 bg-[#FFF8F5] border-2 border-[#442F2A] rounded p-1.5 text-xs truncate"
                 />
               </div>
+
+              {/* Google Drive Status & Permissions Guide */}
+              {cloudInfo.isGoogleDrive && (
+                <div className="p-2 bg-emerald-50 border border-emerald-500/40 rounded text-emerald-900 text-[10px] space-y-1 font-sans leading-relaxed">
+                  <div className="flex items-center gap-1 font-bold text-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>已自動將 Google 雲端分享連結轉換為直連圖片！</span>
+                  </div>
+                  <p className="text-emerald-800/90 pl-4.5">
+                    <strong>⚠️ 重要設定：</strong>請務必至 Google 雲端硬碟，在該圖片按右鍵選擇<strong>「共用」→ 將一般存取權設為「知道連結的任何人」皆可查看</strong>！若保留為「限制/私人」，Google 伺服器會拒絕外部網頁顯示該圖片。
+                  </p>
+                </div>
+              )}
+
+              {/* Failure prompt */}
+              {imgLoadError && (
+                <div className="p-2 bg-amber-50 border border-amber-500/40 rounded text-amber-900 text-[10px] space-y-1 font-sans leading-relaxed">
+                  <div className="flex items-center gap-1 font-bold text-amber-800">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>圖片無法讀取（顯示破圖）</span>
+                  </div>
+                  <p className="text-amber-800/90 pl-4.5">
+                    {cloudInfo.isGoogleDrive ? (
+                      <>
+                        這通常是因為該 Google 雲端檔案尚未開啟<strong>「知道連結的任何人都能查看」</strong>公開權限，導致被 Google 阻擋。
+                      </>
+                    ) : (
+                      <>該網址可能無效、已被防盜連或非直接圖片格式。</>
+                    )}
+                  </p>
+                  <p className="text-amber-950 font-bold pl-4.5">
+                    💡 最省事推薦：直接改按上方「方式一：選擇本機照片上傳」，系統已支援自動瘦身壓縮，換照片秒成功！
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Method 3: Quick Preset Selection */}

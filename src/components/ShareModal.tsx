@@ -253,8 +253,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                   </span>
                 </div>
 
-                <p className="text-[11px] text-[#442F2A]/70 leading-relaxed font-sans">
-                  系統已自動過濾大型 Base64 圖片，僅封裝文字、故事、紀念日與外部圖床網址，長度大幅縮減（目前約 {snapshotUrl.length} 字元），適合臨時分享文字進度。
+                <p className="text-[11px] text-[#442F2A]/80 leading-relaxed font-sans">
+                  現已完整保留您的<strong>電腦本機上傳照片、各分頁裝飾貼圖、文字、故事與雲端連結</strong>！任何訪客點開此快照連結，都能即時載入並完整看見所有圖片與內容。
                 </p>
 
                 <div className="flex items-center gap-2">

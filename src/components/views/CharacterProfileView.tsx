@@ -5,6 +5,7 @@ import { OverlappingHearts } from '../OverlappingHearts';
 import { Edit, Sparkles, Plus, Quote, User, Users, Calendar, Sparkle, Heart, Move, RotateCcw } from 'lucide-react';
 import { renderFormattedText } from '../../utils/textFormatter';
 import { DEFAULT_COUPLE_DATA } from '../../data/defaultData';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../../utils/imageOptimizer';
 
 interface CharacterProfileViewProps {
   data: CoupleSiteData;
@@ -75,9 +76,11 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
 
   const [expandedTrivia, setExpandedTrivia] = useState<Record<string, boolean>>({});
 
-  // Active dragging state for transparent corner sticker in edit mode
+  // Active dragging state for transparent corner sticker or decoration sticker in edit mode
   const [activeDrag, setActiveDrag] = useState<{
-    charKey: 'characterA' | 'characterB';
+    type: 'legacy' | 'decoration';
+    charKey?: 'characterA' | 'characterB';
+    decorationId?: string;
     startX: number;
     startY: number;
     initialOffsetX: number;
@@ -110,15 +113,28 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
       const finalY = Math.round(activeDrag.initialOffsetY + dy);
 
       if (onUpdateData) {
-        const targetChar = data[activeDrag.charKey];
-        onUpdateData({
-          ...data,
-          [activeDrag.charKey]: {
-            ...targetChar,
-            cornerImageOffsetX: finalX,
-            cornerImageOffsetY: finalY,
-          },
-        });
+        if (activeDrag.type === 'legacy' && activeDrag.charKey) {
+          const targetChar = data[activeDrag.charKey];
+          onUpdateData({
+            ...data,
+            [activeDrag.charKey]: {
+              ...targetChar,
+              cornerImageOffsetX: finalX,
+              cornerImageOffsetY: finalY,
+            },
+          });
+        } else if (activeDrag.type === 'decoration' && activeDrag.decorationId && data.decorations) {
+          const nextList = data.decorations.map((d) => {
+            if (d.id === activeDrag.decorationId) {
+              return { ...d, offsetX: finalX, offsetY: finalY };
+            }
+            return d;
+          });
+          onUpdateData({
+            ...data,
+            decorations: nextList,
+          });
+        }
       }
       setActiveDrag(null);
     };
@@ -228,8 +244,11 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
           <div className="shrink-0 w-28 sm:w-32 self-center sm:self-start">
             <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden bg-[#F8EDF1] border-2 border-[#442F2A] shadow-xs relative group">
               <img
-                src={char.avatar}
+                src={normalizeImageUrl(char.avatar)}
                 alt={char.name}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                onError={(e) => handleImageLoadError(e, char.avatar)}
                 className="w-full h-full object-cover filter contrast-105 group-hover:scale-103 transition duration-300"
               />
             </div>
@@ -259,10 +278,10 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
               </div>
             </div>
 
-            {/* 放置透明底的圖片 (兩個人的區塊都要，支援編輯模式直接在卡片上自由拖曳調整位置) */}
-            {char.cornerImage ? (() => {
+            {/* 放置透明底的圖片 (支援單張既有貼圖與多張新貼圖，皆可在編輯模式直接在卡片上自由拖曳調整位置) */}
+            {char.cornerImage && (() => {
               const charKey = isA ? 'characterA' : 'characterB';
-              const isThisDragging = activeDrag?.charKey === charKey;
+              const isThisDragging = activeDrag?.type === 'legacy' && activeDrag?.charKey === charKey;
               const currentOffsetX = isThisDragging ? activeDrag.currentOffsetX : (char.cornerImageOffsetX || 0);
               const currentOffsetY = isThisDragging ? activeDrag.currentOffsetY : (char.cornerImageOffsetY || 0);
 
@@ -287,6 +306,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                       if (!isEditMode) return;
                       e.preventDefault();
                       setActiveDrag({
+                        type: 'legacy',
                         charKey,
                         startX: e.clientX,
                         startY: e.clientY,
@@ -304,8 +324,11 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                     title={isEditMode ? '按住滑鼠或觸控直接拖拽至任意位置' : undefined}
                   >
                     <img
-                      src={char.cornerImage}
+                      src={normalizeImageUrl(char.cornerImage)}
                       alt={`${char.name} 裝飾圖片`}
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                      onError={(e) => handleImageLoadError(e, char.cornerImage)}
                       className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[130px] sm:max-w-[160px] drop-shadow-xs pointer-events-none transition-transform duration-100"
                       style={{
                         backgroundColor: 'transparent',
@@ -354,18 +377,131 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                   </div>
                 </div>
               );
-            })() : isEditMode ? (
-              <div className="flex justify-end mt-2 sm:mt-0 sm:absolute sm:right-0 sm:bottom-0">
+            })()}
+
+            {/* 多張裝飾貼圖指派給此角色姓名區 */}
+            {(() => {
+              const charTarget = isA ? 'CHAR_A' : 'CHAR_B';
+              const assignedDecs = (data.decorations || []).filter(
+                (d) =>
+                  d.targetPage === 'CHARACTER' &&
+                  d.targetCharacter === charTarget &&
+                  (d.visible !== false || isEditMode) &&
+                  d.imageUrl
+              );
+
+              return assignedDecs.map((dec) => {
+                const isThisDragging =
+                  activeDrag?.type === 'decoration' && activeDrag.decorationId === dec.id;
+                const currentOffsetX = isThisDragging
+                  ? activeDrag.currentOffsetX
+                  : dec.offsetX || 0;
+                const currentOffsetY = isThisDragging
+                  ? activeDrag.currentOffsetY
+                  : dec.offsetY || 0;
+                const scale = (dec.scale ?? 100) / 100;
+                const rotation = dec.rotation ?? 0;
+                const opacity = dec.visible === false ? 0.35 : (dec.opacity ?? 100) / 100;
+
+                return (
+                  <div
+                    key={dec.id}
+                    className={`flex mt-1 sm:mt-0 select-none z-10 ${
+                      dec.position === 'top-right'
+                        ? 'sm:absolute sm:right-0 sm:top-0 justify-end'
+                        : dec.position === 'top-left'
+                        ? 'sm:absolute sm:left-0 sm:top-0 justify-start'
+                        : dec.position === 'bottom-left'
+                        ? 'sm:absolute sm:left-0 sm:bottom-0 justify-start'
+                        : 'sm:absolute sm:right-0 sm:bottom-0 justify-end'
+                    }`}
+                    style={{
+                      transform: `translate(${currentOffsetX}px, ${currentOffsetY}px)`,
+                      touchAction: isEditMode ? 'none' : 'auto',
+                    }}
+                  >
+                    <div
+                      onPointerDown={(e) => {
+                        if (!isEditMode) return;
+                        e.preventDefault();
+                        setActiveDrag({
+                          type: 'decoration',
+                          decorationId: dec.id,
+                          startX: e.clientX,
+                          startY: e.clientY,
+                          initialOffsetX: dec.offsetX || 0,
+                          initialOffsetY: dec.offsetY || 0,
+                          currentOffsetX: dec.offsetX || 0,
+                          currentOffsetY: dec.offsetY || 0,
+                        });
+                      }}
+                      className={`relative group ${
+                        isEditMode
+                          ? 'cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#C89398] hover:ring-dashed rounded-lg p-1 transition-all'
+                          : ''
+                      }`}
+                      title={isEditMode ? `【${dec.name || '貼圖'}】可直接拖拽至任意位置` : undefined}
+                    >
+                      <img
+                        src={normalizeImageUrl(dec.imageUrl)}
+                        alt={dec.name || '裝飾貼圖'}
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        onError={(e) => handleImageLoadError(e, dec.imageUrl)}
+                        className="h-16 sm:h-20 md:h-22 w-auto object-contain max-w-[130px] sm:max-w-[160px] drop-shadow-xs pointer-events-none transition-transform duration-100"
+                        style={{
+                          backgroundColor: 'transparent',
+                          transform: `scale(${scale}) rotate(${rotation}deg)`,
+                          opacity,
+                        }}
+                      />
+
+                      {/* 編輯模式快捷提示 */}
+                      {isEditMode && (
+                        <div className="absolute -bottom-5 right-0 flex items-center gap-1 bg-[#442F2A] text-white text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm opacity-85 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                          <Move className="w-2.5 h-2.5 text-[#E0BAC7]" />
+                          <span>{isThisDragging ? '拖曳中...' : dec.name || '貼圖'}</span>
+                          {(dec.offsetX !== 0 || dec.offsetY !== 0) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onUpdateData && data.decorations) {
+                                  const resetList = data.decorations.map((d) =>
+                                    d.id === dec.id ? { ...d, offsetX: 0, offsetY: 0 } : d
+                                  );
+                                  onUpdateData({ ...data, decorations: resetList });
+                                }
+                              }}
+                              className="ml-1 text-[#E0BAC7] hover:underline cursor-pointer flex items-center gap-0.5"
+                              title="重設位置回原位"
+                            >
+                              <RotateCcw className="w-2 h-2" />
+                              <span>原位</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+
+            {/* 編輯模式下的「+ 管理/新增貼圖」快捷按鈕 */}
+            {isEditMode && (
+              <div className="flex justify-end mt-2 sm:mt-0 sm:absolute sm:right-0 sm:bottom-0 z-0">
                 <button
                   type="button"
-                  onClick={() => onEditSection(isA ? 'characterA' : 'characterB')}
+                  onClick={() => onEditSection('decorations')}
                   className="px-2 py-1 bg-[#FFF8F5] border border-dashed border-[#442F2A]/40 text-[#442F2A]/70 hover:text-[#442F2A] hover:border-[#442F2A] rounded text-[10px] font-pixel flex items-center gap-1 cursor-pointer transition shadow-2xs"
+                  title="前往「✨ 頁面裝飾貼圖」管理分類，可新增不限數量的貼圖並自由指定分頁"
                 >
                   <Sparkles className="w-3 h-3 text-[#C89398]" />
-                  <span>+ 設定透明圖</span>
+                  <span>+ 裝飾貼圖管理</span>
                 </button>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
 

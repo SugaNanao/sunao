@@ -12,6 +12,7 @@ import {
 import { PixelHeart } from './PixelHeart';
 import { OverlappingHearts } from './OverlappingHearts';
 import { EditCharacterSection } from './EditCharacterSection';
+import { EditDecorationsSection } from './EditDecorationsSection';
 import {
   X,
   Save,
@@ -39,7 +40,7 @@ import {
   ZoomIn,
 } from 'lucide-react';
 import { exportDataAsJSON, exportLightweightBackupJSON, resetCoupleData } from '../utils/storage';
-import { compressImage } from '../utils/imageOptimizer';
+import { compressImage, normalizeImageUrl } from '../utils/imageOptimizer';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -151,7 +152,45 @@ export const EditModal: React.FC<EditModalProps> = ({
   if (!isOpen) return null;
 
   const handleSave = () => {
-    onSaveData(formData);
+    // Automatically sanitize all cloud storage URLs (e.g. Google Drive, Dropbox) across the dataset
+    const sanitizedData: CoupleSiteData = {
+      ...formData,
+      coverImage: normalizeImageUrl(formData.coverImage),
+      mainIllustration: normalizeImageUrl(formData.mainIllustration),
+      sidebarAvatar: normalizeImageUrl(formData.sidebarAvatar),
+      characterA: formData.characterA
+        ? {
+            ...formData.characterA,
+            avatar: normalizeImageUrl(formData.characterA.avatar),
+            cornerImage: normalizeImageUrl(formData.characterA.cornerImage),
+          }
+        : formData.characterA,
+      characterB: formData.characterB
+        ? {
+            ...formData.characterB,
+            avatar: normalizeImageUrl(formData.characterB.avatar),
+            cornerImage: normalizeImageUrl(formData.characterB.cornerImage),
+          }
+        : formData.characterB,
+      album: (formData.album || []).map((p) => ({
+        ...p,
+        url: normalizeImageUrl(p.url),
+      })),
+      stories: (formData.stories || []).map((s) => ({
+        ...s,
+        coverImage: normalizeImageUrl(s.coverImage),
+      })),
+      alternativeUniverses: (formData.alternativeUniverses || []).map((au) => ({
+        ...au,
+        coverImage: normalizeImageUrl(au.coverImage),
+      })),
+      decorations: (formData.decorations || []).map((dec) => ({
+        ...dec,
+        imageUrl: normalizeImageUrl(dec.imageUrl),
+      })),
+    };
+
+    onSaveData(sanitizedData);
     setSaveSuccessNotice(true);
     setTimeout(() => {
       setSaveSuccessNotice(false);
@@ -226,6 +265,7 @@ export const EditModal: React.FC<EditModalProps> = ({
     { id: 'story', label: '故事章節' },
     { id: 'album', label: '相簿照片' },
     { id: 'au', label: '平行宇宙 AU' },
+    { id: 'decorations', label: '✨ 頁面裝飾貼圖' },
   ];
 
   return (
@@ -435,7 +475,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                   <input
                     type="text"
                     value={formData.mainIllustration}
-                    onChange={(e) => setFormData({ ...formData, mainIllustration: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, mainIllustration: normalizeImageUrl(e.target.value) })}
                     className="flex-1 bg-white border-2 border-[#442F2A] rounded p-1.5 text-xs truncate"
                   />
                   <label className="pixel-btn px-2.5 py-1 bg-[#E0BAC7] rounded text-[11px] flex items-center gap-1 cursor-pointer shrink-0 font-bold">
@@ -452,7 +492,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                   </label>
                 </div>
                 <div className="h-32 sm:h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shadow-inner">
-                  <img src={formData.mainIllustration} alt="Main Preview" className="w-full h-full object-cover" />
+                  <img src={normalizeImageUrl(formData.mainIllustration)} alt="Main Preview" className="w-full h-full object-cover" />
                 </div>
               </div>
 
@@ -491,8 +531,8 @@ export const EditModal: React.FC<EditModalProps> = ({
                   <input
                     type="text"
                     value={formData.sidebarAvatar || ''}
-                    placeholder="可貼上圖片網址或由右側上傳本機照片"
-                    onChange={(e) => setFormData({ ...formData, sidebarAvatar: e.target.value })}
+                    placeholder="可貼上 Google 雲端、Imgur 等圖片網址或由右側上傳本機照片"
+                    onChange={(e) => setFormData({ ...formData, sidebarAvatar: normalizeImageUrl(e.target.value) })}
                     className="flex-1 bg-white border-2 border-[#442F2A] rounded p-1.5 text-xs truncate"
                   />
                   <label className="pixel-btn px-2.5 py-1 bg-[#E0BAC7] hover:bg-[#d49bb0] rounded text-[11px] flex items-center gap-1 cursor-pointer shrink-0 font-bold">
@@ -511,7 +551,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                 <div className="flex items-center gap-3 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40 shadow-xs">
                   <div className="w-16 h-16 rounded-full border-3 border-[#442F2A] overflow-hidden bg-[#E0BAC7] shrink-0 shadow-sm">
                     <img
-                      src={formData.sidebarAvatar || formData.mainIllustration || formData.characterB.avatar}
+                      src={normalizeImageUrl(formData.sidebarAvatar || formData.mainIllustration || formData.characterB.avatar)}
                       alt="Sidebar Avatar Preview"
                       className="w-full h-full object-cover"
                     />
@@ -2602,6 +2642,15 @@ export const EditModal: React.FC<EditModalProps> = ({
                 </div>
               ))}
             </div>
+          )}
+
+          {/* TAB 10: DECORATIONS (頁面裝飾貼圖多張管理) */}
+          {activeSubTab === 'decorations' && (
+            <EditDecorationsSection
+              data={formData}
+              onChange={setFormData}
+              handleFileUpload={handleFileUpload}
+            />
           )}
         </div>
 

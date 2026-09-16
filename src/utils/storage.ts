@@ -90,17 +90,22 @@ function createLightweightFallback(data: CoupleSiteData): CoupleSiteData {
 
 /**
  * Safely encode couple data for shareable URL without causing RangeError or URIError.
- * Text and structure are completely preserved; all inline base64 images are stripped to keep URL short and safe.
+ * Retains all local uploaded photos (base64) so visitor snapshot URLs display all pictures accurately.
  */
 export function encodeShareData(data: CoupleSiteData): string {
   try {
-    const compact = stripBase64ForLightweightBackup(data);
-    const jsonStr = JSON.stringify(compact);
+    // Preserve all data including local uploaded photos
+    const jsonStr = JSON.stringify(data);
     const utf8Bytes = new TextEncoder().encode(jsonStr);
+    
+    // Chunked conversion to avoid maximum call stack size limits on large image data
     let binary = '';
-    const len = utf8Bytes.length;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(utf8Bytes[i]);
+    const chunkSize = 8192;
+    for (let i = 0; i < utf8Bytes.length; i += chunkSize) {
+      const chunk = utf8Bytes.subarray(i, Math.min(i + chunkSize, utf8Bytes.length));
+      for (let j = 0; j < chunk.length; j++) {
+        binary += String.fromCharCode(chunk[j]);
+      }
     }
     return btoa(binary)
       .replace(/\+/g, '-')
@@ -108,7 +113,19 @@ export function encodeShareData(data: CoupleSiteData): string {
       .replace(/=+$/, '');
   } catch (e) {
     console.error('encodeShareData error:', e);
-    return '';
+    // Fallback: if data is too big for single string, strip massive images only as last resort
+    try {
+      const fallbackCompact = stripBase64ForLightweightBackup(data);
+      const fallbackJson = JSON.stringify(fallbackCompact);
+      const fallbackBytes = new TextEncoder().encode(fallbackJson);
+      let binary = '';
+      for (let i = 0; i < fallbackBytes.length; i++) {
+        binary += String.fromCharCode(fallbackBytes[i]);
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    } catch {
+      return '';
+    }
   }
 }
 

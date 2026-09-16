@@ -819,5 +819,7 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
     },
   },
 
+  decorations: [],
+
   bgMusicPlaying: false,
 };

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Character } from '../types';
 import { PixelHeart } from './PixelHeart';
 import { renderFormattedText } from '../utils/textFormatter';
+import { normalizeImageUrl, getGoogleDriveFileId, handleImageLoadError } from '../utils/imageOptimizer';
 
 interface CharacterOverviewCardProps {
   character: Character;
@@ -110,8 +111,11 @@ export const CharacterOverviewCard: React.FC<CharacterOverviewCardProps> = ({
             title={onImageClick ? `點擊前往 ${character.name} 個人基本情報頁` : undefined}
           >
             <img
-              src={character.avatar}
+              src={normalizeImageUrl(character.avatar)}
               alt={character.name}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              onError={(e) => handleImageLoadError(e, character.avatar)}
               className="w-full h-full object-cover filter contrast-105 group-hover:scale-105 transition duration-300"
             />
             {onImageClick && (
