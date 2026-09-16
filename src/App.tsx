@@ -122,27 +122,23 @@ export default function App() {
 
         if (!isMounted) return;
 
-        // Check if user has customized local data
-        const localSource = dbData || data;
-        const hasCustomEdits =
-          localSource.siteTitle !== '月が星を照らすまで' ||
-          localSource.characterA.name !== '菅原孝支' ||
-          (localSource.album && localSource.album.length > 0 && localSource.album[0]?.caption !== '春高排球部全國大會・賽前合影') ||
-          (localSource.customDecorations && localSource.customDecorations.length > 0);
-
-        if (hasCustomEdits) {
-          setData(localSource);
-          // Auto-publish local customization to server if server has no published data yet
-          if (!serverResult.published) {
-            publishDataToServer(localSource).then((res) => {
-              if (res.success) {
-                console.log('[App] Auto-synced local edits to official clean URL server');
-              }
-            }).catch(() => {});
-          }
-        } else if (serverResult.published && serverResult.data) {
-          // Visitor or clean browser: load official published content from server!
+        // 1. If server has published data, it is the authoritative public clean URL state
+        if (serverResult.published && serverResult.data) {
           setData(serverResult.data);
+          saveCoupleData(serverResult.data);
+          return;
+        }
+
+        // 2. Otherwise fallback to local IndexedDB if valid and not stale template
+        if (dbData) {
+          const isStaleTemplate =
+            dbData.siteTitle === '月が星を照らすまで' ||
+            dbData.characterA?.name === '菅原孝支';
+          if (!isStaleTemplate) {
+            setData(dbData);
+            // Auto-publish local edits to server
+            publishDataToServer(dbData).catch(() => {});
+          }
         }
       } catch (err) {
         console.warn('[App] Hydration error:', err);

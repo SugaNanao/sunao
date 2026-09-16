@@ -28,8 +28,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [editContent, setEditContent] = useState<string>('');
 
   const currentNotice = data.introNotice || {
-    title: 'NOTICE ・ 月が星を照らすまで',
-    content: '歡迎來到 菅原孝支 X 宮原七緒 的秘密存檔庫！\n這裡是存放我們從青梅竹馬到戀人所有心動與日常的小天地。\n\n「無論夜幕多麼深沉，月光都會如期灑在星辰之上。」',
+    title: `NOTICE ・ ${data.siteTitle || '戀愛存檔'}`,
+    content: `歡迎來到 ${data.characterA?.name || '我們'} X ${data.characterB?.name || '戀人'} 的秘密存檔庫！\n這裡是存放我們所有心動與日常的小天地。`,
   };
 
   const currentMemo = data.introMemo || {

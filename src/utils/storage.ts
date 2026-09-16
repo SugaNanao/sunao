@@ -40,7 +40,13 @@ export async function loadCoupleDataFromIndexedDB(): Promise<CoupleSiteData | nu
       const req = store.get(STORAGE_KEY);
       req.onsuccess = () => {
         if (req.result) {
-          resolve({ ...DEFAULT_COUPLE_DATA, ...req.result });
+          const result = req.result;
+          // If stored data is from the old obsolete template, discard it
+          if (result.siteTitle === '月が星を照らすまで' || result.characterA?.name === '菅原孝支') {
+            resolve(null);
+          } else {
+            resolve({ ...DEFAULT_COUPLE_DATA, ...result });
+          }
         } else {
           resolve(null);
         }
@@ -247,6 +253,10 @@ export function loadCoupleData(): CoupleSiteData {
     const local = localStorage.getItem(STORAGE_KEY);
     if (local) {
       const parsed = JSON.parse(local);
+      if (parsed.siteTitle === '月が星を照らすまで' || parsed.characterA?.name === '菅原孝支') {
+        localStorage.removeItem(STORAGE_KEY);
+        return DEFAULT_COUPLE_DATA;
+      }
       return { ...DEFAULT_COUPLE_DATA, ...parsed };
     }
   } catch (e) {
@@ -359,26 +369,50 @@ export function generateShareableUrl(data: CoupleSiteData): string {
  * Fetch official published data from the server
  */
 export async function fetchPublishedDataFromServer(): Promise<{ published: boolean; data: CoupleSiteData | null; updatedAt?: string }> {
+  // 1. Try dynamic API endpoint
   try {
     const res = await fetch('/api/site-data', {
       headers: {
         'Accept': 'application/json',
       },
     });
-    if (!res.ok) {
-      return { published: false, data: null };
-    }
-    const result = await res.json();
-    if (result.published && result.data) {
-      return {
-        published: true,
-        data: { ...DEFAULT_COUPLE_DATA, ...result.data },
-        updatedAt: result.updatedAt,
-      };
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
+      const result = await res.json();
+      if (result.published && result.data) {
+        return {
+          published: true,
+          data: { ...DEFAULT_COUPLE_DATA, ...result.data },
+          updatedAt: result.updatedAt,
+        };
+      }
     }
   } catch (err) {
-    console.warn('fetchPublishedDataFromServer failed or server unavailable:', err);
+    console.warn('[Storage] Dynamic /api/site-data unreachable, trying static fallback:', err);
   }
+
+  // 2. Fallback to static public /published-data.json (for pure static deployments and CDN caches)
+  try {
+    const res = await fetch('/published-data.json', {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
+      const data = await res.json();
+      if (data && data.siteTitle) {
+        return {
+          published: true,
+          data: { ...DEFAULT_COUPLE_DATA, ...data },
+          updatedAt: new Date().toISOString(),
+        };
+      }
+    }
+  } catch {
+    // Both endpoints unavailable, fallback to default
+  }
+
   return { published: false, data: null };
 }
 

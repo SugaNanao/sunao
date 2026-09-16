@@ -1,6 +1,4 @@
-import { CoupleSiteData } from "../types/index";
-
-export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
+{
   "siteTitle": "君のすべてを映して",
   "siteSubtitle": "KOSHI × NANAO ",
   "introQuote": "有一天，當你走過蔓草荒煙，我便在那裡向你輕聲呼喊 —— 以風聲，以水響。",
@@ -474,4 +472,4 @@ export const DEFAULT_COUPLE_DATA: CoupleSiteData = {
   },
   "decorations": [],
   "bgMusicPlaying": false
-};
+}

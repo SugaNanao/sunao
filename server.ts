@@ -19,17 +19,23 @@ async function startServer() {
   });
 
   // GET /api/site-data - retrieve server-published couple data
-  app.get('/api/site-data', (req, res) => {
+  app.get(['/api/site-data', '/published-data.json'], (req, res) => {
     try {
       if (fs.existsSync(DATA_FILE)) {
         const fileContent = fs.readFileSync(DATA_FILE, 'utf-8');
         const parsed = JSON.parse(fileContent);
         const stats = fs.statSync(DATA_FILE);
+        if (req.path === '/published-data.json') {
+          return res.json(parsed);
+        }
         return res.json({
           published: true,
           data: parsed,
           updatedAt: stats.mtime.toISOString(),
         });
+      }
+      if (req.path === '/published-data.json') {
+        return res.status(404).json({ error: 'Not published yet' });
       }
       return res.json({
         published: false,
@@ -49,8 +55,26 @@ async function startServer() {
         return res.status(400).json({ error: 'Invalid site data payload' });
       }
 
-      fs.writeFileSync(DATA_FILE, JSON.stringify(siteData, null, 2), 'utf-8');
-      console.log(`[API] Site data published successfully to server disk. Size: ${JSON.stringify(siteData).length} bytes`);
+      const jsonString = JSON.stringify(siteData, null, 2);
+      fs.writeFileSync(DATA_FILE, jsonString, 'utf-8');
+
+      // Also persist to public and dist directories so static requests get immediate access
+      try {
+        const publicDir = path.join(process.cwd(), 'public');
+        if (!fs.existsSync(publicDir)) {
+          fs.mkdirSync(publicDir, { recursive: true });
+        }
+        fs.writeFileSync(path.join(publicDir, 'published-data.json'), jsonString, 'utf-8');
+
+        const distDir = path.join(process.cwd(), 'dist');
+        if (fs.existsSync(distDir)) {
+          fs.writeFileSync(path.join(distDir, 'published-data.json'), jsonString, 'utf-8');
+        }
+      } catch (err) {
+        console.warn('[API] Warning syncing to public/dist directories:', err);
+      }
+
+      console.log(`[API] Site data published successfully to server disk. Size: ${jsonString.length} bytes`);
 
       return res.json({
         success: true,
