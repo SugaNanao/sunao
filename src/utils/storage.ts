@@ -40,13 +40,7 @@ export async function loadCoupleDataFromIndexedDB(): Promise<CoupleSiteData | nu
       const req = store.get(STORAGE_KEY);
       req.onsuccess = () => {
         if (req.result) {
-          const result = req.result;
-          // If stored data is from the old obsolete template, discard it
-          if (result.siteTitle === '月が星を照らすまで' || result.characterA?.name === '菅原孝支') {
-            resolve(null);
-          } else {
-            resolve({ ...DEFAULT_COUPLE_DATA, ...result });
-          }
+          resolve({ ...DEFAULT_COUPLE_DATA, ...req.result });
         } else {
           resolve(null);
         }
@@ -253,10 +247,6 @@ export function loadCoupleData(): CoupleSiteData {
     const local = localStorage.getItem(STORAGE_KEY);
     if (local) {
       const parsed = JSON.parse(local);
-      if (parsed.siteTitle === '月が星を照らすまで' || parsed.characterA?.name === '菅原孝支') {
-        localStorage.removeItem(STORAGE_KEY);
-        return DEFAULT_COUPLE_DATA;
-      }
       return { ...DEFAULT_COUPLE_DATA, ...parsed };
     }
   } catch (e) {

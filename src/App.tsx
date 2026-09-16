@@ -122,23 +122,16 @@ export default function App() {
 
         if (!isMounted) return;
 
-        // 1. If server has published data, it is the authoritative public clean URL state
-        if (serverResult.published && serverResult.data) {
-          setData(serverResult.data);
-          saveCoupleData(serverResult.data);
+        // 1. If user has existing local data, respect their local data and do not overwrite!
+        if (dbData) {
+          setData(dbData);
           return;
         }
 
-        // 2. Otherwise fallback to local IndexedDB if valid and not stale template
-        if (dbData) {
-          const isStaleTemplate =
-            dbData.siteTitle === '月が星を照らすまで' ||
-            dbData.characterA?.name === '菅原孝支';
-          if (!isStaleTemplate) {
-            setData(dbData);
-            // Auto-publish local edits to server
-            publishDataToServer(dbData).catch(() => {});
-          }
+        // 2. Otherwise (clean browser, mobile visitor): load server published data
+        if (serverResult.published && serverResult.data) {
+          setData(serverResult.data);
+          saveCoupleData(serverResult.data);
         }
       } catch (err) {
         console.warn('[App] Hydration error:', err);
