@@ -192,6 +192,47 @@ export function extractShareDataFromUrl(): CoupleSiteData | null {
 }
 
 /**
+ * Parse CoupleSiteData from any given URL or encoded string (useful for importing snapshot links)
+ */
+export function parseDataFromAnyUrl(urlString: string): CoupleSiteData | null {
+  try {
+    const trimmed = urlString.trim();
+    if (!trimmed) return null;
+
+    // Check hash for #data=...
+    const hashIdx = trimmed.indexOf('#');
+    if (hashIdx !== -1) {
+      const hashPart = trimmed.slice(hashIdx);
+      const match = hashPart.match(/[#&]data=([^&]+)/);
+      if (match) {
+        const res = decodeShareData(match[1]);
+        if (res) return res;
+      }
+    }
+
+    // Check query params for ?data=...
+    const queryIdx = trimmed.indexOf('?');
+    if (queryIdx !== -1) {
+      const queryPart = trimmed.slice(queryIdx);
+      const params = new URLSearchParams(queryPart);
+      const dataParam = params.get('data');
+      if (dataParam) {
+        const res = decodeShareData(dataParam);
+        if (res) return res;
+      }
+    }
+
+    // Direct encoded string
+    if (trimmed.startsWith('data=')) {
+      return decodeShareData(trimmed.slice(5));
+    }
+    return decodeShareData(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Synchronous initial load for React state initialization
  */
 export function loadCoupleData(): CoupleSiteData {
@@ -313,3 +354,69 @@ export function generateShareableUrl(data: CoupleSiteData): string {
     return window.location.href;
   }
 }
+
+/**
+ * Fetch official published data from the server
+ */
+export async function fetchPublishedDataFromServer(): Promise<{ published: boolean; data: CoupleSiteData | null; updatedAt?: string }> {
+  try {
+    const res = await fetch('/api/site-data', {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    if (!res.ok) {
+      return { published: false, data: null };
+    }
+    const result = await res.json();
+    if (result.published && result.data) {
+      return {
+        published: true,
+        data: { ...DEFAULT_COUPLE_DATA, ...result.data },
+        updatedAt: result.updatedAt,
+      };
+    }
+  } catch (err) {
+    console.warn('fetchPublishedDataFromServer failed or server unavailable:', err);
+  }
+  return { published: false, data: null };
+}
+
+/**
+ * Publish current modified data to the server disk so that the clean official URL
+ * immediately serves the user's modifications to all visitors!
+ */
+export async function publishDataToServer(data: CoupleSiteData): Promise<{ success: boolean; message?: string; updatedAt?: string }> {
+  try {
+    const res = await fetch('/api/site-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        message: errorData.error || `伺服器回應錯誤 (${res.status})`,
+      };
+    }
+
+    const result = await res.json();
+    return {
+      success: true,
+      message: result.message || '發布成功',
+      updatedAt: result.updatedAt,
+    };
+  } catch (err) {
+    console.error('publishDataToServer error:', err);
+    return {
+      success: false,
+      message: '連線伺服器失敗，請確認網路連線或伺服器正在運行。',
+    };
+  }
+}
+

@@ -5,6 +5,9 @@ import {
   getCleanSiteUrl,
   exportDataAsJSON,
   exportLightweightBackupJSON,
+  fetchPublishedDataFromServer,
+  publishDataToServer,
+  parseDataFromAnyUrl,
 } from '../utils/storage';
 import {
   calculateSiteDataSize,
@@ -28,6 +31,10 @@ import {
   AlertTriangle,
   Link,
   HelpCircle,
+  Globe,
+  RefreshCw,
+  UploadCloud,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface ShareModalProps {
@@ -36,6 +43,7 @@ interface ShareModalProps {
   data: CoupleSiteData;
   onImportData?: (imported: CoupleSiteData) => void;
   onUpdateData?: (newData: CoupleSiteData) => void;
+  onPublish?: () => Promise<boolean> | void;
 }
 
 export const ShareModal: React.FC<ShareModalProps> = ({
@@ -44,6 +52,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   data,
   onImportData,
   onUpdateData,
+  onPublish,
 }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'size'>('url');
   const [copiedClean, setCopiedClean] = useState(false);
@@ -53,6 +62,15 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizeMessage, setOptimizeMessage] = useState<string | null>(null);
 
+  // Server publication states
+  const [serverStatus, setServerStatus] = useState<{ published: boolean; updatedAt?: string } | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishMessage, setPublishMessage] = useState<{ success: boolean; text: string } | null>(null);
+
+  // Snapshot import states
+  const [snapshotInput, setSnapshotInput] = useState('');
+  const [snapshotStatus, setSnapshotStatus] = useState<{ success?: boolean; message: string } | null>(null);
+
   // Compute storage metrics
   const sizeInfo = calculateSiteDataSize(data);
 
@@ -61,6 +79,18 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       setCleanUrl(getCleanSiteUrl());
       setSnapshotUrl(generateShareableUrl(data));
       setOptimizeMessage(null);
+      setPublishMessage(null);
+      setSnapshotStatus(null);
+
+      // Check current server publication state
+      fetchPublishedDataFromServer().then((res) => {
+        setServerStatus({
+          published: res.published,
+          updatedAt: res.updatedAt,
+        });
+      }).catch(() => {
+        setServerStatus(null);
+      });
     }
   }, [isOpen, data]);
 
@@ -90,6 +120,71 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   const handleOpenSnapshot = () => {
     window.open(snapshotUrl, '_blank');
+  };
+
+  const handlePublish = async () => {
+    if (isPublishing) return;
+    setIsPublishing(true);
+    setPublishMessage(null);
+    try {
+      if (onPublish) {
+        await onPublish();
+      } else {
+        await publishDataToServer(data);
+      }
+      setServerStatus({
+        published: true,
+        updatedAt: new Date().toISOString(),
+      });
+      setPublishMessage({
+        success: true,
+        text: '🎉 成功發布！官方乾淨短網址已即時更新為您修改後的最新內容！',
+      });
+    } catch (err) {
+      console.error(err);
+      setPublishMessage({
+        success: false,
+        text: '發布時連線伺服器發生錯誤，請稍後再試。',
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleImportSnapshotAndPublish = async () => {
+    if (!snapshotInput.trim()) return;
+    setSnapshotStatus(null);
+    try {
+      const parsed = parseDataFromAnyUrl(snapshotInput.trim());
+      if (parsed) {
+        if (onUpdateData) {
+          onUpdateData(parsed);
+        } else if (onImportData) {
+          onImportData(parsed);
+        }
+        await publishDataToServer(parsed);
+        setServerStatus({
+          published: true,
+          updatedAt: new Date().toISOString(),
+        });
+        setSnapshotStatus({
+          success: true,
+          message: '✓ 成功還原快照內容，並已同步發布為官方短網址！',
+        });
+        setSnapshotInput('');
+      } else {
+        setSnapshotStatus({
+          success: false,
+          message: '無法解析此快照網址，請確認內容包含 #data= 資料。',
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setSnapshotStatus({
+        success: false,
+        message: '還原時發生錯誤，請確認網址是否完整。',
+      });
+    }
   };
 
   const handleOptimizeImages = async () => {
@@ -190,20 +285,101 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           {/* TAB 1: SHARE URLS */}
           {activeTab === 'url' && (
             <div className="space-y-4 font-pixel text-xs">
-              {/* RECOMMENDED: CLEAN SHORT URL */}
-              <div className="pixel-card p-3.5 bg-white flex flex-col gap-2.5 border-2 border-emerald-700/60 shadow-xs">
+              {/* PRIMARY ACTION: PUBLISH TO OFFICIAL SHORT URL */}
+              <div className="pixel-card p-3.5 sm:p-4 bg-gradient-to-br from-emerald-50/70 via-white to-amber-50/40 flex flex-col gap-3 border-2 border-emerald-700 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-bold text-[#235347] flex items-center gap-1.5 text-xs sm:text-sm">
+                    <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
+                    <span>【核心步驟】一鍵發布修改至官方短網址</span>
+                  </span>
+
+                  {serverStatus?.published ? (
+                    <span className="text-[10px] bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>已同步至伺服器</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-amber-600" />
+                      <span>尚未發布至伺服器</span>
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-[#442F2A]/85 leading-relaxed font-sans">
+                  💡 <strong>為什麼官方短網址原本顯示的是預設內容？</strong>
+                  <br />
+                  您在瀏覽器中所做的一切自訂（修改名字、上傳相片、裝飾貼圖、編寫故事）最初是暫存在您當前的瀏覽器中。
+                  點擊下方<strong>「一鍵發布至官方短網址」</strong>後，系統會將最新內容儲存至網站伺服器。此後<strong>任何人、任何裝置（包括手機、無痕模式）</strong>點開短網址，都能直接看見您修改後的網站！
+                </p>
+
+                {/* Big Publish Trigger Button */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                  <button
+                    onClick={handlePublish}
+                    disabled={isPublishing}
+                    className={`px-4 py-2.5 rounded text-xs sm:text-sm font-bold border-2 border-[#442F2A] flex items-center justify-center gap-2 cursor-pointer transition shadow-md ${
+                      isPublishing
+                        ? 'bg-amber-100 text-amber-900 cursor-wait'
+                        : 'bg-emerald-300 hover:bg-emerald-400 text-[#193f35] active:translate-y-0.5'
+                    }`}
+                  >
+                    {isPublishing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-800" />
+                        <span>正在同步發布至官方伺服器...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4 text-emerald-900" />
+                        <span>🚀 立即發布我的修改至官方短網址</span>
+                      </>
+                    )}
+                  </button>
+
+                  {serverStatus?.updatedAt && (
+                    <span className="text-[10px] text-[#442F2A]/60 font-mono text-center sm:text-left self-center">
+                      上次發布時間：{new Date(serverStatus.updatedAt).toLocaleString('zh-TW')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Publish Success / Feedback Message */}
+                {publishMessage && (
+                  <div
+                    className={`p-2.5 rounded border font-sans text-[11px] flex items-start gap-2 animate-fade-in ${
+                      publishMessage.success
+                        ? 'bg-emerald-100/90 border-emerald-400 text-emerald-900'
+                        : 'bg-amber-100/90 border-amber-400 text-amber-900'
+                    }`}
+                  >
+                    <span className="text-sm">{publishMessage.success ? '🎉' : '⚠️'}</span>
+                    <div className="space-y-0.5">
+                      <p className="font-bold">{publishMessage.text}</p>
+                      {publishMessage.success && (
+                        <p className="text-[10px] text-emerald-800/80">
+                          現在請直接複製下方的「官方乾淨短網址」分享給親朋好友，他們打開將直接看到您修改後的內容！
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* CLEAN SHORT URL DISPLAY & ACTIONS */}
+              <div className="pixel-card p-3.5 bg-white flex flex-col gap-2.5 border-2 border-[#442F2A]/60 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[#235347] flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
-                    <span>【最佳推薦】官方乾淨短網址 (Clean Short URL)</span>
+                  <span className="font-bold text-[#442F2A] flex items-center gap-1.5">
+                    <Globe className="w-4 h-4 text-emerald-600" />
+                    <span>官方乾淨短網址 (Official Clean URL)</span>
                   </span>
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">
-                    ✓ 最美觀・短小俐落
+                    ✓ 推薦分享・絕不破版
                   </span>
                 </div>
 
                 <p className="text-[11px] text-[#442F2A]/80 leading-relaxed font-sans">
-                  長度僅約 <strong>{cleanUrl.length} 個字元</strong>！完全沒有後綴的一長串英文字母亂碼，發布至 <strong>LINE、Instagram 個人簡介、Discord、Facebook 或簡訊</strong>絕不破版，是最正式且美觀的分享方式。
+                  長度僅約 <strong>{cleanUrl.length} 個字元</strong>，完全沒有後綴的一長串字母亂碼。發布至 <strong>LINE、Instagram 個人簡介、Discord、Facebook 或簡訊</strong>絕不破版，是最正式且美觀的分享網址。
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -242,19 +418,19 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               </div>
 
               {/* ADVANCED: COMPACT SNAPSHOT URL */}
-              <div className="pixel-card p-3.5 bg-white flex flex-col gap-2.5 border-2 border-[#442F2A]/40 shadow-xs">
+              <div className="pixel-card p-3.5 bg-white flex flex-col gap-2.5 border-2 border-[#442F2A]/30 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[#442F2A] flex items-center gap-1.5">
                     <Share2 className="w-3.5 h-3.5 text-[#C89398]" />
-                    <span>【免伺服器】快照同步網址 (Snapshot URL)</span>
+                    <span>【免伺服器】快照備用網址 (Snapshot URL)</span>
                   </span>
                   <span className="text-[10px] bg-[#E0BAC7] text-[#442F2A] px-1.5 py-0.5 rounded font-bold">
-                    免發布快照
+                    永久存檔備用
                   </span>
                 </div>
 
                 <p className="text-[11px] text-[#442F2A]/80 leading-relaxed font-sans">
-                  現已完整保留您的<strong>電腦本機上傳照片、各分頁裝飾貼圖、文字、故事與雲端連結</strong>！任何訪客點開此快照連結，都能即時載入並完整看見所有圖片與內容。
+                  將網站全部資料（照片、文字、設定）直接編碼在網址內，即使不依賴伺服器也能開啟。適合用於永久存檔備份。
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -292,17 +468,40 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 </div>
               </div>
 
-              {/* Tips Banner */}
-              <div className="bg-[#FFF0F4] border-2 border-[#E0BAC7] p-3 rounded flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-[#C89398] shrink-0 mt-0.5" />
-                <div className="space-y-1 font-sans text-xs">
-                  <p className="font-bold text-[#9D5A64]">
-                    💡 為什麼推薦直接分享「官方乾淨短網址」？
-                  </p>
-                  <p className="text-[11px] text-[#442F2A]/80 leading-relaxed">
-                    在 Google AI Studio 右上角完成 <strong>Share (分享) 或 Deploy (發布)</strong> 後，官方短網址便是全網永久生效的正式入口。訪客無需載入龐大的網址字串，載入速度極快且手機相容性 100%！
-                  </p>
+              {/* RESTORE & PUBLISH FROM SNAPSHOT */}
+              <div className="pixel-card p-3 bg-[#FAF6F4] border border-[#442F2A]/30 rounded flex flex-col gap-2">
+                <span className="font-bold text-[#442F2A] text-[11px] flex items-center gap-1">
+                  <Link className="w-3.5 h-3.5 text-[#C89398]" />
+                  <span>貼上歷史快照網址還原並發布：</span>
+                </span>
+                <p className="text-[10px] text-[#442F2A]/70 font-sans">
+                  若您之前在其他裝置複製過快照連結（含 #data=），可在此貼上還原並直接發布為官方短網址：
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={snapshotInput}
+                    onChange={(e) => setSnapshotInput(e.target.value)}
+                    placeholder="在此貼上快照網址 (https://...#data=...)"
+                    className="flex-1 bg-white border border-[#442F2A] rounded px-2 py-1 text-xs font-mono text-[#442F2A] outline-none"
+                  />
+                  <button
+                    onClick={handleImportSnapshotAndPublish}
+                    disabled={!snapshotInput.trim()}
+                    className="px-3 py-1 rounded text-xs font-bold border border-[#442F2A] bg-[#E0BAC7] hover:bg-[#d59eb1] text-[#442F2A] disabled:opacity-50 cursor-pointer"
+                  >
+                    套用並發布
+                  </button>
                 </div>
+                {snapshotStatus && (
+                  <p
+                    className={`text-[10px] font-sans ${
+                      snapshotStatus.success ? 'text-emerald-700 font-bold' : 'text-amber-700'
+                    }`}
+                  >
+                    {snapshotStatus.message}
+                  </p>
+                )}
               </div>
             </div>
           )}

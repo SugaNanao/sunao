@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveTab, CoupleSiteData, ChatMessage, ChatConversationGroup } from './types';
-import { loadCoupleData, saveCoupleData, generateShareableUrl, isSharedUrl, loadCoupleDataFromIndexedDB } from './utils/storage';
+import {
+  loadCoupleData,
+  saveCoupleData,
+  generateShareableUrl,
+  isSharedUrl,
+  loadCoupleDataFromIndexedDB,
+  fetchPublishedDataFromServer,
+  publishDataToServer,
+} from './utils/storage';
 import { soundPlayer } from './utils/audioSynth';
 import { LoadingScreen } from './components/LoadingScreen';
 import { CoverScreen } from './components/CoverScreen';
@@ -57,6 +65,10 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [editInitialTab, setEditInitialTab] = useState('basic');
   const [copiedNotice, setCopiedNotice] = useState(false);
+  const [publishToast, setPublishToast] = useState<{ show: boolean; message: string; isError?: boolean }>({
+    show: false,
+    message: '',
+  });
   const [fontMode, setFontMode] = useState<'pixel' | 'rounded' | 'clean'>(() => {
     try {
       const saved = localStorage.getItem('love_archive_font_mode');
@@ -95,15 +107,53 @@ export default function App() {
     });
   }, []);
 
-  // Hydrate full data from IndexedDB if not on a shared snapshot link
+  // Hydrate full data: check server published data and local IndexedDB
   useEffect(() => {
-    if (!isSharedLink) {
-      loadCoupleDataFromIndexedDB().then((dbData) => {
-        if (dbData) {
-          setData(dbData);
+    if (isSharedLink) return;
+
+    let isMounted = true;
+
+    async function initData() {
+      try {
+        const [serverResult, dbData] = await Promise.all([
+          fetchPublishedDataFromServer(),
+          loadCoupleDataFromIndexedDB(),
+        ]);
+
+        if (!isMounted) return;
+
+        // Check if user has customized local data
+        const localSource = dbData || data;
+        const hasCustomEdits =
+          localSource.siteTitle !== '月が星を照らすまで' ||
+          localSource.characterA.name !== '菅原孝支' ||
+          (localSource.album && localSource.album.length > 0 && localSource.album[0]?.caption !== '春高排球部全國大會・賽前合影') ||
+          (localSource.customDecorations && localSource.customDecorations.length > 0);
+
+        if (hasCustomEdits) {
+          setData(localSource);
+          // Auto-publish local customization to server if server has no published data yet
+          if (!serverResult.published) {
+            publishDataToServer(localSource).then((res) => {
+              if (res.success) {
+                console.log('[App] Auto-synced local edits to official clean URL server');
+              }
+            }).catch(() => {});
+          }
+        } else if (serverResult.published && serverResult.data) {
+          // Visitor or clean browser: load official published content from server!
+          setData(serverResult.data);
         }
-      }).catch(() => {});
+      } catch (err) {
+        console.warn('[App] Hydration error:', err);
+      }
     }
+
+    initData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isSharedLink]);
 
   // Effective visitor mode: visitor mode is active whenever user is NOT admin or is viewing a shared link
@@ -133,21 +183,56 @@ export default function App() {
     localStorage.removeItem('love_archive_admin_auth');
   };
 
+  const handlePublishToServer = async (): Promise<boolean> => {
+    try {
+      const res = await publishDataToServer(data);
+      if (res.success) {
+        setPublishToast({
+          show: true,
+          message: '🎉 成功發布至官方短網址！現在任何人打開官方短網址都能看見您的最新內容！',
+          isError: false,
+        });
+        setTimeout(() => setPublishToast({ show: false, message: '' }), 5000);
+        return true;
+      } else {
+        setPublishToast({
+          show: true,
+          message: `發布未成功：${res.message}`,
+          isError: true,
+        });
+        setTimeout(() => setPublishToast({ show: false, message: '' }), 5000);
+        return false;
+      }
+    } catch {
+      setPublishToast({
+        show: true,
+        message: '連線至伺服器時發生錯誤，請稍後重試。',
+        isError: true,
+      });
+      setTimeout(() => setPublishToast({ show: false, message: '' }), 5000);
+      return false;
+    }
+  };
+
   const handleUpdateData = (newData: CoupleSiteData) => {
     setData(newData);
     saveCoupleData(newData);
+    // Background async sync to server
+    publishDataToServer(newData).catch(() => {});
   };
 
   const handleUpdateChat = (messages: ChatMessage[]) => {
     const next = { ...data, chatHistory: messages };
     setData(next);
     saveCoupleData(next);
+    publishDataToServer(next).catch(() => {});
   };
 
   const handleUpdateChatGroups = (groups: ChatConversationGroup[]) => {
     const next = { ...data, chatGroups: groups };
     setData(next);
     saveCoupleData(next);
+    publishDataToServer(next).catch(() => {});
   };
 
   const handleToggleMusic = () => {
@@ -205,7 +290,22 @@ export default function App() {
           isSharedLink={isSharedLink}
           isAdmin={isAdmin}
           onOpenAdminModal={() => setIsAdminModalOpen(true)}
+          onPublish={handlePublishToServer}
         />
+      )}
+
+      {/* Publish Toast Notification */}
+      {publishToast.show && (
+        <div
+          className={`fixed top-16 right-4 z-50 px-4 py-2.5 rounded-md font-pixel text-xs border shadow-xl animate-fade-in flex items-center gap-2 ${
+            publishToast.isError
+              ? 'bg-amber-900 text-amber-100 border-amber-500'
+              : 'bg-[#235347] text-emerald-100 border-emerald-400'
+          }`}
+        >
+          <span>{publishToast.isError ? '⚠️' : '🎉'}</span>
+          <span>{publishToast.message}</span>
+        </div>
       )}
 
       {/* Share Toast Notification */}
@@ -354,6 +454,7 @@ export default function App() {
         data={data}
         onImportData={handleUpdateData}
         onUpdateData={handleUpdateData}
+        onPublish={handlePublishToServer}
       />
 
       {/* Admin Authentication & Console Modal */}
