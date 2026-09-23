@@ -11,6 +11,7 @@ interface AdminAuthModalProps {
   onLogout: () => void;
   data: CoupleSiteData;
   onImportData: (data: CoupleSiteData) => void;
+  onPublish?: () => Promise<boolean>;
 }
 
 const DEFAULT_ADMIN_PASS = 'sugananao24222';
@@ -23,12 +24,15 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
   onLogout,
   data,
   onImportData,
+  onPublish,
 }) => {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [showHelp, setShowHelp] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [passChangedNotice, setPassChangedNotice] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -117,6 +121,40 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
               {/* Action Buttons */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#442F2A] block">資料發布與備份同步：</label>
+
+                {onPublish && (
+                  <div className="p-2.5 bg-emerald-50 rounded border border-emerald-600 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-emerald-900">📱 手機端同步狀態</span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setIsSyncing(true);
+                          const ok = await onPublish();
+                          setIsSyncing(false);
+                          if (ok) {
+                            setSyncSuccess(true);
+                            setTimeout(() => setSyncSuccess(false), 4000);
+                          }
+                        }}
+                        disabled={isSyncing}
+                        className="pixel-btn px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs flex items-center gap-1 shadow-xs cursor-pointer transition disabled:opacity-50"
+                      >
+                        <span>{isSyncing ? '同步中...' : '🚀 立即同步至手機端'}</span>
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-emerald-800/80 leading-tight">
+                      點擊按鈕將電腦版內容寫入伺服器，手機端重新整理後會立即顯示最新編輯內容。
+                    </p>
+                    {syncSuccess && (
+                      <p className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>已成功同步！手機端重新整理即可看見最新內容。</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => exportDataAsJSON(data)}

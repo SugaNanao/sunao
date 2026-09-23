@@ -11,7 +11,12 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-  const DATA_FILE = path.join(process.cwd(), 'published-data.json');
+  const PUBLIC_DIR = path.join(process.cwd(), 'public');
+  if (!fs.existsSync(PUBLIC_DIR)) {
+    fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+  }
+  const DATA_FILE = path.join(PUBLIC_DIR, 'published-data.json');
+  const ROOT_DATA_FILE = path.join(process.cwd(), 'published-data.json');
 
   // Health check route
   app.get('/api/health', (req, res) => {
@@ -21,10 +26,16 @@ async function startServer() {
   // GET /api/site-data - retrieve server-published couple data
   app.get(['/api/site-data', '/published-data.json'], (req, res) => {
     try {
-      if (fs.existsSync(DATA_FILE)) {
-        const fileContent = fs.readFileSync(DATA_FILE, 'utf-8');
+      const targetFile = fs.existsSync(DATA_FILE)
+        ? DATA_FILE
+        : fs.existsSync(ROOT_DATA_FILE)
+        ? ROOT_DATA_FILE
+        : null;
+
+      if (targetFile) {
+        const fileContent = fs.readFileSync(targetFile, 'utf-8');
         const parsed = JSON.parse(fileContent);
-        const stats = fs.statSync(DATA_FILE);
+        const stats = fs.statSync(targetFile);
         if (req.path === '/published-data.json') {
           return res.json(parsed);
         }
@@ -57,6 +68,9 @@ async function startServer() {
 
       const jsonString = JSON.stringify(siteData, null, 2);
       fs.writeFileSync(DATA_FILE, jsonString, 'utf-8');
+      try {
+        fs.writeFileSync(ROOT_DATA_FILE, jsonString, 'utf-8');
+      } catch {}
 
       // Also persist to public and dist directories so static requests get immediate access
       try {

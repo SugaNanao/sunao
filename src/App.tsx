@@ -122,13 +122,34 @@ export default function App() {
 
         if (!isMounted) return;
 
-        // 1. If user has existing local data, respect their local data and do not overwrite!
-        if (dbData) {
-          setData(dbData);
+        const isLocalAdmin = localStorage.getItem('love_archive_admin_auth') === 'true';
+
+        // 1. Mobile phone or visitor device (not admin):
+        // Always display the server's published data so mobile phone is 100% in sync with computer!
+        if (serverResult.published && serverResult.data && !isLocalAdmin) {
+          setData(serverResult.data);
+          saveCoupleData(serverResult.data);
           return;
         }
 
-        // 2. Otherwise (clean browser, mobile visitor): load server published data
+        // 2. Computer (local edited data exists in IndexedDB):
+        if (dbData) {
+          setData(dbData);
+
+          // Automatically push computer's edited data to server if:
+          // - Server has no published data yet, or
+          // - Current device is authenticated admin
+          if (!serverResult.published || isLocalAdmin) {
+            publishDataToServer(dbData).then((res) => {
+              if (res.success) {
+                console.log('[App] Auto-synced computer data to server for mobile devices.');
+              }
+            }).catch(() => {});
+          }
+          return;
+        }
+
+        // 3. Fallback (clean browser, mobile visitor): load server published data
         if (serverResult.published && serverResult.data) {
           setData(serverResult.data);
           saveCoupleData(serverResult.data);
@@ -455,6 +476,7 @@ export default function App() {
         onLogout={handleAdminLogout}
         data={data}
         onImportData={handleUpdateData}
+        onPublish={handlePublishToServer}
       />
 
       {/* Bottom Retro TaskBar with HOME button & Admin trigger */}

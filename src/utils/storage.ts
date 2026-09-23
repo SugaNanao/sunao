@@ -261,16 +261,21 @@ export function loadCoupleData(): CoupleSiteData {
  * 2. Safe localStorage save with QuotaExceeded guard
  */
 export function saveCoupleData(data: CoupleSiteData): void {
+  const dataWithTime = {
+    ...data,
+    updatedAt: data.updatedAt || new Date().toISOString(),
+  };
+
   // Always persist full data to IndexedDB
-  saveCoupleDataToIndexedDB(data).catch(() => {});
+  saveCoupleDataToIndexedDB(dataWithTime).catch(() => {});
 
   // Safely persist to localStorage without crashing on quota limit
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTime));
   } catch (e) {
     // QuotaExceededError: save lightweight fallback
     try {
-      const lightweight = createLightweightFallback(data);
+      const lightweight = createLightweightFallback(dataWithTime);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
     } catch {
       // If even lightweight cannot fit, do nothing (IndexedDB has the full state)
@@ -412,13 +417,17 @@ export async function fetchPublishedDataFromServer(): Promise<{ published: boole
  */
 export async function publishDataToServer(data: CoupleSiteData): Promise<{ success: boolean; message?: string; updatedAt?: string }> {
   try {
+    const payload = {
+      ...data,
+      updatedAt: data.updatedAt || new Date().toISOString(),
+    };
     const res = await fetch('/api/site-data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {

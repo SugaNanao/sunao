@@ -133,27 +133,25 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 </div>
 
                 {isEditMode && (
-                  <>
-                    <button
-                      onClick={onOpenEditModal}
-                      className="pixel-btn px-2.5 py-1 text-xs font-pixel font-bold bg-[#E0BAC7] flex items-center gap-1 rounded"
-                      title="編輯全部網站內容"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                      <span className="hidden lg:inline">編輯站點</span>
-                    </button>
+                  <button
+                    onClick={onOpenEditModal}
+                    className="pixel-btn px-2.5 py-1 text-xs font-pixel font-bold bg-[#E0BAC7] flex items-center gap-1 rounded"
+                    title="編輯全部網站內容"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="hidden lg:inline">編輯站點</span>
+                  </button>
+                )}
 
-                    {onPublish && (
-                      <button
-                        onClick={() => onPublish()}
-                        className="px-2.5 py-1 text-xs font-pixel font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-2 border-emerald-700 flex items-center gap-1 rounded shadow-xs cursor-pointer transition active:translate-y-0.5"
-                        title="將目前畫面所有修改一鍵發布至官方短網址，讓所有訪客即時看到！"
-                      >
-                        <span className="text-xs">🚀</span>
-                        <span className="hidden sm:inline">發布短網址</span>
-                      </button>
-                    )}
-                  </>
+                {onPublish && (
+                  <button
+                    onClick={() => onPublish()}
+                    className="px-2.5 py-1 text-xs font-pixel font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-2 border-emerald-700 flex items-center gap-1 rounded shadow-xs cursor-pointer transition active:translate-y-0.5"
+                    title="將目前電腦版所有修改一鍵發布至伺服器，手機端重新整理即可即時同步！"
+                  >
+                    <span className="text-xs">🚀</span>
+                    <span className="font-bold">同步至手機端</span>
+                  </button>
                 )}
               </div>
             ) : (

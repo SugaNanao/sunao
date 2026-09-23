@@ -255,6 +255,7 @@ export interface CoupleSiteData {
   coupleProfile?: CoupleProfile;
   decorations?: PageDecorationItem[]; // 全站各分頁透明底裝飾貼圖清單
   bgMusicPlaying: boolean;
+  updatedAt?: string;
 }
 
 export const ALBUM_ALL_TAG = '#記憶のかけら';
