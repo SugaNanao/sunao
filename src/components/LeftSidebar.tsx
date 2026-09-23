@@ -204,6 +204,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               alt={`${data.characterA.name} & ${data.characterB.name}`}
               referrerPolicy="no-referrer"
               crossOrigin="anonymous"
+              decoding="async"
               onError={(e) => {
                 handleImageLoadError(e, currentAvatar);
               }}

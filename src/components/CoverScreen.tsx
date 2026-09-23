@@ -101,6 +101,7 @@ export const CoverScreen: React.FC<CoverScreenProps> = ({ data, onEnter }) => {
               alt="Couple Cover"
               referrerPolicy="no-referrer"
               crossOrigin="anonymous"
+              decoding="async"
               onError={(e) => handleImageLoadError(e, data.coverImage)}
               className="w-full h-full object-cover object-center filter brightness-95 contrast-105 transition duration-500 group-hover:scale-105"
             />

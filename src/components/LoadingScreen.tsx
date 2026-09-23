@@ -42,27 +42,31 @@ const PixelHeart: React.FC<{ color: string; size?: number; className?: string }>
 );
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
-  const [progress, setProgress] = useState(12);
+  const [progress, setProgress] = useState(25);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(onComplete, 450);
+          setTimeout(onComplete, 180);
           return 100;
         }
-        // Slower progression jump like vintage OS loading
-        const jump = Math.floor(Math.random() * 7) + 4;
+        // Snappy smooth vintage OS loading
+        const jump = Math.floor(Math.random() * 16) + 18;
         return Math.min(100, prev + jump);
       });
-    }, 240);
+    }, 80);
 
     return () => clearInterval(timer);
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center dot-bg p-4 select-none">
+    <div
+      onClick={onComplete}
+      className="fixed inset-0 z-50 flex items-center justify-center dot-bg p-4 select-none cursor-pointer"
+      title="點擊任意處可快速跳過載入"
+    >
       {/* Retro OS Window */}
       <motion.div
         initial={{ scale: 0.92, opacity: 0 }}

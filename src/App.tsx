@@ -3,6 +3,8 @@ import { ActiveTab, CoupleSiteData, ChatMessage, ChatConversationGroup } from '.
 import {
   loadCoupleData,
   saveCoupleData,
+  debouncedSaveCoupleData,
+  debouncedPublishDataToServer,
   generateShareableUrl,
   isSharedUrl,
   loadCoupleDataFromIndexedDB,
@@ -20,14 +22,16 @@ import { CharacterProfileView } from './components/views/CharacterProfileView';
 import { StoryView } from './components/views/StoryView';
 import { AlbumView } from './components/views/AlbumView';
 import { AUView } from './components/views/AUView';
-import { ChatModal } from './components/ChatModal';
-import { MusicModal } from './components/MusicModal';
-import { EditModal } from './components/EditModal';
-import { ShareModal } from './components/ShareModal';
 import { TaskBar } from './components/TaskBar';
 import { FloatingMusicPlayer } from './components/FloatingMusicPlayer';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { PageDecorationsOverlay } from './components/PageDecorationsOverlay';
+
+// Lazy loaded heavy modals for instant initial page loading
+const ChatModal = React.lazy(() => import('./components/ChatModal').then(m => ({ default: m.ChatModal })));
+const MusicModal = React.lazy(() => import('./components/MusicModal').then(m => ({ default: m.MusicModal })));
+const EditModal = React.lazy(() => import('./components/EditModal').then(m => ({ default: m.EditModal })));
+const ShareModal = React.lazy(() => import('./components/ShareModal').then(m => ({ default: m.ShareModal })));
 
 export default function App() {
   const [data, setData] = useState<CoupleSiteData>(loadCoupleData);
@@ -226,23 +230,23 @@ export default function App() {
 
   const handleUpdateData = (newData: CoupleSiteData) => {
     setData(newData);
-    saveCoupleData(newData);
-    // Background async sync to server
-    publishDataToServer(newData).catch(() => {});
+    debouncedSaveCoupleData(newData, 300);
+    // Background async debounced sync to server
+    debouncedPublishDataToServer(newData, 800);
   };
 
   const handleUpdateChat = (messages: ChatMessage[]) => {
     const next = { ...data, chatHistory: messages };
     setData(next);
-    saveCoupleData(next);
-    publishDataToServer(next).catch(() => {});
+    debouncedSaveCoupleData(next, 300);
+    debouncedPublishDataToServer(next, 800);
   };
 
   const handleUpdateChatGroups = (groups: ChatConversationGroup[]) => {
     const next = { ...data, chatGroups: groups };
     setData(next);
-    saveCoupleData(next);
-    publishDataToServer(next).catch(() => {});
+    debouncedSaveCoupleData(next, 300);
+    debouncedPublishDataToServer(next, 800);
   };
 
   const handleToggleMusic = () => {
@@ -432,40 +436,50 @@ export default function App() {
         onOpenMusicModal={() => setIsMusicModalOpen(true)}
       />
 
-      {/* Modals */}
-      <ChatModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        data={data}
-        isEditMode={effectiveEditMode}
-        isSharedLink={isVisitor}
-        onUpdateChatHistory={handleUpdateChat}
-        onUpdateChatGroups={handleUpdateChatGroups}
-      />
+      {/* Lazy Modals loaded on-demand */}
+      <React.Suspense fallback={null}>
+        {isChatOpen && (
+          <ChatModal
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            data={data}
+            isEditMode={effectiveEditMode}
+            isSharedLink={isVisitor}
+            onUpdateChatHistory={handleUpdateChat}
+            onUpdateChatGroups={handleUpdateChatGroups}
+          />
+        )}
 
-      <MusicModal
-        isOpen={isMusicModalOpen}
-        onClose={() => setIsMusicModalOpen(false)}
-        isPlaying={isPlayingMusic}
-        onTogglePlay={handleToggleMusic}
-      />
+        {isMusicModalOpen && (
+          <MusicModal
+            isOpen={isMusicModalOpen}
+            onClose={() => setIsMusicModalOpen(false)}
+            isPlaying={isPlayingMusic}
+            onTogglePlay={handleToggleMusic}
+          />
+        )}
 
-      <EditModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        data={data}
-        onSaveData={handleUpdateData}
-        initialTab={editInitialTab}
-      />
+        {isEditModalOpen && (
+          <EditModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            data={data}
+            onSaveData={handleUpdateData}
+            initialTab={editInitialTab}
+          />
+        )}
 
-      <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        data={data}
-        onImportData={handleUpdateData}
-        onUpdateData={handleUpdateData}
-        onPublish={handlePublishToServer}
-      />
+        {isShareModalOpen && (
+          <ShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            data={data}
+            onImportData={handleUpdateData}
+            onUpdateData={handleUpdateData}
+            onPublish={handlePublishToServer}
+          />
+        )}
+      </React.Suspense>
 
       {/* Admin Authentication & Console Modal */}
       <AdminAuthModal

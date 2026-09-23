@@ -194,6 +194,8 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
                   alt={photo.caption}
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => handleImageLoadError(e, photo.url)}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500 filter contrast-105"
                   style={{

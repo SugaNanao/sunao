@@ -266,21 +266,45 @@ export function saveCoupleData(data: CoupleSiteData): void {
     updatedAt: data.updatedAt || new Date().toISOString(),
   };
 
-  // Always persist full data to IndexedDB
-  saveCoupleDataToIndexedDB(dataWithTime).catch(() => {});
+  const persist = () => {
+    // Persist full data to IndexedDB
+    saveCoupleDataToIndexedDB(dataWithTime).catch(() => {});
 
-  // Safely persist to localStorage without crashing on quota limit
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTime));
-  } catch (e) {
-    // QuotaExceededError: save lightweight fallback
+    // Safely persist to localStorage without crashing on quota limit
     try {
-      const lightweight = createLightweightFallback(dataWithTime);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
-    } catch {
-      // If even lightweight cannot fit, do nothing (IndexedDB has the full state)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTime));
+    } catch (e) {
+      try {
+        const lightweight = createLightweightFallback(dataWithTime);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
+      } catch {
+        // If even lightweight cannot fit, do nothing (IndexedDB has the full state)
+      }
     }
+  };
+
+  // Schedule during browser idle time or next tick to prevent UI stutter
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(persist, { timeout: 500 });
+  } else {
+    setTimeout(persist, 0);
   }
+}
+
+let debouncedSaveTimer: ReturnType<typeof setTimeout> | null = null;
+export function debouncedSaveCoupleData(data: CoupleSiteData, delay = 300): void {
+  if (debouncedSaveTimer) clearTimeout(debouncedSaveTimer);
+  debouncedSaveTimer = setTimeout(() => {
+    saveCoupleData(data);
+  }, delay);
+}
+
+let debouncedPublishTimer: ReturnType<typeof setTimeout> | null = null;
+export function debouncedPublishDataToServer(data: CoupleSiteData, delay = 800): void {
+  if (debouncedPublishTimer) clearTimeout(debouncedPublishTimer);
+  debouncedPublishTimer = setTimeout(() => {
+    publishDataToServer(data).catch(() => {});
+  }, delay);
 }
 
 export function resetCoupleData(): CoupleSiteData {

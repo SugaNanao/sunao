@@ -15,7 +15,7 @@
     --font-pixel-stack: 'DotGothic16', 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Noto Sans TC', 'Noto Sans JP', 'PingFang TC', 'Microsoft JhengHei', monospace, sans-serif;
   }
 
-  *, ::before, ::after {
+  html, body {
     letter-spacing: 0.06em;
     line-height: 1.75;
   }

@@ -114,6 +114,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 alt="Couple Main Portrait"
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
+                loading="lazy"
+                decoding="async"
                 onError={(e) => handleImageLoadError(e, data.mainIllustration)}
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
               />
@@ -414,6 +416,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   alt={photo.caption}
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => handleImageLoadError(e, photo.url)}
                   className="w-full h-full object-cover filter contrast-105 transition-transform duration-300"
                   style={{
