@@ -548,6 +548,7 @@ export default function App() {
             isOpen={isSyncModalOpen}
             onClose={() => setIsSyncModalOpen(false)}
             data={data}
+            onUpdateData={handleUpdateData}
             onDataPublished={(newTime) => {
               setData((prev) => ({ ...prev, updatedAt: newTime }));
             }}

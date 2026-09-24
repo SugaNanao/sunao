@@ -7,6 +7,7 @@ import {
   getCleanSiteUrl,
   generateShareableUrl,
 } from '../utils/storage';
+import { batchOptimizeDataImages, calculateSiteDataSize, formatBytes } from '../utils/imageOptimizer';
 import {
   Smartphone,
   QrCode,
@@ -18,6 +19,7 @@ import {
   X,
   AlertCircle,
   HelpCircle,
+  Zap,
 } from 'lucide-react';
 
 interface SyncMobileModalProps {
@@ -25,6 +27,7 @@ interface SyncMobileModalProps {
   onClose: () => void;
   data: CoupleSiteData;
   onDataPublished?: (updatedAt: string) => void;
+  onUpdateData?: (newData: CoupleSiteData) => void;
 }
 
 export const SyncMobileModal: React.FC<SyncMobileModalProps> = ({
@@ -32,15 +35,19 @@ export const SyncMobileModal: React.FC<SyncMobileModalProps> = ({
   onClose,
   data,
   onDataPublished,
+  onUpdateData,
 }) => {
   const [cleanUrl, setCleanUrl] = useState('');
   const [snapshotUrl, setSnapshotUrl] = useState('');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [activeUrlType, setActiveUrlType] = useState<'clean' | 'snapshot'>('clean');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const [serverUpdatedAt, setServerUpdatedAt] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<{ success?: boolean; message: string } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const { totalBytes, formattedTotal } = calculateSiteDataSize(data);
 
   useEffect(() => {
     if (isOpen) {
@@ -87,22 +94,36 @@ export const SyncMobileModal: React.FC<SyncMobileModalProps> = ({
     generateQr(targetUrl);
   };
 
-  const handleForcePublish = async () => {
-    if (isPublishing) return;
-    setIsPublishing(true);
-    setSyncStatus(null);
+  const handleAutoOptimizeAndPublish = async () => {
+    if (isOptimizing || isPublishing) return;
+    setIsOptimizing(true);
+    setSyncStatus({
+      success: true,
+      message: '⚡ 正在為圖片進行輕量化無損壓縮中...',
+    });
     try {
+      const optResult = await batchOptimizeDataImages(data);
+      let dataToPublish = data;
+      if (optResult.savedBytes > 0) {
+        dataToPublish = optResult.updatedData;
+        if (onUpdateData) {
+          onUpdateData(optResult.updatedData);
+        }
+      }
+      setIsOptimizing(false);
+      setIsPublishing(true);
       const nowIso = new Date().toISOString();
       const payload: CoupleSiteData = {
-        ...data,
+        ...dataToPublish,
         updatedAt: nowIso,
       };
       const result = await publishDataToServer(payload);
       if (result.success) {
         setServerUpdatedAt(result.updatedAt || nowIso);
+        const savedText = optResult.savedBytes > 0 ? `（已節省 ${formatBytes(optResult.savedBytes)}）` : '';
         setSyncStatus({
           success: true,
-          message: '🎉 已成功發布至伺服器！手機端重新整理即可呈現最新編輯。',
+          message: `🎉 壓縮並成功發布至伺服器${savedText}！手機端重新整理即可呈現最新內容。`,
         });
         if (onDataPublished) {
           onDataPublished(result.updatedAt || nowIso);
@@ -113,12 +134,13 @@ export const SyncMobileModal: React.FC<SyncMobileModalProps> = ({
           message: `發布失敗：${result.message || '未知錯誤'}`,
         });
       }
-    } catch {
+    } catch (err: any) {
       setSyncStatus({
         success: false,
-        message: '連線伺服器失敗，請確認網路連線。',
+        message: `處理失敗：${err?.message || '未知錯誤'}`,
       });
     } finally {
+      setIsOptimizing(false);
       setIsPublishing(false);
     }
   };
@@ -180,16 +202,25 @@ export const SyncMobileModal: React.FC<SyncMobileModalProps> = ({
             </div>
 
             <p className="text-[11px] text-[#442F2A]/70 leading-relaxed">
-              電腦版修改文字或上傳圖片後，點擊下方「立即發布到全網與手機」，伺服器將儲存最新版內容，手機端隨後重整即會更新！
+              電腦版修改文字或上傳圖片後，點擊下方「立即同步發布」，伺服器會儲存最新版內容（包含自動無損壓縮避免傳輸過大），手機端隨後重整即會更新！
             </p>
 
+            <div className="flex items-center justify-between text-[11px] text-[#442F2A]/80 bg-[#FFF8F5] px-2.5 py-1.5 rounded border border-[#442F2A]/30">
+              <span>現有資料總大小：</span>
+              <span className="font-mono font-bold">{formatBytes(totalBytes)}</span>
+            </div>
+
             <button
-              onClick={handleForcePublish}
-              disabled={isPublishing}
+              onClick={handleAutoOptimizeAndPublish}
+              disabled={isPublishing || isOptimizing}
               className="w-full bg-[#C89398] hover:bg-[#9D5A64] text-white py-2 px-3 rounded font-pixel text-xs font-bold border border-[#442F2A] shadow-xs flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isPublishing ? 'animate-spin' : ''}`} />
-              {isPublishing ? '正在發布並同步至伺服器...' : '🔄 立即同步發布最新內容到手機與全網'}
+              <RefreshCw className={`w-3.5 h-3.5 ${isPublishing || isOptimizing ? 'animate-spin' : ''}`} />
+              {isOptimizing
+                ? '⚡ 正在無損瘦身圖片以確保流暢傳輸...'
+                : isPublishing
+                ? '正在發布並同步至伺服器...'
+                : '🔄 立即同步發布最新內容到手機與全網'}
             </button>
 
             {syncStatus && (

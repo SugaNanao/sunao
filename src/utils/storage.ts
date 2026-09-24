@@ -450,20 +450,38 @@ export async function publishDataToServer(data: CoupleSiteData): Promise<{ succe
       ...data,
       updatedAt: data.updatedAt || new Date().toISOString(),
     };
+    const jsonBody = JSON.stringify(payload);
+    const sizeInMB = (jsonBody.length / (1024 * 1024)).toFixed(2);
+
     const res = await fetch('/api/site-data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: jsonBody,
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
+      let errorMsg = `伺服器回應錯誤 (${res.status} ${res.statusText})`;
+      try {
+        const errorData = await res.json();
+        if (errorData.error) {
+          errorMsg = errorData.error;
+        }
+      } catch {
+        const text = await res.text().catch(() => '');
+        if (text) {
+          if (res.status === 413 || text.includes('Payload Too Large') || text.includes('too large')) {
+            errorMsg = `上傳檔案或圖片總量過大（目前約 ${sizeInMB} MB，超過傳輸上限），請在分享視窗點擊「一鍵無損壓縮所有圖片」後重試！`;
+          } else {
+            errorMsg = `伺服器回應 (${res.status}): ${text.slice(0, 100)}`;
+          }
+        }
+      }
       return {
         success: false,
-        message: errorData.error || `伺服器回應錯誤 (${res.status})`,
+        message: errorMsg,
       };
     }
 
@@ -473,11 +491,18 @@ export async function publishDataToServer(data: CoupleSiteData): Promise<{ succe
       message: result.message || '發布成功',
       updatedAt: result.updatedAt,
     };
-  } catch (err) {
+  } catch (err: any) {
     console.error('publishDataToServer error:', err);
+    const errMsg = err?.message || '';
+    if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError')) {
+      return {
+        success: false,
+        message: '連線伺服器逾時或受阻，請檢查網路連線或稍候重試。',
+      };
+    }
     return {
       success: false,
-      message: '連線伺服器失敗，請確認網路連線或伺服器正在運行。',
+      message: `連線伺服器失敗：${errMsg || '未知錯誤'}`,
     };
   }
 }
