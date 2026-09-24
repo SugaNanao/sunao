@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab, CoupleSiteData } from '../types';
-import { Music, Volume2, VolumeX, Edit3, Eye, Lock, Sparkles, Home, User, BookOpen, Image as ImageIcon, Globe, Share2, ShieldCheck } from 'lucide-react';
+import { Music, Volume2, VolumeX, Edit3, Eye, Lock, Sparkles, Home, User, BookOpen, Image as ImageIcon, Globe, Share2, ShieldCheck, Smartphone } from 'lucide-react';
 import { soundPlayer } from '../utils/audioSynth';
 
 interface DesktopHeaderProps {
@@ -19,6 +19,7 @@ interface DesktopHeaderProps {
   isAdmin?: boolean;
   onOpenAdminModal?: () => void;
   onPublish?: () => Promise<boolean> | void;
+  onOpenMobileSync?: () => void;
 }
 
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
@@ -37,6 +38,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   isAdmin = false,
   onOpenAdminModal,
   onPublish,
+  onOpenMobileSync,
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full select-none" id="main-desktop-header">
@@ -160,6 +162,18 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 <Eye className="w-3.5 h-3.5 text-[#442F2A]" />
                 <span className="font-bold text-[11px]">訪客模式</span>
               </div>
+            )}
+
+            {/* Mobile Sync / QR Code button */}
+            {onOpenMobileSync && (
+              <button
+                onClick={onOpenMobileSync}
+                className="pixel-btn px-2.5 py-1 text-xs font-pixel font-bold bg-[#C89398] hover:bg-[#9D5A64] text-white flex items-center gap-1 rounded border border-[#442F2A] shadow-xs cursor-pointer transition"
+                title="手機端即時同步與 QR Code 掃碼"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">手機同步</span>
+              </button>
             )}
 
             {/* Share / Export button */}

@@ -298,7 +298,7 @@ export function debouncedSaveCoupleData(data: CoupleSiteData, delay = 300): void
 }
 
 let debouncedPublishTimer: ReturnType<typeof setTimeout> | null = null;
-export function debouncedPublishDataToServer(data: CoupleSiteData, delay = 800): void {
+export function debouncedPublishDataToServer(data: CoupleSiteData, delay = 300): void {
   if (debouncedPublishTimer) clearTimeout(debouncedPublishTimer);
   debouncedPublishTimer = setTimeout(() => {
     publishDataToServer(data).catch(() => {});
@@ -386,11 +386,15 @@ export function generateShareableUrl(data: CoupleSiteData): string {
  * Fetch official published data from the server
  */
 export async function fetchPublishedDataFromServer(): Promise<{ published: boolean; data: CoupleSiteData | null; updatedAt?: string }> {
-  // 1. Try dynamic API endpoint
+  const timestamp = Date.now();
+  // 1. Try dynamic API endpoint with cache-busting timestamp
   try {
-    const res = await fetch('/api/site-data', {
+    const res = await fetch(`/api/site-data?_t=${timestamp}`, {
+      cache: 'no-store',
       headers: {
         'Accept': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
       },
     });
     const contentType = res.headers.get('content-type') || '';
@@ -410,9 +414,12 @@ export async function fetchPublishedDataFromServer(): Promise<{ published: boole
 
   // 2. Fallback to static public /published-data.json (for pure static deployments and CDN caches)
   try {
-    const res = await fetch('/published-data.json', {
+    const res = await fetch(`/published-data.json?_t=${timestamp}`, {
+      cache: 'no-store',
       headers: {
         'Accept': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
       },
     });
     const contentType = res.headers.get('content-type') || '';
@@ -422,7 +429,7 @@ export async function fetchPublishedDataFromServer(): Promise<{ published: boole
         return {
           published: true,
           data: { ...DEFAULT_COUPLE_DATA, ...data },
-          updatedAt: new Date().toISOString(),
+          updatedAt: data.updatedAt || new Date().toISOString(),
         };
       }
     }

@@ -23,13 +23,32 @@ async function startServer() {
     res.json({ status: 'ok' });
   });
 
+  // CORS & No-Cache middleware for API routes
+  app.use('/api', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Cache-Control');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+    next();
+  });
+
   // GET /api/site-data - retrieve server-published couple data
   app.get(['/api/site-data', '/published-data.json'], (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     try {
+      const distDataFile = path.join(process.cwd(), 'dist', 'published-data.json');
       const targetFile = fs.existsSync(DATA_FILE)
         ? DATA_FILE
         : fs.existsSync(ROOT_DATA_FILE)
         ? ROOT_DATA_FILE
+        : fs.existsSync(distDataFile)
+        ? distDataFile
         : null;
 
       if (targetFile) {
@@ -42,7 +61,7 @@ async function startServer() {
         return res.json({
           published: true,
           data: parsed,
-          updatedAt: stats.mtime.toISOString(),
+          updatedAt: parsed.updatedAt || stats.mtime.toISOString(),
         });
       }
       if (req.path === '/published-data.json') {

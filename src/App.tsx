@@ -32,6 +32,7 @@ const ChatModal = React.lazy(() => import('./components/ChatModal').then(m => ({
 const MusicModal = React.lazy(() => import('./components/MusicModal').then(m => ({ default: m.MusicModal })));
 const EditModal = React.lazy(() => import('./components/EditModal').then(m => ({ default: m.EditModal })));
 const ShareModal = React.lazy(() => import('./components/ShareModal').then(m => ({ default: m.ShareModal })));
+const SyncMobileModal = React.lazy(() => import('./components/SyncMobileModal').then(m => ({ default: m.SyncMobileModal })));
 
 export default function App() {
   const [data, setData] = useState<CoupleSiteData>(loadCoupleData);
@@ -67,6 +68,7 @@ export default function App() {
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [editInitialTab, setEditInitialTab] = useState('basic');
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [publishToast, setPublishToast] = useState<{ show: boolean; message: string; isError?: boolean }>({
@@ -111,7 +113,7 @@ export default function App() {
     });
   }, []);
 
-  // Hydrate full data: check server published data and local IndexedDB
+  // Hydrate full data: compare server published timestamp vs local timestamp
   useEffect(() => {
     if (isSharedLink) return;
 
@@ -126,37 +128,41 @@ export default function App() {
 
         if (!isMounted) return;
 
-        const isLocalAdmin = localStorage.getItem('love_archive_admin_auth') === 'true';
+        const serverData = serverResult.published && serverResult.data ? serverResult.data : null;
+        const localData = dbData || null;
 
-        // 1. Mobile phone or visitor device (not admin):
-        // Always display the server's published data so mobile phone is 100% in sync with computer!
-        if (serverResult.published && serverResult.data && !isLocalAdmin) {
-          setData(serverResult.data);
-          saveCoupleData(serverResult.data);
+        const serverTime = serverData?.updatedAt ? new Date(serverData.updatedAt).getTime() : 0;
+        const localTime = localData?.updatedAt ? new Date(localData.updatedAt).getTime() : 0;
+
+        // 1. Local device (computer) has newer edits than server:
+        if (localData && localTime > serverTime) {
+          setData(localData);
+          // Automatically update the server so mobile devices immediately receive the latest edits!
+          publishDataToServer(localData).then((res) => {
+            if (res.success) {
+              console.log('[App Sync] Auto-synced local edits to server for mobile/visitors.');
+            }
+          }).catch(() => {});
           return;
         }
 
-        // 2. Computer (local edited data exists in IndexedDB):
-        if (dbData) {
-          setData(dbData);
-
-          // Automatically push computer's edited data to server if:
-          // - Server has no published data yet, or
-          // - Current device is authenticated admin
-          if (!serverResult.published || isLocalAdmin) {
-            publishDataToServer(dbData).then((res) => {
-              if (res.success) {
-                console.log('[App] Auto-synced computer data to server for mobile devices.');
-              }
-            }).catch(() => {});
-          }
+        // 2. Server has newer data (e.g. computer edited, now viewing on mobile):
+        if (serverData && serverTime > localTime) {
+          setData(serverData);
+          saveCoupleData(serverData);
           return;
         }
 
-        // 3. Fallback (clean browser, mobile visitor): load server published data
-        if (serverResult.published && serverResult.data) {
-          setData(serverResult.data);
-          saveCoupleData(serverResult.data);
+        // 3. Fallback: use local data if present
+        if (localData) {
+          setData(localData);
+          return;
+        }
+
+        // 4. First-time mobile visitor: load server data
+        if (serverData) {
+          setData(serverData);
+          saveCoupleData(serverData);
         }
       } catch (err) {
         console.warn('[App] Hydration error:', err);
@@ -169,6 +175,41 @@ export default function App() {
       isMounted = false;
     };
   }, [isSharedLink]);
+
+  // Mobile / Tab re-focus auto-sync listener:
+  // When mobile browser tab is re-activated or pulled down, detect if server has newer data
+  useEffect(() => {
+    if (isSharedLink) return;
+
+    const checkServerUpdates = async () => {
+      if (document.visibilityState === 'visible') {
+        try {
+          const serverResult = await fetchPublishedDataFromServer();
+          if (serverResult.published && serverResult.data && serverResult.data.updatedAt) {
+            const serverTime = new Date(serverResult.data.updatedAt).getTime();
+            const currentTime = new Date(data.updatedAt || 0).getTime();
+            if (serverTime > currentTime + 1000) {
+              setData(serverResult.data);
+              saveCoupleData(serverResult.data);
+              setPublishToast({
+                show: true,
+                message: '✨ 已自動同步電腦端的最新內容！',
+                isError: false,
+              });
+              setTimeout(() => setPublishToast({ show: false, message: '' }), 4000);
+            }
+          }
+        } catch {}
+      }
+    };
+
+    document.addEventListener('visibilitychange', checkServerUpdates);
+    window.addEventListener('focus', checkServerUpdates);
+    return () => {
+      document.removeEventListener('visibilitychange', checkServerUpdates);
+      window.removeEventListener('focus', checkServerUpdates);
+    };
+  }, [data.updatedAt, isSharedLink]);
 
   // Effective visitor mode: visitor mode is active whenever user is NOT admin or is viewing a shared link
   const isVisitor = !isAdmin || isSharedLink;
@@ -229,10 +270,31 @@ export default function App() {
   };
 
   const handleUpdateData = (newData: CoupleSiteData) => {
-    setData(newData);
-    debouncedSaveCoupleData(newData, 300);
-    // Background async debounced sync to server
-    debouncedPublishDataToServer(newData, 800);
+    const updated: CoupleSiteData = {
+      ...newData,
+      updatedAt: newData.updatedAt || new Date().toISOString(),
+    };
+    setData(updated);
+    debouncedSaveCoupleData(updated, 200);
+
+    // Immediately push to server so mobile phone / external devices receive the update immediately!
+    publishDataToServer(updated).then((res) => {
+      if (res.success) {
+        setPublishToast({
+          show: true,
+          message: '✅ 已即時同步發布至伺服器！手機端重新整理即可呈現最新編輯。',
+          isError: false,
+        });
+        setTimeout(() => setPublishToast({ show: false, message: '' }), 4500);
+      } else {
+        setPublishToast({
+          show: true,
+          message: `⚠️ 本地已儲存，但伺服器同步失敗：${res.message}`,
+          isError: true,
+        });
+        setTimeout(() => setPublishToast({ show: false, message: '' }), 5000);
+      }
+    }).catch(() => {});
   };
 
   const handleUpdateChat = (messages: ChatMessage[]) => {
@@ -305,6 +367,7 @@ export default function App() {
           isAdmin={isAdmin}
           onOpenAdminModal={() => setIsAdminModalOpen(true)}
           onPublish={handlePublishToServer}
+          onOpenMobileSync={() => setIsSyncModalOpen(true)}
         />
       )}
 
@@ -479,6 +542,17 @@ export default function App() {
             onPublish={handlePublishToServer}
           />
         )}
+
+        {isSyncModalOpen && (
+          <SyncMobileModal
+            isOpen={isSyncModalOpen}
+            onClose={() => setIsSyncModalOpen(false)}
+            data={data}
+            onDataPublished={(newTime) => {
+              setData((prev) => ({ ...prev, updatedAt: newTime }));
+            }}
+          />
+        )}
       </React.Suspense>
 
       {/* Admin Authentication & Console Modal */}
@@ -493,7 +567,7 @@ export default function App() {
         onPublish={handlePublishToServer}
       />
 
-      {/* Bottom Retro TaskBar with HOME button & Admin trigger */}
+      {/* Bottom Retro TaskBar with HOME button, Mobile Sync & Admin trigger */}
       <TaskBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -504,6 +578,8 @@ export default function App() {
         onAdminLogout={handleAdminLogout}
         fontMode={fontMode}
         onCycleFontMode={handleCycleFontMode}
+        onOpenMobileSync={() => setIsSyncModalOpen(true)}
+        onShare={handleShare}
       />
     </div>
   );

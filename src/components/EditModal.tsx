@@ -208,6 +208,7 @@ export const EditModal: React.FC<EditModalProps> = ({
         ...dec,
         imageUrl: normalizeImageUrl(dec.imageUrl),
       })),
+      updatedAt: new Date().toISOString(),
     };
 
     onSaveData(sanitizedData);

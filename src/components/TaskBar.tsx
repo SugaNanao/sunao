@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveTab } from '../types';
-import { Home, Lock, ShieldCheck } from 'lucide-react';
+import { Home, Lock, ShieldCheck, Smartphone, Share2 } from 'lucide-react';
 
 interface TaskBarProps {
   activeTab: ActiveTab;
@@ -12,6 +12,8 @@ interface TaskBarProps {
   onAdminLogout?: () => void;
   fontMode?: 'pixel' | 'rounded' | 'clean';
   onCycleFontMode?: () => void;
+  onOpenMobileSync?: () => void;
+  onShare?: () => void;
 }
 
 export const TaskBar: React.FC<TaskBarProps> = ({
@@ -24,6 +26,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({
   onAdminLogout,
   fontMode = 'pixel',
   onCycleFontMode,
+  onOpenMobileSync,
+  onShare,
 }) => {
   const [timeStr, setTimeStr] = useState('');
 
@@ -43,11 +47,11 @@ export const TaskBar: React.FC<TaskBarProps> = ({
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 bg-[#FFF8F5] border-t-2 border-[#442F2A] h-10 px-2 sm:px-4 flex items-center justify-between font-pixel text-xs text-[#442F2A] select-none shadow-md">
-      {/* Left side: HOME button */}
-      <div className="flex items-center gap-2">
+      {/* Left side: HOME button & Mobile Sync */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <button
           onClick={() => onTabChange('HOME')}
-          className={`pixel-btn px-3 py-1 rounded flex items-center gap-1.5 font-bold cursor-pointer text-xs transition ${
+          className={`pixel-btn px-2.5 sm:px-3 py-1 rounded flex items-center gap-1.5 font-bold cursor-pointer text-xs transition ${
             activeTab === 'HOME'
               ? 'bg-[#442F2A] text-[#FFF8F5]'
               : 'bg-[#E0BAC7] text-[#442F2A] hover:bg-[#d49bb0]'
@@ -58,6 +62,28 @@ export const TaskBar: React.FC<TaskBarProps> = ({
           <Home className="w-3.5 h-3.5" />
           <span>HOME</span>
         </button>
+
+        {onOpenMobileSync && (
+          <button
+            onClick={onOpenMobileSync}
+            className="pixel-btn bg-[#C89398] hover:bg-[#9D5A64] text-white px-2 sm:px-2.5 py-1 rounded flex items-center gap-1 font-bold cursor-pointer text-[11px] sm:text-xs transition border border-[#442F2A] shadow-xs"
+            title="手機端同步與 QR Code 掃碼"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span className="inline">手機同步</span>
+          </button>
+        )}
+
+        {onShare && (
+          <button
+            onClick={onShare}
+            className="pixel-btn bg-white hover:bg-[#F8EDF1] text-[#442F2A] px-2 sm:px-2.5 py-1 rounded hidden md:flex items-center gap-1 font-bold cursor-pointer text-xs transition border border-[#442F2A] shadow-xs"
+            title="分享 / 備份"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[#C89398]" />
+            <span>分享</span>
+          </button>
+        )}
       </div>
 
       {/* Right side: Admin Status & System Clock */}
