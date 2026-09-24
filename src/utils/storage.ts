@@ -78,9 +78,11 @@ function createLightweightFallback(data: CoupleSiteData): CoupleSiteData {
   try {
     return {
       ...data,
-      album: (data.album || []).slice(0, 10).map((photo) => ({
+      coverImage: data.coverImage?.startsWith('data:') && data.coverImage.length > 50000 ? '' : data.coverImage,
+      mainIllustration: data.mainIllustration?.startsWith('data:') && data.mainIllustration.length > 50000 ? '' : data.mainIllustration,
+      album: (data.album || []).slice(0, 15).map((photo) => ({
         ...photo,
-        url: photo.url?.startsWith('data:') && photo.url.length > 200000 ? '' : photo.url,
+        url: photo.url?.startsWith('data:') && photo.url.length > 50000 ? '' : photo.url,
       })),
     };
   } catch {
@@ -267,25 +269,21 @@ export function saveCoupleData(data: CoupleSiteData): void {
   };
 
   const persist = () => {
-    // Persist full data to IndexedDB
+    // 1. Asynchronously persist full data (with all custom images) to IndexedDB
     saveCoupleDataToIndexedDB(dataWithTime).catch(() => {});
 
-    // Safely persist to localStorage without crashing on quota limit
+    // 2. Persist fast lightweight snapshot to localStorage for instant synchronous boot
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTime));
-    } catch (e) {
-      try {
-        const lightweight = createLightweightFallback(dataWithTime);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
-      } catch {
-        // If even lightweight cannot fit, do nothing (IndexedDB has the full state)
-      }
+      const lightweight = createLightweightFallback(dataWithTime);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
+    } catch {
+      // Ignore if localStorage quota is blocked
     }
   };
 
-  // Schedule during browser idle time or next tick to prevent UI stutter
+  // Schedule during browser idle time or next tick so UI never drops frames
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(persist, { timeout: 500 });
+    (window as any).requestIdleCallback(persist, { timeout: 400 });
   } else {
     setTimeout(persist, 0);
   }

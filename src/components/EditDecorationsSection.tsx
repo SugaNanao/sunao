@@ -43,7 +43,7 @@ const PAGE_TARGET_OPTIONS: { value: DecorationPageTarget; label: string; icon: s
   { value: 'AU', label: '🌌 平行宇宙 (AU)', icon: '🌌' },
 ];
 
-export const EditDecorationsSection: React.FC<EditDecorationsSectionProps> = ({
+const EditDecorationsSectionBase: React.FC<EditDecorationsSectionProps> = ({
   data,
   onChange,
   handleFileUpload,
@@ -586,3 +586,5 @@ export const EditDecorationsSection: React.FC<EditDecorationsSectionProps> = ({
     </div>
   );
 };
+
+export const EditDecorationsSection = React.memo(EditDecorationsSectionBase);

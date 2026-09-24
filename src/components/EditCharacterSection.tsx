@@ -53,7 +53,7 @@ interface EditCharacterSectionProps {
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, cb: (url: string) => void) => void;
 }
 
-export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
+const EditCharacterSectionBase: React.FC<EditCharacterSectionProps> = ({
   charKey,
   charRoleLabel,
   themeColor,
@@ -1671,3 +1671,5 @@ export const EditCharacterSection: React.FC<EditCharacterSectionProps> = ({
     </div>
   );
 };
+
+export const EditCharacterSection = React.memo(EditCharacterSectionBase);

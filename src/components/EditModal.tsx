@@ -50,6 +50,19 @@ interface EditModalProps {
   initialTab?: string;
 }
 
+const SUB_TABS = [
+  { id: 'basic', label: '基本資料與首頁' },
+  { id: 'pageTitles', label: '各分頁標題副標' },
+  { id: 'cover', label: 'LOADING / 封面頁設定' },
+  { id: 'profile', label: '雙人人設檔案' },
+  { id: 'coupleProfile', label: '菅緒檔案' },
+  { id: 'milestone', label: '時間線里程碑' },
+  { id: 'story', label: '故事章節' },
+  { id: 'album', label: '相簿照片' },
+  { id: 'au', label: '平行宇宙 AU' },
+  { id: 'decorations', label: '✨ 頁面裝飾貼圖' },
+];
+
 export const EditModal: React.FC<EditModalProps> = ({
   isOpen,
   onClose,
@@ -133,8 +146,11 @@ export const EditModal: React.FC<EditModalProps> = ({
     }));
   };
 
+  const isPreviouslyOpenRef = React.useRef(false);
+
   React.useEffect(() => {
-    if (isOpen) {
+    // Only clone fresh data when the modal transitions from closed to open
+    if (isOpen && !isPreviouslyOpenRef.current) {
       const cloned = JSON.parse(JSON.stringify(data));
       if (!cloned.pageTitles) {
         cloned.pageTitles = {
@@ -147,12 +163,16 @@ export const EditModal: React.FC<EditModalProps> = ({
       setFormData(cloned);
       setActiveSubTab(initialTab === 'anniversary' ? 'basic' : initialTab);
     }
-  }, [initialTab, isOpen, data]);
+    isPreviouslyOpenRef.current = isOpen;
+  }, [initialTab, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSave = () => {
-    // Automatically sanitize all cloud storage URLs (e.g. Google Drive, Dropbox) across the dataset
+    // Provide instant UI feedback
+    setSaveSuccessNotice(true);
+
+    // Automatically sanitize cloud storage URLs across the dataset
     const sanitizedData: CoupleSiteData = {
       ...formData,
       coverImage: normalizeImageUrl(formData.coverImage),
@@ -191,11 +211,10 @@ export const EditModal: React.FC<EditModalProps> = ({
     };
 
     onSaveData(sanitizedData);
-    setSaveSuccessNotice(true);
     setTimeout(() => {
       setSaveSuccessNotice(false);
       onClose();
-    }, 700);
+    }, 450);
   };
 
   const handleReset = () => {
@@ -255,19 +274,6 @@ export const EditModal: React.FC<EditModalProps> = ({
     }
   };
 
-  const subTabs = [
-    { id: 'basic', label: '基本資料與首頁' },
-    { id: 'pageTitles', label: '各分頁標題副標' },
-    { id: 'cover', label: 'LOADING / 封面頁設定' },
-    { id: 'profile', label: '雙人人設檔案' },
-    { id: 'coupleProfile', label: '菅緒檔案' },
-    { id: 'milestone', label: '時間線里程碑' },
-    { id: 'story', label: '故事章節' },
-    { id: 'album', label: '相簿照片' },
-    { id: 'au', label: '平行宇宙 AU' },
-    { id: 'decorations', label: '✨ 頁面裝飾貼圖' },
-  ];
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs select-none">
       <div
@@ -290,7 +296,7 @@ export const EditModal: React.FC<EditModalProps> = ({
 
         {/* Sub-tabs for navigation */}
         <div className="bg-[#F8EDF1] border-b-2 border-[#442F2A] px-3 py-1.5 flex items-center gap-1.5 overflow-x-auto text-xs font-pixel">
-          {subTabs.map((tab) => (
+          {SUB_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
@@ -492,7 +498,13 @@ export const EditModal: React.FC<EditModalProps> = ({
                   </label>
                 </div>
                 <div className="h-32 sm:h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shadow-inner">
-                  <img src={normalizeImageUrl(formData.mainIllustration)} alt="Main Preview" className="w-full h-full object-cover" />
+                  <img
+                    src={normalizeImageUrl(formData.mainIllustration)}
+                    alt="Main Preview"
+                    decoding="async"
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
 
@@ -553,6 +565,8 @@ export const EditModal: React.FC<EditModalProps> = ({
                     <img
                       src={normalizeImageUrl(formData.sidebarAvatar || formData.mainIllustration || formData.characterB.avatar)}
                       alt="Sidebar Avatar Preview"
+                      decoding="async"
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -1031,7 +1045,13 @@ export const EditModal: React.FC<EditModalProps> = ({
                   </label>
                 </div>
                 <div className="h-44 sm:h-56 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-900 shadow-inner">
-                  <img src={formData.coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                  <img
+                    src={formData.coverImage}
+                    alt="Cover Preview"
+                    decoding="async"
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
 
@@ -1640,7 +1660,13 @@ export const EditModal: React.FC<EditModalProps> = ({
                     <div className="flex gap-2 items-center">
                       <div className="w-16 h-12 rounded border border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0">
                         {story.coverImage ? (
-                          <img src={story.coverImage} alt="Story Cover" className="w-full h-full object-cover" />
+                          <img
+                            src={story.coverImage}
+                            alt="Story Cover"
+                            decoding="async"
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[9px] text-neutral-400">
                             無封面
@@ -1950,6 +1976,8 @@ export const EditModal: React.FC<EditModalProps> = ({
                         <img
                           src={photo.url}
                           alt={photo.caption}
+                          decoding="async"
+                          loading="lazy"
                           className="w-full h-full object-cover"
                           style={{
                             objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
@@ -2085,6 +2113,8 @@ export const EditModal: React.FC<EditModalProps> = ({
                         <img
                           src={photo.url}
                           alt="preview"
+                          decoding="async"
+                          loading="lazy"
                           className="w-full h-full object-cover transition-all duration-150"
                           style={{
                             objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
@@ -2429,7 +2459,13 @@ export const EditModal: React.FC<EditModalProps> = ({
                     <div className="flex gap-2 items-center">
                       <div className="w-16 h-12 rounded border border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0">
                         {au.coverImage ? (
-                          <img src={au.coverImage} alt="AU Cover" className="w-full h-full object-cover" />
+                          <img
+                            src={au.coverImage}
+                            alt="AU Cover"
+                            decoding="async"
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[9px] text-neutral-400">
                             無封面

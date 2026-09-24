@@ -36,9 +36,13 @@ export function getGoogleDriveFileId(url?: string): string | null {
  */
 export function normalizeImageUrl(url?: string): string {
   if (!url || typeof url !== 'string') return '';
+  // Avoid duplicating multi-megabyte base64 strings in memory
+  if (url.startsWith('data:') || url.startsWith('blob:')) {
+    return url;
+  }
   const trimmed = url.trim();
 
-  // If base64 or blob, return directly
+  // If base64 or blob after trim, return directly
   if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
     return trimmed;
   }
