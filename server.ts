@@ -8,8 +8,8 @@ async function startServer() {
   const PORT = 3000;
 
   // Support large payload for rich couple data (images, album, custom text)
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(express.json({ limit: '100mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
   const PUBLIC_DIR = path.join(process.cwd(), 'public');
   if (!fs.existsSync(PUBLIC_DIR)) {
@@ -118,6 +118,22 @@ async function startServer() {
       console.error('[API] Error writing published-data.json:', err);
       return res.status(500).json({ error: 'Failed to publish site data to server' });
     }
+  });
+
+  // Handle payload too large and API errors gracefully as JSON
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+      return res.status(413).json({
+        error: '上傳資料或圖片總量過大（超過伺服器單次傳輸限制），請使用「一鍵無損壓縮所有圖片」瘦身後再發布！',
+      });
+    }
+    if (err) {
+      console.error('[API Server Error]:', err);
+      return res.status(err.status || 500).json({
+        error: err.message || '伺服器處理請求時發生錯誤',
+      });
+    }
+    next();
   });
 
   // Vite integration: middleware in development, static files in production

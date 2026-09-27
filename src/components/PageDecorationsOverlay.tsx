@@ -161,7 +161,7 @@ export const PageDecorationsOverlay: React.FC<PageDecorationsOverlayProps> = ({
               }
             >
               <img
-                src={normalizeImageUrl(item.imageUrl)}
+                src={normalizeImageUrl(item.imageUrl) || undefined}
                 alt={item.name || '裝飾貼圖'}
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"

@@ -59,7 +59,7 @@ export const StoryView: React.FC<StoryViewProps> = ({
               {chapter.coverImage && (
                 <div className="h-44 w-full overflow-hidden border-b-2 border-[#442F2A] bg-neutral-100 relative">
                   <img
-                    src={normalizeImageUrl(chapter.coverImage)}
+                    src={normalizeImageUrl(chapter.coverImage) || undefined}
                     alt={chapter.title}
                     referrerPolicy="no-referrer"
                     crossOrigin="anonymous"
@@ -128,7 +128,7 @@ export const StoryView: React.FC<StoryViewProps> = ({
               {selectedChapter.coverImage && (
                 <div className="h-60 w-full rounded-lg border-2 border-[#442F2A] overflow-hidden">
                   <img
-                    src={normalizeImageUrl(selectedChapter.coverImage)}
+                    src={normalizeImageUrl(selectedChapter.coverImage) || undefined}
                     alt={selectedChapter.title}
                     referrerPolicy="no-referrer"
                     crossOrigin="anonymous"

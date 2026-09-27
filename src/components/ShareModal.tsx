@@ -127,14 +127,36 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     setIsPublishing(true);
     setPublishMessage(null);
     try {
+      let isSuccess = true;
+      let errMsg = '';
+      let updatedTime = new Date().toISOString();
+
       if (onPublish) {
-        await onPublish();
+        const pubRes = await onPublish();
+        if (typeof pubRes === 'boolean' && !pubRes) {
+          isSuccess = false;
+        }
       } else {
-        await publishDataToServer(data);
+        const res = await publishDataToServer(data);
+        if (!res.success) {
+          isSuccess = false;
+          errMsg = res.message || '發布未成功';
+        } else if (res.updatedAt) {
+          updatedTime = res.updatedAt;
+        }
       }
+
+      if (!isSuccess) {
+        setPublishMessage({
+          success: false,
+          text: errMsg || '發布未成功，請稍後重試。',
+        });
+        return;
+      }
+
       setServerStatus({
         published: true,
-        updatedAt: new Date().toISOString(),
+        updatedAt: updatedTime,
       });
       setPublishMessage({
         success: true,
@@ -162,16 +184,23 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         } else if (onImportData) {
           onImportData(parsed);
         }
-        await publishDataToServer(parsed);
-        setServerStatus({
-          published: true,
-          updatedAt: new Date().toISOString(),
-        });
-        setSnapshotStatus({
-          success: true,
-          message: '✓ 成功還原快照內容，並已同步發布為官方短網址！',
-        });
-        setSnapshotInput('');
+        const pubRes = await publishDataToServer(parsed);
+        if (pubRes.success) {
+          setServerStatus({
+            published: true,
+            updatedAt: pubRes.updatedAt || new Date().toISOString(),
+          });
+          setSnapshotStatus({
+            success: true,
+            message: '✓ 成功還原快照內容，並已同步發布為官方短網址！',
+          });
+          setSnapshotInput('');
+        } else {
+          setSnapshotStatus({
+            success: false,
+            message: `還原成功，但伺服器同步發布失敗：${pubRes.message || '未知錯誤'}`,
+          });
+        }
       } else {
         setSnapshotStatus({
           success: false,

@@ -464,20 +464,32 @@ export async function publishDataToServer(data: CoupleSiteData): Promise<{ succe
 
     if (!res.ok) {
       let errorMsg = `伺服器回應錯誤 (${res.status} ${res.statusText})`;
+      if (res.status === 413) {
+        errorMsg = `上傳資料或圖片總量過大（目前約 ${sizeInMB} MB，超過傳輸上限），請在分享視窗點擊「一鍵無損壓縮所有圖片」後重試！`;
+      }
       try {
-        const errorData = await res.json();
-        if (errorData.error) {
-          errorMsg = errorData.error;
-        }
-      } catch {
         const text = await res.text().catch(() => '');
         if (text) {
-          if (res.status === 413 || text.includes('Payload Too Large') || text.includes('too large')) {
-            errorMsg = `上傳檔案或圖片總量過大（目前約 ${sizeInMB} MB，超過傳輸上限），請在分享視窗點擊「一鍵無損壓縮所有圖片」後重試！`;
-          } else {
-            errorMsg = `伺服器回應 (${res.status}): ${text.slice(0, 100)}`;
+          try {
+            const errorData = JSON.parse(text);
+            if (errorData?.error) {
+              errorMsg = errorData.error;
+            }
+          } catch {
+            if (
+              res.status === 413 ||
+              text.includes('Payload Too Large') ||
+              text.includes('too large') ||
+              text.includes('entity too large')
+            ) {
+              errorMsg = `上傳資料或圖片總量過大（目前約 ${sizeInMB} MB，超過傳輸上限），請在分享視窗點擊「一鍵無損壓縮所有圖片」後重試！`;
+            } else if (text.trim().length > 0 && !text.startsWith('<')) {
+              errorMsg = `伺服器回應 (${res.status}): ${text.slice(0, 100)}`;
+            }
           }
         }
+      } catch {
+        // Keep errorMsg
       }
       return {
         success: false,
@@ -485,11 +497,16 @@ export async function publishDataToServer(data: CoupleSiteData): Promise<{ succe
       };
     }
 
-    const result = await res.json();
+    let result: any = {};
+    try {
+      result = await res.json();
+    } catch {
+      result = { message: '發布成功' };
+    }
     return {
       success: true,
-      message: result.message || '發布成功',
-      updatedAt: result.updatedAt,
+      message: result?.message || '發布成功',
+      updatedAt: result?.updatedAt,
     };
   } catch (err: any) {
     console.error('publishDataToServer error:', err);

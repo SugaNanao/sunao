@@ -108,17 +108,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="flex flex-col md:flex-row items-stretch gap-4 sm:gap-5">
           {/* Main Couple Featured Art / Illustration (Balanced size with text box) */}
           <div className="w-full md:w-1/2 shrink-0 flex flex-col">
-            <div className="relative rounded-xl border-2 border-[#442F2A] overflow-hidden shadow-sm bg-[#F8EDF1] group flex-1 min-h-[210px] sm:min-h-[220px]">
-              <img
-                src={normalizeImageUrl(data.mainIllustration)}
-                alt="Couple Main Portrait"
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-                loading="lazy"
-                decoding="async"
-                onError={(e) => handleImageLoadError(e, data.mainIllustration)}
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
-              />
+            <div className="relative rounded-xl border-2 border-[#442F2A] overflow-hidden shadow-sm bg-[#F8EDF1] group flex-1 min-h-[210px] sm:min-h-[220px] flex items-center justify-center">
+              {data.mainIllustration ? (
+                <img
+                  src={normalizeImageUrl(data.mainIllustration) || undefined}
+                  alt="Couple Main Portrait"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => handleImageLoadError(e, data.mainIllustration)}
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs font-pixel text-[#442F2A]/40">
+                  君のすべてを映して
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#442F2A]/20 via-transparent to-transparent pointer-events-none" />
             </div>
           </div>
@@ -410,21 +416,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
               onClick={() => onNavigateTab('ALBUM')}
               className="bg-[#FFF8F5] border-2 border-[#442F2A] p-2 rounded shadow hover:rotate-1 hover:scale-102 transition duration-200 cursor-pointer flex flex-col"
             >
-              <div className="h-40 w-full overflow-hidden border border-[#442F2A]/20 rounded mb-2 bg-neutral-100 relative">
-                <img
-                  src={normalizeImageUrl(photo.url)}
-                  alt={photo.caption}
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => handleImageLoadError(e, photo.url)}
-                  className="w-full h-full object-cover filter contrast-105 transition-transform duration-300"
-                  style={{
-                    objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
-                    transform: `scale(${(photo.previewScale ?? 100) / 100})`,
-                  }}
-                />
+              <div className="h-40 w-full overflow-hidden border border-[#442F2A]/20 rounded mb-2 bg-neutral-100 relative flex items-center justify-center">
+                {photo.url ? (
+                  <img
+                    src={normalizeImageUrl(photo.url) || undefined}
+                    alt={photo.caption}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => handleImageLoadError(e, photo.url)}
+                    className="w-full h-full object-cover filter contrast-105 transition-transform duration-300"
+                    style={{
+                      objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                      transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                    }}
+                  />
+                ) : (
+                  <div className="text-xs text-[#442F2A]/40 font-pixel">無相片</div>
+                )}
               </div>
               <p className="font-pixel text-xs font-bold text-[#442F2A] truncate">
                 {photo.caption}

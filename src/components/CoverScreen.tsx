@@ -95,16 +95,20 @@ export const CoverScreen: React.FC<CoverScreenProps> = ({ data, onEnter }) => {
           </div>
 
           {/* Picture Box - Proportionally scaled to match Loading screen window */}
-          <div className="relative h-60 sm:h-72 w-full bg-[#3D2723] overflow-hidden group">
-            <img
-              src={normalizeImageUrl(data.coverImage)}
-              alt="Couple Cover"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-              decoding="async"
-              onError={(e) => handleImageLoadError(e, data.coverImage)}
-              className="w-full h-full object-cover object-center filter brightness-95 contrast-105 transition duration-500 group-hover:scale-105"
-            />
+          <div className="relative h-60 sm:h-72 w-full bg-[#3D2723] overflow-hidden group flex items-center justify-center">
+            {data.coverImage ? (
+              <img
+                src={normalizeImageUrl(data.coverImage) || undefined}
+                alt="Couple Cover"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                decoding="async"
+                onError={(e) => handleImageLoadError(e, data.coverImage)}
+                className="w-full h-full object-cover object-center filter brightness-95 contrast-105 transition duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="text-[#FFF8F5]/50 font-pixel text-xs">LOVE ARCHIVE</div>
+            )}
           </div>
         </motion.div>
       </div>

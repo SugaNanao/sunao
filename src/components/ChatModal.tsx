@@ -454,8 +454,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                 }`}
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-full border border-[#442F2A] overflow-hidden bg-white shrink-0 shadow-sm">
-                  <img src={char.avatar} alt={char.name} className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-full border border-[#442F2A] overflow-hidden bg-white shrink-0 shadow-sm flex items-center justify-center">
+                  {char.avatar ? (
+                    <img src={char.avatar || undefined} alt={char.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-[10px] font-pixel text-[#442F2A]">{char.name?.slice(0, 1)}</span>
+                  )}
                 </div>
 
                 {/* Message Bubble */}

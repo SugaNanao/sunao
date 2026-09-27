@@ -242,15 +242,19 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
         <div className="flex flex-col sm:flex-row items-start gap-4 pb-3 border-b border-[#442F2A]/15">
           {/* 1. 照片 */}
           <div className="shrink-0 w-28 sm:w-32 self-center sm:self-start">
-            <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden bg-[#F8EDF1] border-2 border-[#442F2A] shadow-xs relative group">
-              <img
-                src={normalizeImageUrl(char.avatar)}
-                alt={char.name}
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-                onError={(e) => handleImageLoadError(e, char.avatar)}
-                className="w-full h-full object-cover filter contrast-105 group-hover:scale-103 transition duration-300"
-              />
+            <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden bg-[#F8EDF1] border-2 border-[#442F2A] shadow-xs relative group flex items-center justify-center">
+              {char.avatar ? (
+                <img
+                  src={normalizeImageUrl(char.avatar) || undefined}
+                  alt={char.name}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleImageLoadError(e, char.avatar)}
+                  className="w-full h-full object-cover filter contrast-105 group-hover:scale-103 transition duration-300"
+                />
+              ) : (
+                <div className="text-xs font-pixel text-[#442F2A]/40">{char.name}</div>
+              )}
             </div>
           </div>
 
@@ -324,7 +328,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                     title={isEditMode ? '按住滑鼠或觸控直接拖拽至任意位置' : undefined}
                   >
                     <img
-                      src={normalizeImageUrl(char.cornerImage)}
+                      src={normalizeImageUrl(char.cornerImage) || undefined}
                       alt={`${char.name} 裝飾圖片`}
                       referrerPolicy="no-referrer"
                       crossOrigin="anonymous"
@@ -443,7 +447,7 @@ export const CharacterProfileView: React.FC<CharacterProfileViewProps> = ({
                       title={isEditMode ? `【${dec.name || '貼圖'}】可直接拖拽至任意位置` : undefined}
                     >
                       <img
-                        src={normalizeImageUrl(dec.imageUrl)}
+                        src={normalizeImageUrl(dec.imageUrl) || undefined}
                         alt={dec.name || '裝飾貼圖'}
                         referrerPolicy="no-referrer"
                         crossOrigin="anonymous"

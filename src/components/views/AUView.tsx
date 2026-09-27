@@ -70,7 +70,7 @@ export const AUView: React.FC<AUViewProps> = ({
               {au.coverImage && (
                 <div className="h-44 w-full overflow-hidden border-b-2 border-[#442F2A] relative bg-neutral-100">
                   <img
-                    src={normalizeImageUrl(au.coverImage)}
+                    src={normalizeImageUrl(au.coverImage) || undefined}
                     alt={au.title}
                     referrerPolicy="no-referrer"
                     crossOrigin="anonymous"
@@ -154,7 +154,7 @@ export const AUView: React.FC<AUViewProps> = ({
               {selectedAU.coverImage && (
                 <div className="h-56 w-full rounded-lg border-2 border-[#442F2A] overflow-hidden">
                   <img
-                    src={normalizeImageUrl(selectedAU.coverImage)}
+                    src={normalizeImageUrl(selectedAU.coverImage) || undefined}
                     alt={selectedAU.title}
                     referrerPolicy="no-referrer"
                     crossOrigin="anonymous"

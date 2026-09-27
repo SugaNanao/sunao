@@ -110,15 +110,19 @@ const EditCharacterSectionBase: React.FC<EditCharacterSectionProps> = ({
         <div>
           <label className="block text-[11px] font-bold text-[#442F2A]">頭像 (Avatar URL 或 本機上傳)：</label>
           <div className="flex gap-2 items-center">
-            <div className="w-12 h-12 rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0 shadow-xs">
-              <img
-                src={normalizeImageUrl(character.avatar)}
-                alt="Avatar Preview"
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-                onError={(e) => handleImageLoadError(e, character.avatar)}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-12 h-12 rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0 shadow-xs flex items-center justify-center">
+              {character.avatar ? (
+                <img
+                  src={normalizeImageUrl(character.avatar) || undefined}
+                  alt="Avatar Preview"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleImageLoadError(e, character.avatar)}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-[10px] text-[#442F2A]/40 font-pixel">無頭像</span>
+              )}
             </div>
             <div className="flex-1 flex gap-1">
               <input
@@ -165,7 +169,7 @@ const EditCharacterSectionBase: React.FC<EditCharacterSectionProps> = ({
             {character.cornerImage ? (
               <div className="w-12 h-12 rounded border border-[#442F2A] overflow-hidden bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:6px_6px] bg-white shrink-0 shadow-xs flex items-center justify-center p-1">
                 <img
-                  src={normalizeImageUrl(character.cornerImage)}
+                  src={normalizeImageUrl(character.cornerImage) || undefined}
                   alt="Corner Sticker"
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
@@ -263,62 +267,68 @@ const EditCharacterSectionBase: React.FC<EditCharacterSectionProps> = ({
                   </div>
 
                   {/* 自由拖拽的透明底圖片 */}
-                  <div
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-                      const startX = e.clientX;
-                      const startY = e.clientY;
-                      const initX = character.cornerImageOffsetX || 0;
-                      const initY = character.cornerImageOffsetY || 0;
+                  {character.cornerImage ? (
+                    <div
+                      onPointerDown={(e) => {
+                        e.preventDefault();
+                        const startX = e.clientX;
+                        const startY = e.clientY;
+                        const initX = character.cornerImageOffsetX || 0;
+                        const initY = character.cornerImageOffsetY || 0;
 
-                      const onMove = (moveEvent: PointerEvent) => {
-                        const dx = moveEvent.clientX - startX;
-                        const dy = moveEvent.clientY - startY;
-                        onUpdate({
-                          ...character,
-                          cornerImageOffsetX: Math.round(initX + dx),
-                          cornerImageOffsetY: Math.round(initY + dy),
-                        });
-                      };
+                        const onMove = (moveEvent: PointerEvent) => {
+                          const dx = moveEvent.clientX - startX;
+                          const dy = moveEvent.clientY - startY;
+                          onUpdate({
+                            ...character,
+                            cornerImageOffsetX: Math.round(initX + dx),
+                            cornerImageOffsetY: Math.round(initY + dy),
+                          });
+                        };
 
-                      const onUp = () => {
-                        window.removeEventListener('pointermove', onMove);
-                        window.removeEventListener('pointerup', onUp);
-                      };
+                        const onUp = () => {
+                          window.removeEventListener('pointermove', onMove);
+                          window.removeEventListener('pointerup', onUp);
+                        };
 
-                      window.addEventListener('pointermove', onMove);
-                      window.addEventListener('pointerup', onUp);
-                    }}
-                    className={`absolute select-none z-10 cursor-grab active:cursor-grabbing group ${
-                      character.cornerImagePosition === 'top-right'
-                        ? 'right-3 top-3'
-                        : character.cornerImagePosition === 'top-left'
-                        ? 'left-3 top-3'
-                        : character.cornerImagePosition === 'bottom-left'
-                        ? 'left-3 bottom-3'
-                        : 'right-3 bottom-3'
-                    }`}
-                    style={{
-                      transform: `translate(${character.cornerImageOffsetX || 0}px, ${character.cornerImageOffsetY || 0}px)`,
-                      touchAction: 'none',
-                    }}
-                    title="按住滑鼠或觸控拖拽圖片至任意位置"
-                  >
-                    <div className="relative">
-                      <img
-                        src={character.cornerImage}
-                        alt="corner-preview"
-                        className="h-16 sm:h-20 w-auto object-contain pointer-events-none group-hover:drop-shadow-md drop-shadow-sm transition-transform"
-                        style={{
-                          backgroundColor: 'transparent',
-                          transform: `scale(${(character.cornerImageScale || 100) / 100})`,
-                        }}
-                      />
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#442F2A] text-white text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        ✥ 按住拖曳
+                        window.addEventListener('pointermove', onMove);
+                        window.addEventListener('pointerup', onUp);
+                      }}
+                      className={`absolute select-none z-10 cursor-grab active:cursor-grabbing group ${
+                        character.cornerImagePosition === 'top-right'
+                          ? 'right-3 top-3'
+                          : character.cornerImagePosition === 'top-left'
+                          ? 'left-3 top-3'
+                          : character.cornerImagePosition === 'bottom-left'
+                          ? 'left-3 bottom-3'
+                          : 'right-3 bottom-3'
+                      }`}
+                      style={{
+                        transform: `translate(${character.cornerImageOffsetX || 0}px, ${character.cornerImageOffsetY || 0}px)`,
+                        touchAction: 'none',
+                      }}
+                      title="按住滑鼠或觸控拖拽圖片至任意位置"
+                    >
+                      <div className="relative">
+                        <img
+                          src={character.cornerImage || undefined}
+                          alt="corner-preview"
+                          className="h-16 sm:h-20 w-auto object-contain pointer-events-none group-hover:drop-shadow-md drop-shadow-sm transition-transform"
+                          style={{
+                            backgroundColor: 'transparent',
+                            transform: `scale(${(character.cornerImageScale || 100) / 100})`,
+                          }}
+                        />
+                        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#442F2A] text-white text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                          ✥ 按住拖曳
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-pixel text-[#442F2A]/40 pointer-events-none">
+                      （未設定人物姓名區角落透明插圖）
+                    </div>
+                  )}
 
                   <div className="absolute bottom-1.5 left-2 text-[9px] font-pixel text-[#442F2A]/50 pointer-events-none">
                     ※ 點擊按住貼圖拖曳即可自訂擺放位置

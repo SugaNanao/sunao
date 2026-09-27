@@ -265,6 +265,8 @@ export function calculateSiteDataSize(data: CoupleSiteData): {
 
   (data.album || []).forEach((photo) => checkUrl(photo.url));
   (data.alternativeUniverses || []).forEach((au) => checkUrl(au.coverImage));
+  (data.stories || []).forEach((story) => checkUrl(story.coverImage));
+  (data.decorations || []).forEach((dec) => checkUrl(dec.imageUrl));
 
   const textBytes = Math.max(0, totalBytes - imageBytes);
 
@@ -318,6 +320,28 @@ export async function batchOptimizeDataImages(
       name: `au_${idx}`,
       get: () => au.coverImage,
       set: (v) => { nextData.alternativeUniverses[idx].coverImage = v; },
+      maxDim: 800,
+    });
+  });
+
+  (nextData.stories || []).forEach((story, idx) => {
+    tasks.push({
+      name: `story_${idx}`,
+      get: () => story.coverImage,
+      set: (v) => { nextData.stories[idx].coverImage = v; },
+      maxDim: 1080,
+    });
+  });
+
+  (nextData.decorations || []).forEach((dec, idx) => {
+    tasks.push({
+      name: `dec_${idx}`,
+      get: () => dec.imageUrl,
+      set: (v) => {
+        if (nextData.decorations && nextData.decorations[idx]) {
+          nextData.decorations[idx].imageUrl = v;
+        }
+      },
       maxDim: 800,
     });
   });
@@ -384,6 +408,14 @@ export function stripBase64ForLightweightBackup(data: CoupleSiteData): CoupleSit
     alternativeUniverses: (data.alternativeUniverses || []).map((au) => ({
       ...au,
       coverImage: cleanUrl(au.coverImage),
+    })),
+    stories: (data.stories || []).map((story) => ({
+      ...story,
+      coverImage: cleanUrl(story.coverImage),
+    })),
+    decorations: (data.decorations || []).map((dec) => ({
+      ...dec,
+      imageUrl: cleanUrl(dec.imageUrl) || '',
     })),
   };
 }

@@ -194,22 +194,26 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             onClick={() => {
               if (isEditMode) openAvatarModal();
             }}
-            className={`w-20 h-20 rounded-full border-3 border-[#442F2A] p-0.5 bg-[#E0BAC7] overflow-hidden shadow-md relative group/avatar ${
+            className={`w-20 h-20 rounded-full border-3 border-[#442F2A] p-0.5 bg-[#E0BAC7] overflow-hidden shadow-md relative group/avatar flex items-center justify-center ${
               isEditMode ? 'cursor-pointer' : ''
             }`}
             title={isEditMode ? '點擊自定義個人頭貼' : undefined}
           >
-            <img
-              src={normalizeImageUrl(currentAvatar)}
-              alt={`${data.characterA.name} & ${data.characterB.name}`}
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-              decoding="async"
-              onError={(e) => {
-                handleImageLoadError(e, currentAvatar);
-              }}
-              className="w-full h-full object-cover rounded-full"
-            />
+            {currentAvatar ? (
+              <img
+                src={normalizeImageUrl(currentAvatar) || undefined}
+                alt={`${data.characterA.name} & ${data.characterB.name}`}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                decoding="async"
+                onError={(e) => {
+                  handleImageLoadError(e, currentAvatar);
+                }}
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <span className="text-xs text-[#442F2A] font-pixel font-bold">♥</span>
+            )}
             {isEditMode && (
               <div className="absolute inset-0 bg-black/45 rounded-full flex flex-col items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                 <Camera className="w-4 h-4 mb-0.5 text-white" />
@@ -303,7 +307,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 {previewAvatar ? (
                   <img
                     key={previewAvatar}
-                    src={previewAvatar}
+                    src={previewAvatar || undefined}
                     alt="Avatar Preview"
                     referrerPolicy="no-referrer"
                     crossOrigin="anonymous"

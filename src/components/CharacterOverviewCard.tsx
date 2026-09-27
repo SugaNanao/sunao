@@ -103,21 +103,27 @@ export const CharacterOverviewCard: React.FC<CharacterOverviewCardProps> = ({
                 onImageClick();
               }
             }}
-            className={`w-full h-36 sm:h-42 rounded-xl overflow-hidden bg-[#F8EDF1] border border-[#442F2A]/15 shadow-xs relative group transition-all duration-200 ${
+            className={`w-full h-36 sm:h-42 rounded-xl overflow-hidden bg-[#F8EDF1] border border-[#442F2A]/15 shadow-xs relative group transition-all duration-200 flex items-center justify-center ${
               onImageClick
                 ? 'cursor-pointer hover:border-[#442F2A] hover:scale-102 active:scale-98 hover:shadow-md'
                 : ''
             }`}
             title={onImageClick ? `點擊前往 ${character.name} 個人基本情報頁` : undefined}
           >
-            <img
-              src={normalizeImageUrl(character.avatar)}
-              alt={character.name}
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-              onError={(e) => handleImageLoadError(e, character.avatar)}
-              className="w-full h-full object-cover filter contrast-105 group-hover:scale-105 transition duration-300"
-            />
+            {character.avatar ? (
+              <img
+                src={normalizeImageUrl(character.avatar) || undefined}
+                alt={character.name}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                onError={(e) => handleImageLoadError(e, character.avatar)}
+                className="w-full h-full object-cover filter contrast-105 group-hover:scale-105 transition duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs font-pixel text-[#442F2A]/40">
+                {character.name}
+              </div>
+            )}
             {onImageClick && (
               <div className="absolute inset-0 bg-[#442F2A]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
                 <span className="bg-[#FFF8F5] text-[#442F2A] text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm border border-[#442F2A] font-bold">

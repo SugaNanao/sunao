@@ -353,7 +353,7 @@ const EditDecorationsSectionBase: React.FC<EditDecorationsSectionProps> = ({
                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded border-2 border-[#442F2A] bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:8px_8px] bg-white shrink-0 overflow-hidden flex items-center justify-center p-1.5 relative group/img shadow-xs">
                       {item.imageUrl ? (
                         <img
-                          src={normalizeImageUrl(item.imageUrl)}
+                          src={normalizeImageUrl(item.imageUrl) || undefined}
                           alt={item.name}
                           referrerPolicy="no-referrer"
                           crossOrigin="anonymous"

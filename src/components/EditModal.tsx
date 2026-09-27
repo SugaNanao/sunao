@@ -498,14 +498,18 @@ export const EditModal: React.FC<EditModalProps> = ({
                     />
                   </label>
                 </div>
-                <div className="h-32 sm:h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shadow-inner">
-                  <img
-                    src={normalizeImageUrl(formData.mainIllustration)}
-                    alt="Main Preview"
-                    decoding="async"
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="h-32 sm:h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 shadow-inner flex items-center justify-center">
+                  {formData.mainIllustration ? (
+                    <img
+                      src={normalizeImageUrl(formData.mainIllustration) || undefined}
+                      alt="Main Preview"
+                      decoding="async"
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs text-[#442F2A]/50 font-pixel">尚未設定主視覺插圖</span>
+                  )}
                 </div>
               </div>
 
@@ -562,14 +566,18 @@ export const EditModal: React.FC<EditModalProps> = ({
                   </label>
                 </div>
                 <div className="flex items-center gap-3 bg-white p-2.5 rounded-lg border-2 border-[#442F2A]/40 shadow-xs">
-                  <div className="w-16 h-16 rounded-full border-3 border-[#442F2A] overflow-hidden bg-[#E0BAC7] shrink-0 shadow-sm">
-                    <img
-                      src={normalizeImageUrl(formData.sidebarAvatar || formData.mainIllustration || formData.characterB.avatar)}
-                      alt="Sidebar Avatar Preview"
-                      decoding="async"
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 rounded-full border-3 border-[#442F2A] overflow-hidden bg-[#E0BAC7] shrink-0 shadow-sm flex items-center justify-center">
+                    {(formData.sidebarAvatar || formData.mainIllustration || formData.characterB?.avatar) ? (
+                      <img
+                        src={normalizeImageUrl(formData.sidebarAvatar || formData.mainIllustration || formData.characterB?.avatar) || undefined}
+                        alt="Sidebar Avatar Preview"
+                        decoding="async"
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-[10px] text-[#442F2A]/60 font-pixel">無頭像</span>
+                    )}
                   </div>
                   <div className="text-xs text-[#442F2A]">
                     <p className="font-bold text-xs text-[#442F2A]">側邊欄圓形頭貼即時預覽</p>
@@ -1045,14 +1053,18 @@ export const EditModal: React.FC<EditModalProps> = ({
                     />
                   </label>
                 </div>
-                <div className="h-44 sm:h-56 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-900 shadow-inner">
-                  <img
-                    src={formData.coverImage}
-                    alt="Cover Preview"
-                    decoding="async"
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="h-44 sm:h-56 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-900 shadow-inner flex items-center justify-center">
+                  {formData.coverImage ? (
+                    <img
+                      src={normalizeImageUrl(formData.coverImage) || undefined}
+                      alt="Cover Preview"
+                      decoding="async"
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs text-white/50 font-pixel">尚未設定封面背景圖</span>
+                  )}
                 </div>
               </div>
 
@@ -1662,7 +1674,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                       <div className="w-16 h-12 rounded border border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0">
                         {story.coverImage ? (
                           <img
-                            src={story.coverImage}
+                            src={normalizeImageUrl(story.coverImage) || undefined}
                             alt="Story Cover"
                             decoding="async"
                             loading="lazy"
@@ -1974,17 +1986,21 @@ export const EditModal: React.FC<EditModalProps> = ({
                         }`}
                         title={`點擊切換在首頁展示: ${photo.caption || '相片 #' + (idx + 1)}`}
                       >
-                        <img
-                          src={photo.url}
-                          alt={photo.caption}
-                          decoding="async"
-                          loading="lazy"
-                          className="w-full h-full object-cover"
-                          style={{
-                            objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
-                            transform: `scale(${(photo.previewScale ?? 100) / 100})`,
-                          }}
-                        />
+                        {photo.url ? (
+                          <img
+                            src={normalizeImageUrl(photo.url) || undefined}
+                            alt={photo.caption}
+                            decoding="async"
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                            style={{
+                              objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                              transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-neutral-100 text-[10px] text-neutral-400 font-pixel">無圖片</div>
+                        )}
                         {isSelected && (
                           <div className="absolute inset-0 bg-[#442F2A]/35 flex items-center justify-center">
                             <span className="bg-[#442F2A] text-white rounded-full p-0.5 shadow-sm">
@@ -2108,20 +2124,24 @@ export const EditModal: React.FC<EditModalProps> = ({
                           };
                           setFormData({ ...formData, album: next });
                         }}
-                        className="h-32 w-full rounded border border-[#442F2A] overflow-hidden bg-neutral-100 relative cursor-crosshair group shadow-inner"
+                        className="h-32 w-full rounded border border-[#442F2A] overflow-hidden bg-neutral-100 relative cursor-crosshair group shadow-inner flex items-center justify-center"
                         title="點擊圖片任意處可直接將焦點移至該位置"
                       >
-                        <img
-                          src={photo.url}
-                          alt="preview"
-                          decoding="async"
-                          loading="lazy"
-                          className="w-full h-full object-cover transition-all duration-150"
-                          style={{
-                            objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
-                            transform: `scale(${(photo.previewScale ?? 100) / 100})`,
-                          }}
-                        />
+                        {photo.url ? (
+                          <img
+                            src={normalizeImageUrl(photo.url) || undefined}
+                            alt="preview"
+                            decoding="async"
+                            loading="lazy"
+                            className="w-full h-full object-cover transition-all duration-150"
+                            style={{
+                              objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                              transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                            }}
+                          />
+                        ) : (
+                          <div className="text-xs text-[#442F2A]/40 font-pixel">請輸入相片網址或上傳圖片</div>
+                        )}
                         {/* 焦點十字圓圈 */}
                         <div
                           className="absolute w-3.5 h-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#C89398]/80 shadow-md pointer-events-none transition-all duration-100"
@@ -2461,7 +2481,7 @@ export const EditModal: React.FC<EditModalProps> = ({
                       <div className="w-16 h-12 rounded border border-[#442F2A] overflow-hidden bg-neutral-100 shrink-0">
                         {au.coverImage ? (
                           <img
-                            src={au.coverImage}
+                            src={normalizeImageUrl(au.coverImage) || undefined}
                             alt="AU Cover"
                             decoding="async"
                             loading="lazy"

@@ -272,7 +272,7 @@ export const SyncMobileModal: React.FC<SyncMobileModalProps> = ({
               <div className="p-3 bg-white border-2 border-[#442F2A] rounded-lg shadow-inner inline-block">
                 {qrCodeDataUrl ? (
                   <img
-                    src={qrCodeDataUrl}
+                    src={qrCodeDataUrl || undefined}
                     alt="Mobile Sync QR Code"
                     className="w-44 h-44 sm:w-48 sm:h-48 object-contain"
                   />

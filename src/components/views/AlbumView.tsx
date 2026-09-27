@@ -188,21 +188,25 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
           >
             {/* Photo Paper Frame */}
             <div>
-              <div className="h-52 w-full overflow-hidden border border-[#442F2A]/30 rounded bg-neutral-100 relative">
-                <img
-                  src={normalizeImageUrl(photo.url)}
-                  alt={photo.caption}
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => handleImageLoadError(e, photo.url)}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500 filter contrast-105"
-                  style={{
-                    objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
-                    transform: `scale(${(photo.previewScale ?? 100) / 100})`,
-                  }}
-                />
+              <div className="h-52 w-full overflow-hidden border border-[#442F2A]/30 rounded bg-neutral-100 relative flex items-center justify-center">
+                {photo.url ? (
+                  <img
+                    src={normalizeImageUrl(photo.url) || undefined}
+                    alt={photo.caption}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => handleImageLoadError(e, photo.url)}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500 filter contrast-105"
+                    style={{
+                      objectPosition: `${photo.previewPositionX ?? 50}% ${photo.previewPositionY ?? 50}%`,
+                      transform: `scale(${(photo.previewScale ?? 100) / 100})`,
+                    }}
+                  />
+                ) : (
+                  <div className="text-xs text-[#442F2A]/40 font-pixel">無相片</div>
+                )}
                 <div className="absolute top-2 right-2 flex items-center gap-1">
                   {(photo.showOnHome || (data.homeAlbumPhotoIds && data.homeAlbumPhotoIds.includes(photo.id))) && (
                     <span className="bg-[#442F2A] text-[#FFF8F5] border border-[#442F2A] text-[9px] font-pixel px-1.5 py-0.5 rounded shadow-sm">
@@ -291,10 +295,10 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
               </div>
 
               {/* Preview if url provided */}
-              {newPhotoUrl && (
-                <div className="h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100">
+              {newPhotoUrl ? (
+                <div className="h-40 w-full rounded border-2 border-[#442F2A] overflow-hidden bg-neutral-100 flex items-center justify-center">
                   <img
-                    src={normalizeImageUrl(newPhotoUrl)}
+                    src={normalizeImageUrl(newPhotoUrl) || undefined}
                     alt="Preview"
                     referrerPolicy="no-referrer"
                     crossOrigin="anonymous"
@@ -302,7 +306,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
                     className="w-full h-full object-cover"
                   />
                 </div>
-              )}
+              ) : null}
 
               {/* Tag Selection & Custom Tag Creation */}
               <div>
@@ -434,14 +438,18 @@ export const AlbumView: React.FC<AlbumViewProps> = ({
             {/* Photo */}
             <div className="p-4 bg-[#FFF8F5]">
               <div className="max-h-[60vh] w-full rounded border-2 border-[#442F2A] overflow-hidden bg-black/5 flex items-center justify-center">
-                <img
-                  src={normalizeImageUrl(lightboxPhoto.url)}
-                  alt={lightboxPhoto.caption}
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                  onError={(e) => handleImageLoadError(e, lightboxPhoto.url)}
-                  className="w-full max-h-[60vh] object-contain"
-                />
+                {lightboxPhoto.url ? (
+                  <img
+                    src={normalizeImageUrl(lightboxPhoto.url) || undefined}
+                    alt={lightboxPhoto.caption}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => handleImageLoadError(e, lightboxPhoto.url)}
+                    className="w-full max-h-[60vh] object-contain"
+                  />
+                ) : (
+                  <div className="p-8 text-xs text-[#442F2A]/40 font-pixel">無相片</div>
+                )}
               </div>
 
               <div className="mt-3 p-3 bg-white rounded border border-[#442F2A]/20">
