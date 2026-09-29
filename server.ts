@@ -120,6 +120,77 @@ async function startServer() {
     }
   });
 
+  // POST /api/upload-audio - Upload custom music file (mp3, m4a, wav, mp4, etc.)
+  app.post('/api/upload-audio', (req, res) => {
+    try {
+      const { filename, fileData, title, artist } = req.body;
+      if (!fileData) {
+        return res.status(400).json({ error: '缺少音訊檔案資料' });
+      }
+
+      const audioUploadDir = path.join(process.cwd(), 'public', 'uploads', 'audio');
+      if (!fs.existsSync(audioUploadDir)) {
+        fs.mkdirSync(audioUploadDir, { recursive: true });
+      }
+
+      // Sanitize extension and filename
+      const parsedExt = path.extname(filename || '').toLowerCase();
+      const validExts = ['.mp3', '.m4a', '.wav', '.ogg', '.mp4', '.aac', '.flac', '.webm'];
+      const ext = validExts.includes(parsedExt) ? parsedExt : '.mp3';
+
+      const safeBaseName = (path.parse(filename || 'track').name || 'audio')
+        .replace(/[^a-zA-Z0-9_\u4e00-\u9fa5\u3040-\u30ff-]/g, '_')
+        .slice(0, 40);
+
+      const uniqueFileName = `${Date.now()}_${safeBaseName}${ext}`;
+      const filePath = path.join(audioUploadDir, uniqueFileName);
+
+      // Strip data:audio/...;base64, or data:video/...;base64, if present
+      const base64Content = fileData.replace(/^data:[^;]+;base64,/, '');
+      const buffer = Buffer.from(base64Content, 'base64');
+
+      fs.writeFileSync(filePath, buffer);
+
+      // Also copy to dist/uploads/audio if dist directory exists
+      try {
+        const distUploadDir = path.join(process.cwd(), 'dist', 'uploads', 'audio');
+        if (fs.existsSync(path.join(process.cwd(), 'dist'))) {
+          if (!fs.existsSync(distUploadDir)) {
+            fs.mkdirSync(distUploadDir, { recursive: true });
+          }
+          fs.writeFileSync(path.join(distUploadDir, uniqueFileName), buffer);
+        }
+      } catch (copyErr) {
+        console.warn('[API] Warning syncing audio to dist directory:', copyErr);
+      }
+
+      const relativeUrl = `/uploads/audio/${uniqueFileName}`;
+      console.log(`[API] Custom audio uploaded successfully: ${relativeUrl} (${buffer.length} bytes)`);
+
+      const songTitle = (title || '').trim() || path.parse(filename || '自訂音樂').name;
+      const songArtist = (artist || '').trim();
+
+      return res.json({
+        success: true,
+        url: relativeUrl,
+        filename: uniqueFileName,
+        title: songTitle,
+        artist: songArtist,
+        size: buffer.length,
+      });
+    } catch (err) {
+      console.error('[API] Error uploading audio:', err);
+      return res.status(500).json({ error: '伺服器處理音訊上傳失敗' });
+    }
+  });
+
+  // Serve static /uploads folder (for uploaded audio and custom assets)
+  const uploadsStaticDir = path.join(process.cwd(), 'public', 'uploads');
+  if (!fs.existsSync(uploadsStaticDir)) {
+    fs.mkdirSync(uploadsStaticDir, { recursive: true });
+  }
+  app.use('/uploads', express.static(uploadsStaticDir));
+
   // Handle payload too large and API errors gracefully as JSON
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (err && (err.type === 'entity.too.large' || err.status === 413)) {

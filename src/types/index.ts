@@ -216,6 +216,17 @@ export interface PageTitlesConfig {
   au?: PageHeaderTitle;
 }
 
+export interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  bpm?: number;
+  notes?: { f: number; d: number }[];
+  src?: string; // For uploaded MP3 or MP4 audio URL / Base64 / ObjectURL
+  isCustom?: boolean;
+  size?: number;
+}
+
 export interface CoupleSiteData {
   siteTitle: string;
   siteSubtitle: string;
@@ -254,6 +265,7 @@ export interface CoupleSiteData {
   specialDates?: SpecialDate[];
   coupleProfile?: CoupleProfile;
   decorations?: PageDecorationItem[]; // 全站各分頁透明底裝飾貼圖清單
+  customTracks?: Track[]; // 使用者上傳的專屬音樂歌曲清單
   bgMusicPlaying: boolean;
   updatedAt?: string;
 }

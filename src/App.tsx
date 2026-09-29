@@ -111,7 +111,31 @@ export default function App() {
     soundPlayer.onPlayStateChange((playing) => {
       setIsPlayingMusic(playing);
     });
+
+    const handleTracksUpdated = () => {
+      const customTracks = soundPlayer.getCustomTracks();
+      setData((prev) => {
+        const prevCustom = prev.customTracks || [];
+        if (
+          prevCustom.length !== customTracks.length ||
+          JSON.stringify(prevCustom.map((t) => t.id)) !== JSON.stringify(customTracks.map((t) => t.id))
+        ) {
+          const nextData = { ...prev, customTracks };
+          saveCoupleData(nextData);
+          return nextData;
+        }
+        return prev;
+      });
+    };
+    soundPlayer.onTracksUpdated(handleTracksUpdated);
   }, []);
+
+  // Sync custom tracks from loaded SiteData into soundPlayer
+  useEffect(() => {
+    if (data.customTracks && data.customTracks.length > 0) {
+      soundPlayer.syncWithSiteData(data.customTracks);
+    }
+  }, [data.customTracks]);
 
   // Hydrate full data: compare server published timestamp vs local timestamp
   useEffect(() => {

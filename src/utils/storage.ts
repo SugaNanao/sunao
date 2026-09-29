@@ -84,6 +84,10 @@ function createLightweightFallback(data: CoupleSiteData): CoupleSiteData {
         ...photo,
         url: photo.url?.startsWith('data:') && photo.url.length > 50000 ? '' : photo.url,
       })),
+      customTracks: (data.customTracks || []).map((t) => ({
+        ...t,
+        src: t.src?.startsWith('data:') && t.src.length > 50000 ? '' : t.src,
+      })),
     };
   } catch {
     return data;

@@ -1,15 +1,8 @@
 // Web Audio API retro 8-bit chiptune synthesizer & custom MP3/MP4 media player
 // Supports both sweet retro 8-bit chiptune music and user-uploaded MP3/MP4 files
+import { Track } from '../types';
 
-export interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  bpm?: number;
-  notes?: { f: number; d: number }[];
-  src?: string; // For uploaded MP3 or MP4 audio URL / Base64 / ObjectURL
-  isCustom?: boolean;
-}
+export type { Track };
 
 export const INITIAL_DEFAULT_TRACKS: Track[] = [
   {
@@ -85,6 +78,72 @@ export const INITIAL_DEFAULT_TRACKS: Track[] = [
 
 const STORAGE_CUSTOM_TRACKS_KEY = 'couple_site_custom_tracks';
 const STORAGE_DELETED_DEFAULT_TRACKS_KEY = 'couple_site_deleted_default_tracks';
+const AUDIO_DB_NAME = 'LoveArchiveAudioDB';
+const AUDIO_STORE_NAME = 'audioTracks';
+const AUDIO_DB_VERSION = 1;
+
+function openAudioDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') return reject(new Error('IndexedDB not supported'));
+    const req = indexedDB.open(AUDIO_DB_NAME, AUDIO_DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(AUDIO_STORE_NAME)) {
+        db.createObjectStore(AUDIO_STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadTracksFromAudioDB(): Promise<Track[]> {
+  try {
+    const db = await openAudioDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE_NAME, 'readonly');
+      const store = tx.objectStore(AUDIO_STORE_NAME);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function saveTrackToAudioDB(track: Track): Promise<void> {
+  try {
+    const db = await openAudioDB();
+    const tx = db.transaction(AUDIO_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(AUDIO_STORE_NAME);
+    store.put(track);
+  } catch (err) {
+    console.warn('AudioDB save error:', err);
+  }
+}
+
+async function removeTrackFromAudioDB(id: string): Promise<void> {
+  try {
+    const db = await openAudioDB();
+    const tx = db.transaction(AUDIO_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(AUDIO_STORE_NAME);
+    store.delete(id);
+  } catch (err) {
+    console.warn('AudioDB remove error:', err);
+  }
+}
+
+async function clearAudioDB(): Promise<void> {
+  try {
+    const db = await openAudioDB();
+    const tx = db.transaction(AUDIO_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(AUDIO_STORE_NAME);
+    store.clear();
+  } catch (err) {
+    console.warn('AudioDB clear error:', err);
+  }
+}
 
 class RetroChiptunePlayer {
   private ctx: AudioContext | null = null;
@@ -103,6 +162,7 @@ class RetroChiptunePlayer {
   constructor() {
     this.initAudioElement();
     this.reloadTracks();
+    this.hydrateFromIndexedDB();
   }
 
   private initAudioElement() {
@@ -115,6 +175,34 @@ class RetroChiptunePlayer {
       this.audioEl.addEventListener('error', (e) => {
         console.warn('Audio playback error', e);
       });
+    }
+  }
+
+  private async hydrateFromIndexedDB() {
+    if (typeof window === 'undefined') return;
+    try {
+      const dbTracks = await loadTracksFromAudioDB();
+      if (dbTracks && dbTracks.length > 0) {
+        let changed = false;
+        dbTracks.forEach((dbTrack) => {
+          const existingIdx = this.tracks.findIndex((t) => t.id === dbTrack.id);
+          if (existingIdx !== -1) {
+            // Update src if DB has full data
+            if (dbTrack.src && (!this.tracks[existingIdx].src || this.tracks[existingIdx].src?.length < dbTrack.src.length)) {
+              this.tracks[existingIdx] = dbTrack;
+              changed = true;
+            }
+          } else {
+            this.tracks.push(dbTrack);
+            changed = true;
+          }
+        });
+        if (changed) {
+          if (this.onTracksUpdatedCallback) this.onTracksUpdatedCallback();
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to hydrate tracks from AudioDB:', e);
     }
   }
 
@@ -138,7 +226,7 @@ class RetroChiptunePlayer {
     // 2. Filter initial default tracks
     const activeDefaults = INITIAL_DEFAULT_TRACKS.filter((t) => !deletedDefaults.includes(t.id));
 
-    // 3. Load custom tracks
+    // 3. Load custom tracks from localStorage
     let customTracks: Track[] = [];
     try {
       const savedCustom = localStorage.getItem(STORAGE_CUSTOM_TRACKS_KEY);
@@ -146,17 +234,15 @@ class RetroChiptunePlayer {
         const parsed = JSON.parse(savedCustom);
         if (Array.isArray(parsed)) {
           customTracks = parsed;
-          // Clean up any "Uploaded MP3 Audio" / "Uploaded MP4 Audio" placeholder text
           customTracks.forEach((t) => {
             if (t.artist && /uploaded mp[34]/i.test(t.artist)) {
               t.artist = '';
             }
           });
-          localStorage.setItem(STORAGE_CUSTOM_TRACKS_KEY, JSON.stringify(customTracks));
         }
       }
     } catch (e) {
-      console.warn('Failed to load custom tracks', e);
+      console.warn('Failed to load custom tracks from localStorage', e);
     }
 
     this.tracks = [...activeDefaults, ...customTracks];
@@ -171,21 +257,34 @@ class RetroChiptunePlayer {
 
   private saveCustomTracks() {
     if (typeof window === 'undefined') return;
+    const customTracks = this.tracks.filter((t) => t.isCustom);
+
+    // Save to IndexedDB (supports unlimited capacity)
+    customTracks.forEach((t) => saveTrackToAudioDB(t));
+
+    // Save safe lightweight copy to localStorage
     try {
-      const customTracks = this.tracks.filter((t) => t.isCustom);
-      localStorage.setItem(STORAGE_CUSTOM_TRACKS_KEY, JSON.stringify(customTracks));
+      const safeCustom = customTracks.map((t) => {
+        // If track src is a very long base64 (e.g. > 200KB), omit or truncate in localStorage to prevent QuotaExceededError
+        if (t.src && t.src.startsWith('data:') && t.src.length > 200000) {
+          return { ...t, src: '' };
+        }
+        return t;
+      });
+      localStorage.setItem(STORAGE_CUSTOM_TRACKS_KEY, JSON.stringify(safeCustom));
     } catch (e) {
-      console.warn('Failed to save custom tracks', e);
+      console.warn('Failed to save custom tracks to localStorage (using IndexedDB fallback)', e);
     }
   }
 
-  public addCustomTrack(title: string, artist: string, src: string): number {
+  public addCustomTrack(title: string, artist: string, src: string, size?: number): number {
     const newTrack: Track = {
       id: 'custom-' + Date.now(),
       title: title || '自訂音樂',
       artist: artist && !/uploaded mp[34]/i.test(artist) ? artist : '',
       src,
       isCustom: true,
+      size,
     };
     this.tracks.push(newTrack);
     this.saveCustomTracks();
@@ -194,6 +293,31 @@ class RetroChiptunePlayer {
     this.setTrack(newIndex);
     this.play();
     return newIndex;
+  }
+
+  public syncWithSiteData(siteDataTracks?: Track[]) {
+    if (!siteDataTracks || !Array.isArray(siteDataTracks) || siteDataTracks.length === 0) return;
+    let changed = false;
+    siteDataTracks.forEach((sTrack) => {
+      const existing = this.tracks.find((t) => t.id === sTrack.id);
+      if (!existing) {
+        this.tracks.push({ ...sTrack, isCustom: true });
+        saveTrackToAudioDB(sTrack);
+        changed = true;
+      } else if (sTrack.src && !existing.src) {
+        existing.src = sTrack.src;
+        saveTrackToAudioDB(existing);
+        changed = true;
+      }
+    });
+    if (changed) {
+      this.saveCustomTracks();
+      if (this.onTracksUpdatedCallback) this.onTracksUpdatedCallback();
+    }
+  }
+
+  public getCustomTracks(): Track[] {
+    return this.tracks.filter((t) => t.isCustom);
   }
 
   /**
@@ -228,6 +352,9 @@ class RetroChiptunePlayer {
       } catch (e) {
         console.warn('Failed to save deleted default track id', e);
       }
+    } else {
+      // Remove from IndexedDB
+      removeTrackFromAudioDB(id);
     }
 
     // Remove from in-memory array

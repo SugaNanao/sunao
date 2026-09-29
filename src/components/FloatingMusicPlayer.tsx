@@ -164,16 +164,16 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
                 <button
                   onClick={onOpenMusicModal}
                   className="text-[10px] font-pixel bg-[#FFF8F5] hover:bg-[#E0BAC7] px-2 py-1 rounded border border-[#442F2A] text-[#442F2A] transition cursor-pointer"
-                  title="打開曲庫與設定"
+                  title="打開音樂盒與上傳音樂"
                 >
-                  曲目設定
+                  曲庫 / 上傳 ♫
                 </button>
               )}
             </div>
 
             {/* Collapsible Track List within the floating window */}
             {showTrackList && (
-              <div className="mt-2 pt-2 border-t border-[#442F2A]/20 space-y-1 max-h-32 overflow-y-auto pr-1">
+              <div className="mt-2 pt-2 border-t border-[#442F2A]/20 space-y-1 max-h-36 overflow-y-auto pr-1">
                 {playlist.map((track, idx) => {
                   const isCurrent = track.id === currentTrack.id;
                   return (
@@ -187,10 +187,22 @@ export const FloatingMusicPlayer: React.FC<FloatingMusicPlayerProps> = ({
                       }`}
                     >
                       <span className="truncate">{track.title}</span>
-                      <span className="text-[9px] opacity-70 shrink-0 ml-1">{track.bpm} BPM</span>
+                      <span className="text-[9px] opacity-70 shrink-0 ml-1">
+                        {track.isCustom ? 'MP3/MP4' : `${track.bpm || 120} BPM`}
+                      </span>
                     </button>
                   );
                 })}
+                {onOpenMusicModal && (
+                  <div className="pt-1 border-t border-[#442F2A]/15 flex justify-end">
+                    <button
+                      onClick={onOpenMusicModal}
+                      className="text-[9px] font-pixel text-[#C89398] hover:text-[#442F2A] hover:underline flex items-center gap-0.5 cursor-pointer"
+                    >
+                      + 上傳專屬音樂
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
